@@ -1758,6 +1758,7 @@ namespace SHJ
             Form1.needcloseform = true;
             ShowWindow(FindWindow("Shell_TrayWnd", null), SW_RESTORE);
             ShowWindow(FindWindow("Button", null), SW_RESTORE);
+            this.Dispose();
         }
 
         #endregion

@@ -900,7 +900,15 @@ namespace SHJ
             //关闭窗体
             if (needcloseform)
             {
-                this.Close();
+                try
+                {
+                    this.Dispose();
+                    this.Close();
+                }
+                catch
+                {
+                    Environment.Exit(0);
+                }
             }
 
             PricessTiming();
