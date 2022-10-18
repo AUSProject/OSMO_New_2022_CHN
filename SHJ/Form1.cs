@@ -232,7 +232,7 @@ namespace SHJ
         private int zhifutype;//0现金1支付宝2微信3一码付4提货码
         private int totalshangpinnum = 16;//显示的商品总数
         private int totalhuodaonum = 16;//显示的货道总数
-        private int isextbusy;//扩展板是否正忙0表示空闲，1正在出货，2出货完成需要确认
+        public static int isextbusy;//扩展板是否正忙0表示空闲，1正在出货，2出货完成需要确认
 
 
         private int Aisleoutcount;//电机输出超时计时
@@ -1155,7 +1155,7 @@ namespace SHJ
             {
                 PEPrinter.needMoveTray = 4;
                 outCallBack = false;
-                jb = 0x08;
+                CurStep = 0x08;
                 CodeEntity.TrayState = 0;
                 
             }
@@ -1168,14 +1168,14 @@ namespace SHJ
             }
             else if (((PEPrinter.TrayCondition & 0x01) == 0x01) && print && !String.IsNullOrEmpty(PEPrinter.PicPath))//开始打印
             {
-                jb = 0x09;
+                CurStep = 0x09;
                 print = false;
                 isextbusy = 2;
             }
             else if ((CodeEntity.TrayState == 32  && endCallBack))//托盘归位
             {
                 PEPrinter.needMoveTray = 1;
-                jb = 0x10;
+                CurStep = 0x10;
                 endCallBack = false;
                 CodeEntity.TrayState = 0;
             }
@@ -1360,7 +1360,7 @@ namespace SHJ
                             {
                                 liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
                                 huodaorecv = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
-                                setting.SendTiHuoMa(huodaorecv);//向设备发送货道号和开始指令
+                                setting.StartRunning(huodaorecv);//向设备发送货道号和开始指令
                                 if ((huodaorecv <= mynodelistshangpin.Count) && (huodaorecv > 0))
                                 {
                                     if (isextbusy != 0)//正在出货
@@ -2613,7 +2613,7 @@ namespace SHJ
 
         #region WorkingTest
 
-        private static byte jb;
+        private static byte CurStep;
         int numNow = 150;
         
         public void WorkingTest(int huodaoNum,string PicPath)
@@ -2636,7 +2636,7 @@ namespace SHJ
                         if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == huodaorecv)
                         {
                             updateshangpin(huodaorecv.ToString());//更新商品信息
-                            jb = 0x00;
+                            CurStep = 0x00;
                             if (BUYstep == 4)//货道正确
                             {
                                 HMIstep = 3;//出货
@@ -2700,7 +2700,7 @@ namespace SHJ
 
         private void ChoseNow()
         {
-            switch (jb)
+            switch (CurStep)
             {
                 case 0x00:
                     if (myfunctionnode.Attributes.GetNamedItem("vendortype").Value == "1")//印章打印机
@@ -2888,11 +2888,11 @@ namespace SHJ
             {
                 if (numNow == 147)
                 {
-                    jb = 0x02;
+                    CurStep = 0x02;
                 }
                 else if (numNow == 140)
                 {
-                    jb = 0x04;
+                    CurStep = 0x04;
                 }
                 ChoseNow();
             }

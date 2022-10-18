@@ -57,7 +57,7 @@ namespace SHJ
         /// 向设备发送货道号和开始运行指令
         /// </summary>
         /// <param name="huodaorecv">货道号</param>
-        public static void SendTiHuoMa(int huodaorecv)
+        public static void StartRunning(int huodaorecv)
         {
             PCHMI.CONFIG.PLC_OFF[0] = false;
             switch (huodaorecv)
@@ -525,37 +525,7 @@ namespace SHJ
                         PEPrinter.OutputNumber = (UInt16)hScrollBar2.Value;
                         PEPrinter.needPutPrintCondition = true;
                     }
-                    //if (hScrollBar4.Value != PEPrinter.PreheatData)
-                    //{
-                    //    PEPrinter.PreheatData = (UInt16)hScrollBar4.Value;
-                    //    PEPrinter.needPutPrintCondition = true;
-                    //}
-                    //if (hScrollBar5.Value != PEPrinter.PreheatLines)
-                    //{
-                    //    PEPrinter.PreheatLines = (UInt16)hScrollBar5.Value;
-                    //    PEPrinter.needPutPrintCondition = true;
-                    //}
                 }
-            }
-            else 
-            {
-                //if ((hScrollBar1.Value != PEPrinter.LineSpeedValue1)&&(PEPrinter.LineSpeedValue1>= hScrollBar1.Minimum))
-                //{
-                //    hScrollBar1.Value = PEPrinter.LineSpeedValue1;
-                //}
-                //if ((hScrollBar2.Value != PEPrinter.OutputNumber) && (PEPrinter.OutputNumber >= hScrollBar2.Minimum))
-                //{
-                //    hScrollBar2.Value = PEPrinter.OutputNumber;
-                //}
-                //if ((hScrollBar4.Value != PEPrinter.PreheatData) && (PEPrinter.PreheatData >= hScrollBar4.Minimum))
-                //{
-                //    hScrollBar4.Value = PEPrinter.PreheatData;
-                //}
-                //if ((hScrollBar5.Value != PEPrinter.PreheatLines) && (PEPrinter.PreheatLines >= hScrollBar5.Minimum))
-                //{
-                //    hScrollBar5.Value = PEPrinter.PreheatLines;
-                //}
-
             }
 
             if (Form1.istestmode)
@@ -582,27 +552,6 @@ namespace SHJ
                     }
                 }
             }
-            
-            {
-                //switch (Form1.extendstate[0]&0xfc)
-                //{
-                //    default:
-                //        //label29.Text = "Running state:" + Form1.extendstate[0].ToString("X");
-                //        break;
-                //}
-            }
-                
-            //label33.Text = "Machine state:" + Form1.extendstate[1].ToString("X");
-            //label3.Text = "Restock button:" + (Form1.extendstate[1]&0x01).ToString();
-            //label40.Text = "Settings button:" + ((Form1.extendstate[1] >> 1) & 0x01).ToString();
-            //label35.Text = "A axis is not at zero:" + ((Form1.extendstate[1] >> 4) & 0x01).ToString();
-            //label37.Text = "B axis is not at zero:" + ((Form1.extendstate[1] >> 5) & 0x01).ToString();
-            //label39.Text = "Z1 axis is not at zero:" + ((Form1.extendstate[1] >> 6) & 0x01).ToString();
-            //label43.Text = "PLC send frame:" + Form1.STM32Sendstr;
-            //label46.Text = "PLC receive frame:" + Form1.STM32Recestr;
-            //label22.Text = "Driver board sends frame:" + Form1.VMSendstr;
-            //label25.Text = "Driver board receive frame:" + Form1.VMRecestr;
-
             switch (Form1.keyboardnum)
             {
                 case 11://textBox1
@@ -1758,10 +1707,10 @@ namespace SHJ
             Form1.needcloseform = true;
             ShowWindow(FindWindow("Shell_TrayWnd", null), SW_RESTORE);
             ShowWindow(FindWindow("Button", null), SW_RESTORE);
-            this.Dispose();
         }
 
         #endregion
+
 
         private void listBox1_DoubleClick(object sender, EventArgs e)
         {
@@ -1808,6 +1757,11 @@ namespace SHJ
         private void txt_User_Click(object sender, EventArgs e)
         {
             this.txt_User.Text = "";
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            new PCHMI.VAR().SEND_INT16(0, "D209", 0);
         }
     }
 }

@@ -263,7 +263,7 @@ namespace SHJ
             else
             {
                 cargoWayNum = cmbCargoWay.SelectedIndex + 1;
-                setting.SendTiHuoMa(cargoWayNum);
+                setting.StartRunning(cargoWayNum);
                 Form1.CallWorkingTest(cargoWayNum, imageFilePath);
                 this.Dispose();
                 this.Close();
@@ -290,7 +290,7 @@ namespace SHJ
         /// 检查设备是否连接
         /// </summary>
         /// <returns>true or false</returns>
-       private bool CheckPortConnect()
+       private static bool CheckPortConnect()
         {
             bool callback = false;
             string[] gcom = System.IO.Ports.SerialPort.GetPortNames();
@@ -333,7 +333,6 @@ namespace SHJ
         }
 
         #endregion
-
-       
+        
     }
 }
