@@ -6,77 +6,70 @@ using System.Threading.Tasks;
 
 namespace SHJ
 {
-    class MechineTools
+    class Machine
     {
-        public MechineTools()
+        public Machine()
         {
             
         }
-        public short runCode;//运行代码
-        public short faultCode;//错误代码
-        public short mainCode;//主控程序
-        public byte nowStep;//机器当前进行步骤  0x00:等待  0x01 :放置印面  0x02:取盖子，存盖子  0x03:装配印面  0x04:装配盖子  0x05:出料  0x06:出料及回零
-        public bool runToken;//是否运行
+        public static short runCode;//运行代码
+        public static short faultCode;//错误代码
+        public static short mainCode;//主控程序
+        /// <summary>
+        /// <para>机器当前运行步骤</para>
+        /// 00:空闲 01:取盒子 02:抓取印面 03:等待打印  04:正在打印  05:正在组装 06:正在出货 07:等待取货 98:打印机故障 99:机器故障 
+        /// </summary>
+        public static byte nowStep;
+        public static bool runToken;//是否运行
         /// <summary>
         /// PLC自动运行程序
         /// </summary>
         /// <param name="action">是否运行</param>
-        public void PlcAutoControl(bool action)
+        public void PlcAutoControl()
         {
             GetFaultCode();
-            if (runToken && action)
+            if (runToken)
             {
                 GetMainCode();
                 switch (mainCode)
                 {
                     case 0:
-                        nowStep = 0x00;
                         break;
                     case 1:
-                        InstallPrintFace();
-                        nowStep = 0x01;
+                        InstallPrintFace();//托盘弹出和回收，开始打印
                         break;
                     case 2:
-                        nowStep = 0x02;
                         break;
                     case 3:
-                        PrintTakeBack();
-                        nowStep = 0x03;
+                        PrintTakeBack();//托盘回收归零,开始组装
                         break;
                     case 4:
-                        nowStep = 0x04;
                         break;
                     case 5:
-                        nowStep = 0x05;
+                        Shipment();
                         break;
                     case 6:
                         IniMachine();
-                        nowStep = 0x06;
                         break;
                     case 7:
-                        nowStep = 0x07;
                         break;
                 }
             }
         }
 
         /// <summary>
-        /// 监控机器是否报错
-        /// 报错:True,无报错:false
+        /// 监控机器错误代码
         /// </summary>
-        /// <returns>报错:True,无报错:false</returns>
-        public bool GetFaultCode()
+        private void GetFaultCode()
         {
             faultCode=new PCHMI.VAR().GET_INT16(0, "D209");
-            if (faultCode != 0)
+            if (faultCode != 0)//报错则停止运行
             {
                 runToken = false;
-                return true;
             }
             else
             {
                 runToken = true;
-                return false;
             }
         }
 
@@ -84,32 +77,45 @@ namespace SHJ
         /// 获取程序当前步骤
         /// </summary>
         /// <returns></returns>
-        public short GetMainCode()
+        private short GetMainCode()
         {
             mainCode = new PCHMI.VAR().GET_INT16(0, "D15");
             return mainCode;
         }
 
-        private bool trayOut = false;//托盘是否弹出
-        private bool trayBack = false;//托盘是否回收
+        private  bool trayOut = false;//托盘是否弹出
+        private  bool trayBack = false;//托盘是否回收打印
+        private  bool trayReZero = false;//托盘是否归零
         /// <summary>
         /// 安装印面监控程序
         /// </summary>
-        public void InstallPrintFace()
+        private void InstallPrintFace()
         {
             short D11 = new PCHMI.VAR().GET_INT16(0, "D11");
-            if (D11 == 6 && !trayOut)
+            if (D11 >= 0 && D11 < 3)
             {
+                nowStep = 0x01;
+            }
+            else if(D11 >= 3 && D11 < 6)
+            {
+                nowStep = 0x02;
+            }
+            else if (D11 >= 6 && D11 < 10 && !trayOut)
+            {
+                nowStep = 0x03;
                 trayOut = true;
                 PEPrinter.needMoveTray = 4;//弹出托盘
             }
             else if (D11 == 10 && trayOut)
             {
                 trayBack = true;
+                trayOut = false;
                 PEPrinter.needMoveTray = 3;//回收托盘进行打印
             }
             else if (((PEPrinter.TrayCondition & 0x01) == 0x01) && trayBack && !String.IsNullOrEmpty(PEPrinter.PicPath))//开始打印
             {
+                trayBack = false;
+                nowStep = 0x04;
                 Form1.isextbusy = 2;
             }
             else { }
@@ -118,23 +124,46 @@ namespace SHJ
         /// <summary>
         /// 收回托盘程序
         /// </summary>
-        public void PrintTakeBack()
+        private void PrintTakeBack()
         {
             short D7 = new PCHMI.VAR().GET_INT16(0, "D7");
-            if (D7 >= 5)
+            if (D7 > 5 && !trayReZero)
             {
+                trayReZero = true;
+                nowStep = 0x05;
                 PEPrinter.needMoveTray = 1;//回收托盘
+            }
+        }
+
+        /// <summary>
+        /// 出货过程
+        /// </summary>
+        private void Shipment()
+        {
+            short D9 = new PCHMI.VAR().GET_INT16(0, "D9");
+            if (D9 < 5 && D9>0)
+            {
+                nowStep = 0x06;
+            }
+            else if (D9 >= 8)
+            {
+                nowStep = 0x07;
             }
         }
 
         /// <summary>
         /// 还原机器状态
         /// </summary>
-        public void IniMachine()
+        private void IniMachine()
         {
-            trayBack = false;
-            trayOut = false;
-            nowStep = 0x00;
+            short D10 = new PCHMI.VAR().GET_INT16(0, "D10");
+            if (D10 >= 0)
+            {
+                trayReZero = false;
+                trayBack = false;
+                trayOut = false;
+                nowStep = 0x00;
+            }
         }
     }
 }

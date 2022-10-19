@@ -269,7 +269,7 @@
             // timer4
             // 
             this.timer4.Enabled = true;
-            this.timer4.Interval = 500;
+            this.timer4.Interval = 1000;
             this.timer4.Tick += new System.EventHandler(this.timer4_Tick);
             // 
             // pic_Erweima

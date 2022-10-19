@@ -143,11 +143,10 @@ namespace SHJ
         #endregion
 
         #region Feild
-
-        //private static int shouyao=0;//是否是售药机0tongyong1shouyao2shuangkaishouyao
-
+        
         private string imageUrlFile;//图片下载地址文件夹
         private string ErweimaUrl = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";//二维码地址
+        Machine machine;//机器控制
 
         public static bool needcloseform = false;//是否需要关闭窗体
         public static int HMIstep;//界面页面：0广告 1触摸选择商品 2支付页面
@@ -306,6 +305,8 @@ namespace SHJ
             pic_Erweima.Visible = false;//隐藏二维码
             lbl_Title.Visible = false;
 
+            machine = new Machine();
+            
             config1.START((Control)this, System.Reflection.Assembly.GetExecutingAssembly(), null);
             
             this.panel1.Dock = DockStyle.Fill;
@@ -910,9 +911,6 @@ namespace SHJ
                     Environment.Exit(0);
                 }
             }
-
-            PricessTiming();
-
         }
 
         #endregion
@@ -1137,62 +1135,10 @@ namespace SHJ
         #endregion
 
         #region Timer4
-
-        bool inCallBack = true; //托盘归位（打印中）
-        bool outCallBack = true;//托盘弹出
-        bool endCallBack = true;//托盘归位
-        bool print = false;//打印
         private void timer4_Tick(object sender, EventArgs e)
         {
-            CodeEntity.RunCode = new PCHMI.VAR().GET_INT16(0, "400208");//运行代码
-            CodeEntity.FaultCode = new PCHMI.VAR().GET_INT16(0, "400209");//故障代码
-            CodeEntity.PrintFaceNum = new PCHMI.VAR().GET_INT16(0, "400304");
-            CodeEntity.TrayState = new PCHMI.VAR().GET_INT16(0, "400010");
-            CodeEntity.M119 = new PCHMI.VAR().GET_BIT(0, "000119");
-
-          
-            if ((CodeEntity.TrayState == 2 && outCallBack))//托盘弹出(打印中）
-            {
-                PEPrinter.needMoveTray = 4;
-                outCallBack = false;
-                CurStep = 0x08;
-                CodeEntity.TrayState = 0;
-                
-            }
-            else if (CodeEntity.TrayState == 4 && inCallBack)//托盘归位（印章制作时）
-            {
-                inCallBack = false;
-                CodeEntity.TrayState = 0;
-                PEPrinter.needMoveTray = 3;
-                print = true;
-            }
-            else if (((PEPrinter.TrayCondition & 0x01) == 0x01) && print && !String.IsNullOrEmpty(PEPrinter.PicPath))//开始打印
-            {
-                CurStep = 0x09;
-                print = false;
-                isextbusy = 2;
-            }
-            else if ((CodeEntity.TrayState == 32  && endCallBack))//托盘归位
-            {
-                PEPrinter.needMoveTray = 1;
-                CurStep = 0x10;
-                endCallBack = false;
-                CodeEntity.TrayState = 0;
-            }
-            else if (!endCallBack)//打印完成后初始化
-            {
-                if (CodeEntity.FaultCode==0 && CodeEntity.RunCode == 0 && (PEPrinter.TrayCondition & 0x01) == 0x01)
-                {
-                    HMIstep = 1;
-                    isextbusy = 0;
-                    inCallBack = true;
-                    outCallBack = true;
-                    print = false;
-                    endCallBack = true;
-                    numNow = 150;
-                    PricessAction = false;
-                }
-            }
+            machine.PlcAutoControl();
+            PricessTiming(Machine.runToken);
         }
 
         #endregion
@@ -1354,7 +1300,7 @@ namespace SHJ
                     switch (GSMRxBuffer[5])
                     {
                         case 0x01://验证成功
-                            PricessAction = true;
+                            Machine.runToken = true;
                             string gettihuomastring = Encoding.Default.GetString(GSMRxBuffer, 6, 7);
                             if (myTihuomastr == gettihuomastring)
                             {
@@ -2612,13 +2558,12 @@ namespace SHJ
         #endregion
 
         #region WorkingTest
-
-        private static byte CurStep;
+        
         int numNow = 150;
         
         public void WorkingTest(int huodaoNum,string PicPath)
         {
-            PricessAction = true;
+            Machine.runToken = true;
             pictureaddr = PicPath;
             myprint = new PEPrinter();
             netreturncount = 0;//超时计时停止
@@ -2636,7 +2581,6 @@ namespace SHJ
                         if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == huodaorecv)
                         {
                             updateshangpin(huodaorecv.ToString());//更新商品信息
-                            CurStep = 0x00;
                             if (BUYstep == 4)//货道正确
                             {
                                 HMIstep = 3;//出货
@@ -2670,7 +2614,6 @@ namespace SHJ
                                                 }
                                             }
                                         }
-
                                         break;
                                     }
                                 }
@@ -2686,9 +2629,7 @@ namespace SHJ
                                 }
                                 catch
                                 {
-
                                 }
-
                             }
                         }
                     }
@@ -2697,53 +2638,7 @@ namespace SHJ
                 tihuoma.tihuomaresult = "提货码验证成功";
             }
         }
-
-        private void ChoseNow()
-        {
-            switch (CurStep)
-            {
-                case 0x00:
-                    if (myfunctionnode.Attributes.GetNamedItem("vendortype").Value == "1")//印章打印机
-                    {
-                        showprintstate = "请放入印章盒,再点开始制作";
-                    }
-                    else
-                    {
-                        showprintstate = "印章正在准备,请稍等";
-                    }
-
-                    break;
-                case 0x02:
-                    showprintstate = "印章制作中:取外壳,请稍等";
-                    break;
-                case 0x04:
-                    showprintstate = "印章制作中:取印面,请稍等";
-                    break;
-                case 0x08:
-                    showprintstate = "印章制作中:等待打印,请稍等";
-                    break;
-                case 0x10:
-                    showprintstate = "印章制作中:正在组装,请稍等";
-                    break;
-                case 0x20:
-                    showprintstate = "印章制作中:正在出货,请稍等";
-                    break;
-                case 0x40:
-                    showprintstate = "印章制作中:正在出货,请稍等";
-                    break;
-                case 0x80:
-                    showprintstate = "印章制作完成:等待取货,请稍等";
-                    break;
-                case 20:
-                    showprintstate = "机器故障,请稍等";
-                    break;
-                default:
-                    //showprintstate = Form1.extendstate[0].ToString("X") + ",请稍等"; ;
-                    break;
-            }
-            label5.Text = showprinttime + showprintstate+"...  " + (numNow--).ToString() + "s";
-        }
-
+        
         #endregion
 
         #region ErrorDetect
@@ -2882,20 +2777,51 @@ namespace SHJ
         /// <summary>
         /// 印章机打印过程
         /// </summary>
-        private void PricessTiming()
+        private void PricessTiming(bool token)
         {
-            if (PricessAction)
+            if (token)
             {
-                if (numNow == 147)
-                {
-                    CurStep = 0x02;
-                }
-                else if (numNow == 140)
-                {
-                    CurStep = 0x04;
-                }
                 ChoseNow();
             }
+        }
+
+        private void ChoseNow()
+        {
+            switch (Machine.nowStep)
+            {
+                case 0x00:
+                    break;
+                case 0x01:
+                    showprintstate = "印章制作中:取外壳,请稍等";
+                    break;
+                case 0x02:
+                    showprintstate = "印章制作中:取印面,请稍等";
+                    break;
+                case 0x03:
+                    showprintstate = "印章制作中:等待打印,请稍等";
+                    break;
+                case 0x04:
+                    showprintstate = "印章制作中:正在打印,请稍等";
+                    break;
+                case 0x05:
+                    showprintstate = "印章制作中:正在组装,请稍等";
+                    break;
+                case 0x06:
+                    showprintstate = "印章制作中:正在出货,请稍等";
+                    break;
+                case 0x07:
+                    showprintstate = "印章制作完成:等待取货,请稍等";
+                    break;
+                case 0x98:
+                    showprintstate = "打印机故障";
+                    break;
+                case 0x99:
+                    showprintstate = "机器故障,请稍等";
+                    break;
+                default:
+                    break;
+            }
+            label5.Text = showprinttime + showprintstate + "...  " + (numNow--).ToString() + "s";
         }
 
         #endregion
