@@ -12,77 +12,85 @@ namespace SHJ
         {
             
         }
-        public static short runCode;//运行代码
-        public static short faultCode;//错误代码
-        public static short mainCode;//主控程序
+        public short runCode;//运行代码
+        public short faultCode;//错误代码
+        public short mainCode;//主控程序
+        public string curBit;//当前位
+        public short curData;//当前位数据
+        public static int time = 150;
+        public int runTiming = time;
+        
         /// <summary>
         /// <para>机器当前运行步骤</para>
         /// 00:空闲 01:取盒子 02:抓取印面 03:等待打印  04:正在打印  05:正在组装 06:正在出货 07:等待取货 98:打印机故障 99:机器故障 
         /// </summary>
         public static byte nowStep;
-        public static bool runToken;//是否运行
+
         /// <summary>
         /// PLC自动运行程序
         /// </summary>
         /// <param name="action">是否运行</param>
-        public void PlcAutoControl()
+        public void PlcAutoControl(bool action)
         {
-            GetFaultCode();
-            if (runToken)
+            if (action)
             {
-                GetMainCode();
+                GetCode();
                 switch (mainCode)
                 {
                     case 0:
                         break;
                     case 1:
+                        curBit = "D11：";
                         InstallPrintFace();//托盘弹出和回收，开始打印
                         break;
                     case 2:
+                        curBit = "D6：";
+                        curData = new PCHMI.VAR().GET_INT16(0, "D6");
                         break;
                     case 3:
+                        curBit = "D7：";
                         PrintTakeBack();//托盘回收归零,开始组装
                         break;
                     case 4:
+                        curBit = "D8：";
+                        curData = new PCHMI.VAR().GET_INT16(0, "D8");
                         break;
                     case 5:
-                        Shipment();
+                        curBit = "D9：";
+                        Shipment();//出货
                         break;
                     case 6:
-                        IniMachine();
+                        curBit = "D10：";
+                        WaitShip();//等待取货
                         break;
                     case 7:
+                        IniMachine();//复位
+                        break;
+                    case 98:
+                        nowStep = 0x98;
+                        break;
+                    case 99:
+                        nowStep = 0x99;
                         break;
                 }
             }
         }
 
         /// <summary>
-        /// 监控机器错误代码
+        /// 监控机器错误代码和运行代码
+        /// <para>获取当前步骤</para>
         /// </summary>
-        private void GetFaultCode()
+        private void GetCode()
         {
             faultCode=new PCHMI.VAR().GET_INT16(0, "D209");
-            if (faultCode != 0)//报错则停止运行
-            {
-                runToken = false;
-            }
-            else
-            {
-                runToken = true;
-            }
-        }
-
-        /// <summary>
-        /// 获取程序当前步骤
-        /// </summary>
-        /// <returns></returns>
-        private short GetMainCode()
-        {
+            runCode = new PCHMI.VAR().GET_INT16(0, "D208");
             mainCode = new PCHMI.VAR().GET_INT16(0, "D15");
-            return mainCode;
+            if(faultCode != 0)//报错
+            {
+                mainCode = 99;
+            }
         }
-
+        
         private  bool trayOut = false;//托盘是否弹出
         private  bool trayBack = false;//托盘是否回收打印
         private  bool trayReZero = false;//托盘是否归零
@@ -92,6 +100,7 @@ namespace SHJ
         private void InstallPrintFace()
         {
             short D11 = new PCHMI.VAR().GET_INT16(0, "D11");
+            curData = D11;
             if (D11 >= 0 && D11 < 3)
             {
                 nowStep = 0x01;
@@ -127,6 +136,7 @@ namespace SHJ
         private void PrintTakeBack()
         {
             short D7 = new PCHMI.VAR().GET_INT16(0, "D7");
+            curData = D7;
             if (D7 > 5 && !trayReZero)
             {
                 trayReZero = true;
@@ -141,29 +151,41 @@ namespace SHJ
         private void Shipment()
         {
             short D9 = new PCHMI.VAR().GET_INT16(0, "D9");
-            if (D9 < 5 && D9>0)
+            curData = D9;
+            if (D9 >= 4)
             {
                 nowStep = 0x06;
             }
-            else if (D9 >= 8)
+        }
+
+        /// <summary>
+        ///等待取货
+        /// </summary>
+        private void WaitShip()
+        {
+            short D10 = new PCHMI.VAR().GET_INT16(0, "D10");
+            curData = D10;
+            if (D10 >= 0)
             {
                 nowStep = 0x07;
             }
         }
 
         /// <summary>
-        /// 还原机器状态
+        /// 复位数据
         /// </summary>
         private void IniMachine()
         {
-            short D10 = new PCHMI.VAR().GET_INT16(0, "D10");
-            if (D10 >= 0)
+            if (runCode == 0)
             {
                 trayReZero = false;
                 trayBack = false;
                 trayOut = false;
                 nowStep = 0x00;
+                runTiming = time;
+                Form1.HMIstep = 1;
             }
         }
+
     }
 }

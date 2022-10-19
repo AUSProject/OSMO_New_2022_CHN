@@ -120,6 +120,14 @@ namespace SHJ
             {
                 Form1.myfunctionnode.Attributes.GetNamedItem("adupdate").Value = "1";
             }
+            if (ckb_runDataShow.Checked)
+            {
+                Form1.myfunctionnode.Attributes.GetNamedItem("runDataShow").Value = "1";
+            }
+            else
+            {
+                Form1.myfunctionnode.Attributes.GetNamedItem("runDataShow").Value = "0";
+            }
 
             int i;
             for (i = 0; i < dataGridView1.Rows.Count; i++)
@@ -195,7 +203,14 @@ namespace SHJ
             {
                 checkBox5.Checked = true;
             }
-
+            if(Form1.myfunctionnode.Attributes.GetNamedItem("runDataShow").Value=="1")
+            {
+                ckb_runDataShow.Checked = true;
+            }
+            else
+            {
+                ckb_runDataShow.Checked = false;
+            }
             textBox11.Text = Form1.mynodelistshangpin.Count.ToString();//商品数量
 
             hScrollBar1.Value = int.Parse(Form1.myfunctionnode.Attributes.GetNamedItem("temperature1").Value);
@@ -1762,6 +1777,11 @@ namespace SHJ
         private void button1_Click_1(object sender, EventArgs e)
         {
             new PCHMI.VAR().SEND_INT16(0, "D209", 0);
+        }
+
+        private void ckb_runDataShow_CheckedChanged(object sender, EventArgs e)
+        {
+            needsave = true;
         }
     }
 }

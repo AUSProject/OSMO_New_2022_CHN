@@ -147,6 +147,7 @@ namespace SHJ
         private string imageUrlFile;//图片下载地址文件夹
         private string ErweimaUrl = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";//二维码地址
         Machine machine;//机器控制
+        private bool showData;//显示数据
 
         public static bool needcloseform = false;//是否需要关闭窗体
         public static int HMIstep;//界面页面：0广告 1触摸选择商品 2支付页面
@@ -507,26 +508,7 @@ namespace SHJ
                         }
                     }
                 }
-
-                //for (int i = 0; i < cmimagefiles.Length; i++)//商品触摸列表
-                //{
-
-                //    int mystartindex = cmimagefiles[i].LastIndexOf('\\');
-                //    int myendindex = cmimagefiles[i].LastIndexOf('.');
-                //    bool mycontainpic = cmimagefiles[i].EndsWith(".bmp") || cmimagefiles[i].EndsWith(".jpg")
-                //        || cmimagefiles[i].EndsWith(".png") || cmimagefiles[i].EndsWith(".gif")
-                //        || cmimagefiles[i].EndsWith(".tif") || cmimagefiles[i].EndsWith(".jpeg");
-                //    string mycmname = cmimagefiles[i].Substring(mystartindex + 1, myendindex - mystartindex - 1);
-                //    bool hasshangpinnum = false;
-                //    for (int j = 0; j < mynodelistshangpin.Count; j++)//查找是否有配置数据
-                //    {
-                //        if (mynodelistshangpin[j].Attributes.GetNamedItem("shangpinnum").Value == mycmname)
-                //        {
-                //            hasshangpinnum = true;
-                //            break;
-                //        }
-                //    }
-                //}
+                
                 if (myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
                 {
                     dataaddress += "\\" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".txt";
@@ -598,12 +580,20 @@ namespace SHJ
             qrCodeEncoder.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.L;
 
             pic_Erweima.Image = Image.FromFile(Path.Combine(adimagesaddress, "erweima.jpg"));
-
+            showData = myfunctionnode.Attributes.GetNamedItem("adupdate").Value == "0" ? false : true;
+            if (showData)
+            {
+                lbl_D15.Visible = true;
+                lbl_Ds.Visible = true;
+            }
+            else
+            {
+                lbl_D15.Visible = false;
+                lbl_Ds.Visible = false;
+            }
         }
 
         #endregion
-
-        #region Timer
 
         #region Timer1
 
@@ -1135,13 +1125,17 @@ namespace SHJ
         #endregion
 
         #region Timer4
+        private bool action = false;
         private void timer4_Tick(object sender, EventArgs e)
         {
-            machine.PlcAutoControl();
-            PricessTiming(Machine.runToken);
+            machine.PlcAutoControl(action);
+            PricessTiming(action);
+            if (showData && action)
+            {
+                lbl_D15.Text = "D15：" + machine.mainCode.ToString();
+                lbl_Ds.Text = machine.curBit + machine.curData.ToString();
+            }
         }
-
-        #endregion
 
         #endregion
 
@@ -1300,7 +1294,7 @@ namespace SHJ
                     switch (GSMRxBuffer[5])
                     {
                         case 0x01://验证成功
-                            Machine.runToken = true;
+                            action = true;
                             string gettihuomastring = Encoding.Default.GetString(GSMRxBuffer, 6, 7);
                             if (myTihuomastr == gettihuomastring)
                             {
@@ -1849,6 +1843,8 @@ namespace SHJ
             NetNode.Attributes.Append(netdelayAttribute);//xml节点附件属性
             rootNode.AppendChild(NetNode);
 
+            XmlAttribute dataShow = myxmldoc.CreateAttribute("runDataShow");//运行时显示数据
+            dataShow.Value = "0";
             XmlNode functionNode = myxmldoc.CreateElement("function");//功能定义
             XmlAttribute netlogAttribute = myxmldoc.CreateAttribute("netlog");//网络日志
             netlogAttribute.Value = "0";
@@ -2054,10 +2050,7 @@ namespace SHJ
             mypayconfignode = myxmldoc.SelectSingleNode("config").SelectSingleNode("payconfig");
             mynodelistshangpin = myxmldoc.SelectSingleNode("config").SelectSingleNode("shangpin").ChildNodes;
             mynodelisthuodao = myxmldoc.SelectSingleNode("config").SelectSingleNode("huodao").ChildNodes;
-            //mynodelistchuhuo = mysalexmldoc.SelectSingleNode("sale").SelectSingleNode("chuhuo").ChildNodes;
             mynodelistpay = mysalexmldoc.SelectSingleNode("sale").SelectSingleNode("pay").ChildNodes;
-            //PLCnodelistbitdata = PLCxmldoc.SelectSingleNode("config").SelectSingleNode("bitdata").ChildNodes;
-            //PLCnodelistworddata = PLCxmldoc.SelectSingleNode("config").SelectSingleNode("worddata").ChildNodes;
             try
             {
                 paytypes = int.Parse(mypayconfignode.Attributes.GetNamedItem("allpay").Value);
@@ -2150,6 +2143,20 @@ namespace SHJ
             this.pictureBox6.Location = new Point(800, 800);
             this.pictureBox7.Location = new Point(550, 400);
             this.pictureBox8.Location = new Point(1020, 400);
+            this.lbl_D15.Location = new Point(38, 22);
+            this.lbl_Ds.Location = new Point(38, 46);
+
+            showData = myfunctionnode.Attributes.GetNamedItem("adupdate").Value == "0" ? false : true;
+            if (showData)
+            {
+                lbl_D15.Visible = true;
+                lbl_Ds.Visible = true;
+            }
+            else
+            {
+                lbl_D15.Visible = false;
+                lbl_Ds.Visible = false;
+            }
 
             needupdatePlaylist = true;
         }
@@ -2559,11 +2566,9 @@ namespace SHJ
 
         #region WorkingTest
         
-        int numNow = 150;
-        
         public void WorkingTest(int huodaoNum,string PicPath)
         {
-            Machine.runToken = true;
+            action = true;
             pictureaddr = PicPath;
             myprint = new PEPrinter();
             netreturncount = 0;//超时计时停止
@@ -2772,8 +2777,7 @@ namespace SHJ
         #endregion
 
         #region 过程显示
-
-        bool PricessAction = false;
+        
         /// <summary>
         /// 印章机打印过程
         /// </summary>
@@ -2821,7 +2825,14 @@ namespace SHJ
                 default:
                     break;
             }
-            label5.Text = showprinttime + showprintstate + "...  " + (numNow--).ToString() + "s";
+            if(Machine.nowStep==0x98 || Machine.nowStep == 0x99)
+            {
+                label5.Text = showprinttime + showprintstate + "...  " + (machine.runTiming).ToString() + "s";
+            }
+            else
+            {
+                label5.Text = showprinttime + showprintstate + "...  " + (machine.runTiming--).ToString() + "s";
+            }
         }
 
         #endregion

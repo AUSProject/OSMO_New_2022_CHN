@@ -43,6 +43,8 @@
             this.imageList4 = new System.Windows.Forms.ImageList(this.components);
             this.imageList5 = new System.Windows.Forms.ImageList(this.components);
             this.panel4 = new System.Windows.Forms.Panel();
+            this.lbl_Ds = new System.Windows.Forms.Label();
+            this.lbl_D15 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -172,6 +174,8 @@
             // 
             this.panel4.BackgroundImage = global::SHJ.Properties.Resources.tihuo;
             this.panel4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.panel4.Controls.Add(this.lbl_Ds);
+            this.panel4.Controls.Add(this.lbl_D15);
             this.panel4.Controls.Add(this.label16);
             this.panel4.Controls.Add(this.label15);
             this.panel4.Controls.Add(this.label5);
@@ -184,6 +188,32 @@
             this.panel4.Size = new System.Drawing.Size(784, 612);
             this.panel4.TabIndex = 14;
             this.panel4.Visible = false;
+            // 
+            // lbl_Ds
+            // 
+            this.lbl_Ds.AutoSize = true;
+            this.lbl_Ds.BackColor = System.Drawing.Color.Transparent;
+            this.lbl_Ds.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_Ds.ForeColor = System.Drawing.Color.Red;
+            this.lbl_Ds.Location = new System.Drawing.Point(36, 42);
+            this.lbl_Ds.Name = "lbl_Ds";
+            this.lbl_Ds.Size = new System.Drawing.Size(44, 16);
+            this.lbl_Ds.TabIndex = 54;
+            this.lbl_Ds.Text = "D11:";
+            this.lbl_Ds.Visible = false;
+            // 
+            // lbl_D15
+            // 
+            this.lbl_D15.AutoSize = true;
+            this.lbl_D15.BackColor = System.Drawing.Color.Transparent;
+            this.lbl_D15.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_D15.ForeColor = System.Drawing.Color.Red;
+            this.lbl_D15.Location = new System.Drawing.Point(36, 18);
+            this.lbl_D15.Name = "lbl_D15";
+            this.lbl_D15.Size = new System.Drawing.Size(44, 16);
+            this.lbl_D15.TabIndex = 54;
+            this.lbl_D15.Text = "D15:";
+            this.lbl_D15.Visible = false;
             // 
             // label16
             // 
@@ -369,6 +399,8 @@
         private System.Windows.Forms.PictureBox pic_Erweima;
         private System.Windows.Forms.Label lbl_Title;
         internal PCHMI.CONFIG config1;
+        private System.Windows.Forms.Label lbl_Ds;
+        private System.Windows.Forms.Label lbl_D15;
     }
 }
 
