@@ -52,10 +52,10 @@
             this.pictureBox7 = new System.Windows.Forms.PictureBox();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.timer4 = new System.Windows.Forms.Timer(this.components);
             this.pic_Erweima = new System.Windows.Forms.PictureBox();
             this.lbl_Title = new System.Windows.Forms.Label();
             this.config1 = new PCHMI.CONFIG();
+            this.timer3 = new System.Windows.Forms.Timer(this.components);
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -296,12 +296,6 @@
             this.label2.TabIndex = 46;
             this.label2.Text = "2016-03-07 12:00:00";
             // 
-            // timer4
-            // 
-            this.timer4.Enabled = true;
-            this.timer4.Interval = 1000;
-            this.timer4.Tick += new System.EventHandler(this.timer4_Tick);
-            // 
             // pic_Erweima
             // 
             this.pic_Erweima.Location = new System.Drawing.Point(1580, 750);
@@ -341,6 +335,11 @@
         "MITSUBISHI_FX_SERIAL;COM=3,9600,2,7,1;SN=1;JumpBit="};
             this.config1.通讯配置文件名 = "PLC1";
             this.config1.随机数保存地址 = null;
+            // 
+            // timer3
+            // 
+            this.timer3.Interval = 1000;
+            this.timer3.Tick += new System.EventHandler(this.timer3_Tick);
             // 
             // Form1
             // 
@@ -395,12 +394,12 @@
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Button button2;
-        public System.Windows.Forms.Timer timer4;
         private System.Windows.Forms.PictureBox pic_Erweima;
         private System.Windows.Forms.Label lbl_Title;
         internal PCHMI.CONFIG config1;
         private System.Windows.Forms.Label lbl_Ds;
         private System.Windows.Forms.Label lbl_D15;
+        private System.Windows.Forms.Timer timer3;
     }
 }
 

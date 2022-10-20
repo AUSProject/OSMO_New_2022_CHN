@@ -956,6 +956,9 @@ namespace SHJ
                     PEPrinter.needMoveTray = 1;
                 }
             }
+
+            short D15 = new PCHMI.VAR().GET_INT16(0, "D15");
+            textBox1.Text = D15.ToString();
         }
 
         #endregion

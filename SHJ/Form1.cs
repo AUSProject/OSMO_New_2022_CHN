@@ -121,25 +121,7 @@ namespace SHJ
                 return false;
             }
         }
-        /// <summary>
-        /// 设备故障代码检测
-        /// </summary>
-        public static bool CallMachineError()
-        {
-            if (nowform1 != null)
-                return nowform1.MachineErrorInspect();
-            else
-                return false;
-        }
-
-        public static bool CallGoodsInspect()
-        {
-            if (nowform1 != null)
-                return nowform1.GoodsInspect();
-            else
-                return true;
-        }
-
+        
         #endregion
 
         #region Feild
@@ -917,7 +899,6 @@ namespace SHJ
             else
             {
                 count = 0;
-                MachineErrorInspect();
                 PrintErrorInspect2();
             }
             if (HMIstep == 0)//广告
@@ -1124,13 +1105,13 @@ namespace SHJ
 
         #endregion
 
-        #region Timer4
-        private bool action = false;
-        private void timer4_Tick(object sender, EventArgs e)
+        #region Timer3
+        //运行控制和显示
+        private void timer3_Tick(object sender, EventArgs e)
         {
-            machine.PlcAutoControl(action);
-            PricessTiming(action);
-            if (showData && action)
+            machine.PlcAutoControl(true);
+            RunningDisplay();
+            if (showData)
             {
                 lbl_D15.Text = "D15：" + machine.mainCode.ToString();
                 lbl_Ds.Text = machine.curBit + machine.curData.ToString();
@@ -1138,7 +1119,7 @@ namespace SHJ
         }
 
         #endregion
-
+        
         #region 网络，初始化，更新
 
         /// <summary>
@@ -1294,7 +1275,7 @@ namespace SHJ
                     switch (GSMRxBuffer[5])
                     {
                         case 0x01://验证成功
-                            action = true;
+                            timer3.Enabled = true;
                             string gettihuomastring = Encoding.Default.GetString(GSMRxBuffer, 6, 7);
                             if (myTihuomastr == gettihuomastring)
                             {
@@ -2568,7 +2549,7 @@ namespace SHJ
         
         public void WorkingTest(int huodaoNum,string PicPath)
         {
-            action = true;
+            timer3.Enabled = true;
             pictureaddr = PicPath;
             myprint = new PEPrinter();
             netreturncount = 0;//超时计时停止
@@ -2694,106 +2675,20 @@ namespace SHJ
             else
                 return false;
         }
-
-        /// <summary>
-        /// 设备错误检测
-        /// </summary>
-        /// <returns></returns>
-        string errorCode;
-        bool btnCallBack = true;
-        private string[] errorList = 
-        {
-            "打印机托盘错误",
-             "没有打印",
-             "出料位置错误",
-             "装配位置检测",
-             "存盖子位置检测",
-             "抓手故障",
-             "料槽位置印面取料失败",
-             "盖子存放位置放置失败",
-             "盒子取料超时" ,
-             "盖子存储位置取料失败",
-             "装配位置成品取料失败",
-             "成品出料槽放置成品失败"
-        };
-
-        private  bool MachineErrorInspect()
-        {
-            errorCode = Convert.ToString(CodeEntity.FaultCode, 2);
-            if (btnCallBack && errorCode!="0")
-            {
-                btnCallBack = false;
-                HMIstep = 1;
-                if (mysetting != null)
-                {
-                    string errorPrint = "";
-                    int listLenth = errorList.Length;
-                    for(int i=errorCode.Length-1;i>=0;i--)
-                    {
-                        if (listLenth < 0)
-                            break;
-                        else
-                        {
-                            if (errorCode[i] == '1')
-                                errorPrint += errorList[i];
-                            if (i > 0 && errorCode[i - 1] == '1')
-                                errorPrint += ",";
-                        }
-                        listLenth--;
-                    }
-                    if (MessageBox.Show($"{errorPrint}", "故障", MessageBoxButtons.OK) == DialogResult.OK)
-                    {
-                        btnCallBack = true;
-                        count = 0;
-                    }
-                }
-                else
-                {
-                    if (MessageBox.Show("机器故障！进入后台程序查看详情", "故障", MessageBoxButtons.OK) == DialogResult.OK)
-                    {
-                        btnCallBack = true;
-                        count = 0;
-                    }
-                }
-                return true;
-            }
-            else
-            {
-                if (count > 30)
-                    btnCallBack = true;
-                return false;
-            }
-        }
-
-       private bool GoodsInspect()
-        {
-            if (CodeEntity.PrintFaceNum == 0)
-                return true;
-            else
-                return false;
-
-        }
-
+        
         #endregion
 
         #region 过程显示
         
         /// <summary>
-        /// 印章机打印过程
+        /// 设备运行过程显示
         /// </summary>
-        private void PricessTiming(bool token)
-        {
-            if (token)
-            {
-                ChoseNow();
-            }
-        }
-
-        private void ChoseNow()
+        private void RunningDisplay()
         {
             switch (Machine.nowStep)
             {
                 case 0x00:
+                    timer3.Enabled = false;
                     break;
                 case 0x01:
                     showprintstate = "印章制作中:取外壳,请稍等";

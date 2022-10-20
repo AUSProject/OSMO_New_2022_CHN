@@ -10,7 +10,6 @@ namespace SHJ
         public tihuoma()
         {
             InitializeComponent();
-            Form1.CallGoodsInspect();
         }
         
         public static string tihuomaresult= "请输入提货码";//验证结果提示语
@@ -254,11 +253,11 @@ namespace SHJ
                 return;
             if (String.IsNullOrEmpty(cmbCargoWay.Text))
             {
-                MessageBox.Show("Please select a cargo channel","Remind");
+                MessageBox.Show("请选择货道","提示");
             }
             else if (String.IsNullOrEmpty(imageFilePath))
             {
-                MessageBox.Show("Please select the pattern","Remind");
+                MessageBox.Show("请选择印章图章","提示");
             }
             else
             {
@@ -287,20 +286,6 @@ namespace SHJ
         }
 
         /// <summary>
-        /// 检查设备是否连接
-        /// </summary>
-        /// <returns>true or false</returns>
-       private static bool CheckPortConnect()
-        {
-            bool callback = false;
-            string[] gcom = System.IO.Ports.SerialPort.GetPortNames();
-            if(gcom.Length>0)
-            {
-                callback = true;
-            }
-            return callback;
-        }
-        /// <summary>
         /// 对设备和打印机进行检查
         /// </summary>
         /// <returns>true：设备或打印机故障</returns>
@@ -311,18 +296,18 @@ namespace SHJ
                 textBox1.Text = "";
                 return true;
             }
-             if (!CheckPortConnect())//设备连接检查
+             if (!Machine.CheckPortConnect())//设备连接检查
             {
                 textBox1.Text = "";
                 MessageBox.Show("设备未连接,请检查连接或重启设备", "错误");
                 return true;
             }
-            if (Form1.CallMachineError())//机器故障检查
+            if (Machine.FaultShow()!=null)//机器故障检查
             {
                 MessageBox.Show("设备故障,进入后台程序查看详情", "故障", MessageBoxButtons.OK);
                 return true;
             }
-            if (Form1.CallGoodsInspect())//印面数量检查
+            if (!Machine.GoodsInspect())//印面数量检查
             {
                 textBox1.Text = "";
                 MessageBox.Show("印面缺货", "提示");

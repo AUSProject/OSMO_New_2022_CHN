@@ -13,7 +13,7 @@ namespace SHJ
             
         }
         public short runCode;//运行代码
-        public short faultCode;//错误代码
+        public static short faultCode;//错误代码
         public short mainCode;//主控程序
         public string curBit;//当前位
         public short curData;//当前位数据
@@ -22,7 +22,7 @@ namespace SHJ
         
         /// <summary>
         /// <para>机器当前运行步骤</para>
-        /// 00:空闲 01:取盒子 02:抓取印面 03:等待打印  04:正在打印  05:正在组装 06:正在出货 07:等待取货 98:打印机故障 99:机器故障 
+        /// 00:空闲 01:取盒子 02:抓取印面 03:等待打印  04:正在打印  05:正在组装 06:正在出货 07:等待取货 98:打印机故障 99:机器故障
         /// </summary>
         public static byte nowStep;
 
@@ -184,6 +184,70 @@ namespace SHJ
                 nowStep = 0x00;
                 runTiming = time;
                 Form1.HMIstep = 1;
+            }
+        }
+
+        /// <summary>
+        /// 检测是否还有印面
+        /// <para>True:有 False:没有</para>
+        /// </summary>
+        /// <returns></returns>
+        public static bool GoodsInspect()
+        {
+            Int16 num = new PCHMI.VAR().GET_INT16(0, "D202");
+            if (num == 0)
+                return false;
+            else
+                return true;
+        }
+
+        private string[] errorList =
+        {
+            "打印机托盘错误",
+             "没有打印",
+             "出料位置错误",
+             "装配位置检测",
+             "存盖子位置检测",
+             "抓手故障",
+             "料槽位置印面取料失败",
+             "盖子存放位置放置失败",
+             "盒子取料超时" ,
+             "盖子存储位置取料失败",
+             "装配位置成品取料失败",
+             "成品出料槽放置成品失败"
+        };
+        /// <summary>
+        /// 机器故障显示
+        /// <para>返回故障信息</para>
+        /// </summary>
+        public static string FaultShow()
+        {
+            string eMsg = "";
+            if (faultCode != 0)
+            {
+                string error = Convert.ToString(faultCode, 2);
+            }
+            else
+            {
+                eMsg = null;
+            }
+            return eMsg;
+        }
+
+        /// <summary>
+        /// 检查设备是否连接
+        /// <para>true:连接 false:未连接</para>
+        /// </summary>
+        public static bool CheckPortConnect()
+        {
+            string[] gcom = System.IO.Ports.SerialPort.GetPortNames();
+            if (gcom.Length > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
