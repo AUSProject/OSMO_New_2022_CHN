@@ -42,7 +42,6 @@ namespace SHJ
         public static byte MediaType;//打印机媒介类型
         public static byte TrayCondition;//打印机托盘状态
         public static UInt16 HeadTemperature;//打印头温度
-        public static UInt16 MediaLength;//打印机媒介长度
 
         public static UInt16 ProductID;//打印机编号
         public static UInt16 Version;//打印机F/W版本号，两个字节16进制值表示，高字节Major，低字节Minor
@@ -63,8 +62,6 @@ namespace SHJ
         public static UInt16 LineSpeedValue1;//指定橡胶打印线速度的设定值。(0～300)
         public static UInt16 LineSpeedValue2;//指定标签打印线速度的设定值。(0～300)
         
-
-
         public static bool needReset;//需要复位
         public static bool needQueryState;//需要查询状态
         public static bool needGetStateData;//需要获取状态数据
@@ -1067,21 +1064,12 @@ namespace SHJ
         #endregion
 
         public static string PEloopstate;//当前打印机执行任务步骤
-        private int loopdelay;
         public static  int resetCount = 0;
         /// <summary>
         /// 处理打印机任务
         /// </summary>
         public void PEloop()
         {
-            if (loopdelay>0)
-            {
-                loopdelay = 0;
-            }
-            else
-            {
-                loopdelay++;
-            }
             if (isconnected)
             {
                 if (needReset)//需要复位
@@ -1197,7 +1185,6 @@ namespace SHJ
                     }
                     PEloopstate = "发送图片";
                 }
-
                 else if (needPushMedia)//需要推送媒介
                 {
                     bool ret = PushMedia(MediaPosition, MediaCoefficient);
@@ -1224,15 +1211,14 @@ namespace SHJ
 
                     PEloopstate = "添加查询指令";
                 }
-               
             }
             else
             {
                 int Funreturn = PE_Open(0, 0, ref PEhandle);
                 if (Funreturn == 0)
                 {
-                    isconnected = true;
                     needReset = true;
+                    isconnected = true;
                 }
                 else
                 {
@@ -1240,6 +1226,7 @@ namespace SHJ
                     isconnected = false;
                 }
             }
+           
         }
     }
 }

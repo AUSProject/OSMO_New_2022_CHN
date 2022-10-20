@@ -291,26 +291,27 @@ namespace SHJ
         /// <returns>true：设备或打印机故障</returns>
         private bool SummaryCheck()
         {
-            if (Form1.CallError())//打印机检查 
+            if (Print.PrintFaultInspect()!=null)//打印机检查 
             {
                 textBox1.Text = "";
+                MessageBox.Show("打印机故障","打印机故障");
                 return true;
             }
              if (!Machine.CheckPortConnect())//设备连接检查
             {
                 textBox1.Text = "";
-                MessageBox.Show("设备未连接,请检查连接或重启设备", "错误");
+                MessageBox.Show("设备未连接,请检查连接或重启设备", "设备提示");
                 return true;
             }
             if (Machine.FaultShow()!=null)//机器故障检查
             {
-                MessageBox.Show("设备故障,进入后台程序查看详情", "故障", MessageBoxButtons.OK);
+                MessageBox.Show("设备故障,进入后台程序查看详情", "设备故障", MessageBoxButtons.OK);
                 return true;
             }
             if (!Machine.GoodsInspect())//印面数量检查
             {
                 textBox1.Text = "";
-                MessageBox.Show("印面缺货", "提示");
+                MessageBox.Show("印面缺货", "设备提示");
                 return true;
             }
             else

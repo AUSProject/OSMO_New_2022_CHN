@@ -596,7 +596,6 @@ namespace SHJ
                 case 19://textBox4
                     textBox4.Text = Form1.keyboardstring;
                     break;
-                    break;
                 case 21://textBox11
                     textBox11.Text = Form1.keyboardstring;
                     break;
@@ -675,9 +674,13 @@ namespace SHJ
             {
                 label2.Text = "机器状态:未准备好";
             }
+            label153.Text = label2.Text;
             label16.Text = "任务步骤:" + PEPrinter.PEloopstate;
+            label157.Text = label16.Text;
             label69.Text = "状态字:" + PEPrinter.PEPrinterState.ToString("X4");
+            label160.Text = label69.Text;
             label61.Text = "状态描述:" + PEPrinter.PEPrinterStatedetail;
+            label156.Text = label61.Text;
             label68.Text = "媒介类型:" + PEPrinter.MediaType.ToString();
             label66.Text = "打印头温度:" + (PEPrinter.HeadTemperature / 2.0).ToString("f1") + "℃";
             switch (PEPrinter.TrayCondition)
@@ -707,7 +710,9 @@ namespace SHJ
                     label65.Text = "媒介状态:未知";
                     break;
             }
+            label162.Text = label67.Text;
             label75.Text = "打印机编号:" + PEPrinter.ProductID.ToString("X4");
+            label154.Text = label75.Text;
             label72.Text = "F/W版本号:V" + (PEPrinter.Version >> 8).ToString("X") + "." + (PEPrinter.Version & 0xff).ToString("X2");
             label74.Text = "可打印最宽像素:" + PEPrinter.PrintableWidth.ToString();
             label73.Text = "可打印最高像素:" + PEPrinter.PrintableHeight.ToString();
@@ -716,13 +721,18 @@ namespace SHJ
             label63.Text = "有效打印头点数:" + PEPrinter.ValidHeadDots.ToString();
             label62.Text = "每块打印头点数:" + PEPrinter.HeadBlockDots.ToString();
             label77.Text = "橡胶行速:" + PEPrinter.LineSpeed1.ToString("f1") + "ms/行";
+            label170.Text = label77.Text;
             label76.Text = "标签行速:" + PEPrinter.LineSpeed2.ToString("f1") + "ms/行";
+            label168.Text = label76.Text;
             label54.Text = "橡胶打印行速设定值:" + PEPrinter.LineSpeedValue1.ToString();
             label56.Text = "标签打印行速设定值:" + PEPrinter.LineSpeedValue2.ToString();
             label60.Text = "休眠模式进入时间:" + PEPrinter.SeepTransitionTime.ToString() + "分";
             label59.Text = "输出灰度值:" + PEPrinter.OutputNumber.ToString();
+            label176.Text = label59.Text;
             label78.Text = "预热操作输出值:" + PEPrinter.PreheatData.ToString();
+            label166.Text = label78.Text;
             label58.Text = "预热操作执行行数:" + PEPrinter.PreheatLines.ToString();
+            label178.Text = label58.Text;
             label57.Text = "预热操作STROBE信号低电平:" + PEPrinter.PreheatLineStrobeLow.ToString();
 
             System.Windows.Forms.Application.DoEvents();
@@ -935,28 +945,11 @@ namespace SHJ
         #endregion
 
         #region Timer
-
-        bool printTry = false;
-        public bool checkPrint = false;
+        
         private void timer1_Tick(object sender, EventArgs e)//500ms
         {
             updatemenu();
-
-            if (checkPrint)
-            {
-                if (CodeEntity.M119 == 1 && !printTry)//弹出
-                {
-                    printTry = true;
-                    PEPrinter.needMoveTray = 2;
-                }
-                else if (printTry && CodeEntity.M119 == 0)//归位
-                {
-                    printTry = false;
-                    checkPrint = false;
-                    PEPrinter.needMoveTray = 1;
-                }
-            }
-
+            
             short D15 = new PCHMI.VAR().GET_INT16(0, "D15");
             textBox1.Text = D15.ToString();
         }
@@ -1785,6 +1778,11 @@ namespace SHJ
         private void ckb_runDataShow_CheckedChanged(object sender, EventArgs e)
         {
             needsave = true;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            PEPrinter.needReset = true;
         }
     }
 }

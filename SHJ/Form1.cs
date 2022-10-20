@@ -105,23 +105,7 @@ namespace SHJ
                 nowform1.WorkingTest(num, path);
             }
         }
-        /// <summary>
-        /// 检测打印机是否连接
-        /// None为连接,ok为未连接
-        /// </summary>
-        /// <returns></returns>
-        public static bool CallError()
-        {
-            if (nowform1 != null)
-            {
-                return nowform1.PrintErrorInspect();
-            }
-            else
-            {
-                return false;
-            }
-        }
-        
+ 
         #endregion
 
         #region Feild
@@ -154,7 +138,6 @@ namespace SHJ
         public static string salexmlfile;//销售记录文件名
         public static string configxmlfilecopy;//配置文件名
         public static string salexmlfilecopy;//销售记录文件名
-        public static string PLCxmlfile;//PLC配置文件名
         private string regxmlfile;//注册文件名
         public static XmlDocument myxmldoc = new XmlDocument();//配置文件XML
         public static XmlNodeList mynodelistshangpin;//商品列表
@@ -306,7 +289,6 @@ namespace SHJ
             salexmlfile = System.IO.Directory.GetCurrentDirectory() + "\\sale.dat";
             configxmlfilecopy = System.IO.Directory.GetCurrentDirectory() + "\\app.xml";
             salexmlfilecopy = System.IO.Directory.GetCurrentDirectory() + "\\sale.xml";
-            PLCxmlfile = System.IO.Directory.GetCurrentDirectory() + "\\PLCdata.xml";
             dataaddress = System.IO.Directory.GetCurrentDirectory() + "\\netdata";
             regxmlfile = "C:\\flexlm\\regEPTON.dll";
             if (System.IO.Directory.Exists(adimagesaddress) == false)//广告文件夹不存在
@@ -888,19 +870,9 @@ namespace SHJ
         #endregion
 
         #region Timer2
-
-        int count = 0;
+        
         private void timer2_Tick(object sender, EventArgs e)
         {
-            if (count < 10)
-            {
-                count++;
-            }
-            else
-            {
-                count = 0;
-                PrintErrorInspect2();
-            }
             if (HMIstep == 0)//广告
             {
                 if (mytihuoma != null)
@@ -1021,6 +993,8 @@ namespace SHJ
                 needreturnHMIstep1 = 1;//需要返回选货画面
             }
 
+            //清理代码
+
             if (isextbusy == 2)//托盘正在归位，等待打印
             {
                 if ((PEPrinter.TrayCondition & 0x01) == 0x01)//托盘已经归位
@@ -1061,17 +1035,13 @@ namespace SHJ
 
                     PEPrinter.needPutImage = true;//加载图片并打印
                     isextbusy = 3;//正在打印
-                    //extendstate[0] = 0x08;
                 }
             }
             else if (isextbusy == 3)//正在打印
             {
                 if (((PEPrinter.TrayCondition >> 1) & 0x01) == 0x01)//托盘已经弹出
                 {
-                    //setextenddata = 0x02;
-                    //needsetextend = true;
                     isextbusy = 4;//正在组装印章和印面
-                    //extendstate[0] = 0x10;
                 }
             }
             myprint.PEloop();//处理打印机事务
@@ -2626,59 +2596,8 @@ namespace SHJ
         }
         
         #endregion
-
-        #region ErrorDetect
-
-        bool printcallback = true;
-        private void PrintErrorInspect2()
-        {
-            if (PEPrinter.PEPrinterState == 65535)
-            {
-            }
-           else if(PEPrinter.PEPrinterState>0x8000 && printcallback)
-            {
-                printcallback = false;
-                if(MessageBox.Show($"{PEPrinter.PEPrinterStatedetail}", "错误", MessageBoxButtons.OK)==DialogResult.OK)
-                {
-                    printcallback = true;
-                    count = 0;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 打印机错误检测
-        /// </summary>
-        bool btnPrintCallback = true;
-        private bool PrintErrorInspect()
-        {
-            if (PEPrinter.PEPrinterState > 0x8000 && btnPrintCallback)
-            {
-                if (PEPrinter.PEPrinterState == 65535)
-                {
-                    if (MessageBox.Show($"打印机未连接", "错误", MessageBoxButtons.OK) == DialogResult.OK)
-                    {
-                        btnPrintCallback = true;
-                        return true;
-                    }
-                    else
-                        return true;
-                }
-                else if (MessageBox.Show($"{PEPrinter.PEPrinterStatedetail}", "错误", MessageBoxButtons.OK) == DialogResult.OK)
-                {
-                    btnPrintCallback = true;
-                    return true;
-                }
-                else
-                    return true;
-            }
-            else
-                return false;
-        }
         
-        #endregion
-
-        #region 过程显示
+        #region 运行步骤显示
         
         /// <summary>
         /// 设备运行过程显示
