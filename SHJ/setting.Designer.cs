@@ -2026,7 +2026,7 @@
             // 
             // 数据显示器64
             // 
-            this.数据显示器64.HDADDR = "";
+            this.数据显示器64.HDADDR = "D209";
             this.数据显示器64.Location = new System.Drawing.Point(133, 101);
             this.数据显示器64.Name = "数据显示器64";
             this.数据显示器64.PLC = ((uint)(0u));
@@ -2049,7 +2049,7 @@
             this.数据显示器64.总显示位数 = ((uint)(8u));
             this.数据显示器64.数值改变事件参数 = "NULL";
             this.数据显示器64.数据类型 = PCHMI.数据显示器.DatType.INT16;
-            this.数据显示器64.最大值 = "100";
+            this.数据显示器64.最大值 = "32768";
             this.数据显示器64.最小值 = "0";
             this.数据显示器64.权限提示文本 = "";
             this.数据显示器64.输入方式 = PCHMI.数据显示器.INTYPE.软键盘;
@@ -2060,7 +2060,7 @@
             // 
             // 数据显示器63
             // 
-            this.数据显示器63.HDADDR = "";
+            this.数据显示器63.HDADDR = "D208";
             this.数据显示器63.Location = new System.Drawing.Point(133, 54);
             this.数据显示器63.Name = "数据显示器63";
             this.数据显示器63.PLC = ((uint)(0u));
@@ -2083,7 +2083,7 @@
             this.数据显示器63.总显示位数 = ((uint)(8u));
             this.数据显示器63.数值改变事件参数 = "NULL";
             this.数据显示器63.数据类型 = PCHMI.数据显示器.DatType.INT16;
-            this.数据显示器63.最大值 = "100";
+            this.数据显示器63.最大值 = "32768";
             this.数据显示器63.最小值 = "0";
             this.数据显示器63.权限提示文本 = "";
             this.数据显示器63.输入方式 = PCHMI.数据显示器.INTYPE.软键盘;

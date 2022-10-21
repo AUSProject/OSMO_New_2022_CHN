@@ -18,6 +18,10 @@ namespace SHJ
         private static volatile LogHelper _LogHelpeer = null;
         private static object LogHepler_Lock = new object();
 
+        /// <summary>
+        /// 获取实例
+        /// </summary>
+        /// <returns></returns>
         public static LogHelper GetExample()
         {
             if (_LogHelpeer == null)
@@ -45,11 +49,10 @@ namespace SHJ
                     writeLog.Add(log);
                     stream = new StreamWriter(Form1.logAddress, true, System.Text.Encoding.UTF8);
                     stream.WriteLine((log).PadRight(20) + "Date：" + DateTime.Now.ToString());
-                    stream.Close();
+                    stream.Flush();
                 }
                 catch
                 {
-
                 }
             }
         }
@@ -59,9 +62,11 @@ namespace SHJ
         /// </summary>
         public void LogWriteComplete()
         {
-            Log("本次记录完成");
+            stream = new StreamWriter(Form1.logAddress, true, System.Text.Encoding.UTF8);
+            stream.WriteLine(("\r\n本次记录完成").PadRight(20) + DateTime.Now.ToString()+"\r\n\r\n");
             writeLog.Clear();
             stream.Close();
         }
+
     }
 }

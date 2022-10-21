@@ -51,7 +51,6 @@ namespace SHJ
                 switch (mainCode)
                 {
                     case 0:
-                        IniMachine();
                         break;
                     case 1:
                         curBit = "D11：";
@@ -75,13 +74,7 @@ namespace SHJ
                         ShipmentAndWaitShip();//出货,等待取货
                         break;
                     case 6:
-                        curBit = "D9：";
-                        //ShipmentAndWaitShip();//等待取货
-                        //IniMachine();
-                        break;
-                    case 7:
-                        curBit = "D9：";
-                        //IniMachine();//复位
+                        curData = new PCHMI.VAR().GET_INT16(0, "D9");
                         break;
                     case 98:
                         nowStep = 0x98;
@@ -90,8 +83,16 @@ namespace SHJ
                         nowStep = 0x99;
                         break;
                 }
+                log.Log("D15：" + mainCode);
+                log.Log(curBit + curData);
+                if (nowStep >= 0x05 && runCode==0 && faultCode==0)//复位
+                {
+                    IniMachine();
+                }
             }
         }
+
+        #region 机器控制
 
         /// <summary>
         /// 监控机器错误代码和运行代码
@@ -129,13 +130,13 @@ namespace SHJ
                 trayOut = true;
                 PEPrinter.needMoveTray = 4;//弹出托盘
             }
-            else if (D11 >= 8 && trayOut)
-            {
-                trayBack = true;
-                trayOut = false;
-                PEPrinter.needMoveTray = 3;//回收托盘进行打印
-                log.Log("准备打印");
-            }
+            //else if (D11 >= 8 && trayOut)
+            //{
+            //    trayBack = true;
+            //    trayOut = false;
+            //    PEPrinter.needMoveTray = 3;//回收托盘进行打印
+            //    log.Log("准备打印");
+            //}
         }
 
         /// <summary>
@@ -143,12 +144,18 @@ namespace SHJ
         /// </summary>
         private void Printing()
         {
+            if (trayOut)
+            {
+                trayBack = true;
+                trayOut = false;
+                PEPrinter.needMoveTray = 3;//回收托盘进行打印
+                log.Log("准备打印");
+            }
             if (((PEPrinter.TrayCondition & 0x01) == 0x01) && trayBack && !String.IsNullOrEmpty(PEPrinter.PicPath))//开始打印
             {
                 log.Log("打印开始了");
                 trayBack = false;
                 nowStep = 0x04;
-                //Form1.isextbusy = 2;
                 print.PrintAction();
             }
         }
@@ -186,25 +193,43 @@ namespace SHJ
             }
         }
 
-        #region 机器检测
-
         /// <summary>
         /// 复位数据
         /// </summary>
         private void IniMachine()
         {
-            short D9 = new PCHMI.VAR().GET_INT16(0, "D9");
+            trayReZero = false;
+            trayBack = false;
+            trayOut = false;
+            nowStep = 0x09;
+            runTiming = 150;
+            Form1.HMIstep = 1;
+        }
 
-            if (D9 == 11)
+        /// <summary>
+        /// 向设备发送货道号和开始运行指令
+        /// </summary>
+        /// <param name="huodaorecv">货道号</param>
+        public static void StartRunning(int huodaorecv)
+        {
+            PCHMI.CONFIG.PLC_OFF[0] = false;
+            switch (huodaorecv)
             {
-                trayReZero = false;
-                trayBack = false;
-                trayOut = false;
-                nowStep = 0x09;
-                runTiming = 150;
-                Form1.HMIstep = 1;
+                case 1:
+                    new PCHMI.VAR().SEND_CTRL(0, "D208", "字写入", "257");
+                    break;
+                case 2:
+                    new PCHMI.VAR().SEND_CTRL(0, "D208", "字写入", "513");
+                    break;
+                case 3:
+                    new PCHMI.VAR().SEND_CTRL(0, "D208", "字写入", "769");
+                    break;
             }
         }
+
+        #endregion
+
+        #region 机器检测
 
         /// <summary>
         /// 检测是否还有印面
@@ -269,7 +294,7 @@ namespace SHJ
                 return false;
             }
         }
-
+        
         #endregion
 
     }

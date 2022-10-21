@@ -54,27 +54,6 @@ namespace SHJ
         #region Method
         
         /// <summary>
-        /// 向设备发送货道号和开始运行指令
-        /// </summary>
-        /// <param name="huodaorecv">货道号</param>
-        public static void StartRunning(int huodaorecv)
-        {
-            PCHMI.CONFIG.PLC_OFF[0] = false;
-            switch (huodaorecv)
-            {
-                case 1:
-                    new PCHMI.VAR().SEND_CTRL(0, "D208", "字写入", "257");
-                    break;
-                case 2:
-                    new PCHMI.VAR().SEND_CTRL(0, "D208", "字写入", "513");
-                    break;
-                case 3:
-                    new PCHMI.VAR().SEND_CTRL(0, "D208", "字写入", "769");
-                    break;
-            }
-        }
-
-        /// <summary>
         /// 将修改保存到XML
         /// </summary>
         private void updatexml()

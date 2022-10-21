@@ -20,6 +20,10 @@ namespace SHJ
             log = LogHelper.GetExample();
         }
         private static Print _Pirnt = null;
+        /// <summary>
+        /// 获取实例
+        /// </summary>
+        /// <returns></returns>
         public static Print GetExample()
         {
             if (_Pirnt == null)

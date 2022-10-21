@@ -264,7 +264,7 @@ namespace SHJ
             else
             {
                 cargoWayNum = cmbCargoWay.SelectedIndex + 1;
-                setting.StartRunning(cargoWayNum);
+                Machine.StartRunning(cargoWayNum);
                 Form1.CallWorkingTest(cargoWayNum, imageFilePath);
                 this.Dispose();
                 this.Close();

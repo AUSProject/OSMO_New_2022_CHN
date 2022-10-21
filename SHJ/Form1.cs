@@ -117,7 +117,7 @@ namespace SHJ
         private string imageUrlFile;//图片下载地址文件夹
         private string ErweimaUrl = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";//二维码地址
         Machine machine;//机器控制
-        private bool showData;//显示数据
+        private bool showData;//运行时显示数据
 
         public static bool needcloseform = false;//是否需要关闭窗体
         public static int HMIstep;//界面页面：0广告 1触摸选择商品 2支付页面
@@ -186,8 +186,7 @@ namespace SHJ
         public static bool checktihuoma;//需要验证提货码
         public static string showprintstate;//制作过程状态显示
         public static int OSMOtype;
-
-
+        
         public static string keyboardstring = "";//键盘输入值
         public static int keyboardnum;//键盘输入对应的文本框编号
         public static keyboard mykeyborad = new keyboard();
@@ -199,9 +198,7 @@ namespace SHJ
         private int zhifutype;//0现金1支付宝2微信3一码付4提货码
         private int totalshangpinnum = 16;//显示的商品总数
         private int totalhuodaonum = 16;//显示的货道总数
-        public static int isextbusy;//扩展板是否正忙0表示空闲，1正在出货，2出货完成需要确认
-
-
+        
         private int Aisleoutcount;//电机输出超时计时
         public static int tempAisleNUM;//商品货号选择
         public static bool istestmode;//测试出货模式
@@ -962,12 +959,10 @@ namespace SHJ
             if (Aisleoutcount >= 600)//170s
             {
                 Aisleoutcount = 0;
-                //isextbusy = 0;//超时退出
                 if (istestmode == false)//购买模式需要退币
                 {
                     if (zhifutype == 0)//现金支付
                     {
-
                     }
                     else
                     {
@@ -992,55 +987,6 @@ namespace SHJ
                 needreturnHMIstep1 = 1;//需要返回选货画面
             }
             
-            //if (isextbusy == 2)//托盘正在归位，等待打印
-            //{
-            //    if ((PEPrinter.TrayCondition & 0x01) == 0x01)//托盘已经归位
-            //    {
-            //        PEPrinter.TYPE_STAMP mytype;
-            //        int osmotype = 3;
-            //        try
-            //        {
-            //            osmotype = int.Parse(mynodelisthuodao[wulihuodao].Attributes.GetNamedItem("position").Value);
-            //        }
-            //        catch
-            //        {
-
-            //        }
-            //        switch (osmotype)
-            //        {
-            //            case 1:
-            //                mytype = PEPrinter.TYPE_STAMP.TYPE_1010;
-            //                break;
-            //            case 2:
-            //                mytype = PEPrinter.TYPE_STAMP.TYPE_2020;
-            //                break;
-            //            case 3:
-            //                mytype = PEPrinter.TYPE_STAMP.TYPE_2530;
-            //                break;
-            //            default:
-            //                mytype = PEPrinter.TYPE_STAMP.TYPE_2530;
-            //                break;
-            //        }
-            //        try
-            //        {
-            //            PEPrinter.CreateProcessingData(PEPrinter.PicPath, mytype);
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            MessageBox.Show(ex.Message);
-            //        }
-
-            //        PEPrinter.needPutImage = true;//加载图片并打印
-            //        isextbusy = 3;//正在打印
-            //    }
-            //}
-            //else if (isextbusy == 3)//正在打印
-            //{
-            //    if (((PEPrinter.TrayCondition >> 1) & 0x01) == 0x01)//托盘已经弹出
-            //    {
-            //        isextbusy = 4;//正在组装印章和印面
-            //    }
-            //}
             myprint.PEloop();//处理打印机事务
 
             if (needopensettingform)
@@ -1055,7 +1001,6 @@ namespace SHJ
                     mysetting.ShowDialog();
                     mysetting = null;
                     InitFormsize();
-
                 }
                 axWindowsMediaPlayer1.Ctlcontrols.play();
 
@@ -1077,12 +1022,6 @@ namespace SHJ
         private void timer3_Tick(object sender, EventArgs e)
         {
             machine.PlcAutoControl(true);
-            if (print.PrintFaultInspect() != null)
-            {
-                Machine.nowStep = 0x98;
-            }
-            log.Log("D15：" + machine.mainCode.ToString());
-            log.Log(machine.curBit + machine.curData.ToString());
             RunningDisplay();
             if (showData)
             {
@@ -1262,7 +1201,7 @@ namespace SHJ
                             {
                                 liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
                                 huodaorecv = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
-                                setting.StartRunning(huodaorecv);//向设备发送货道号和开始指令
+                                Machine.StartRunning(huodaorecv);//向设备发送货道号和开始指令
                                 if ((huodaorecv <= mynodelistshangpin.Count) && (huodaorecv > 0))
                                 {
                                     if (Machine.nowStep==0x00)//机器空闲
@@ -2043,7 +1982,6 @@ namespace SHJ
         {
             //出货设置
             Aisleoutcount = 1;//超时计时开始
-            //isextbusy = 1;//正在出货
         }
        
         private void InitFormsize()
@@ -2547,7 +2485,6 @@ namespace SHJ
                             {
                                 HMIstep = 3;//出货
                                 guanggaoreturntime = 0;
-                                //isextbusy = 2;
                                 huohao = tempAisleNUM;//实际出货商品号
                                 shangpinjiage = 0;//实际出货商品价格
                                 for (int k = 0; k < mynodelisthuodao.Count; k++)
@@ -2665,7 +2602,7 @@ namespace SHJ
                 }
                 else
                 {
-                    label5.Text =  showprintstate + "...  " + (machine.runTiming--).ToString() + "s";
+                    label5.Text =  showprintstate + "     " + (machine.runTiming--).ToString() + "s";
                     timingCount = 0;
                 }
             }
