@@ -13,6 +13,7 @@ namespace SHJ
         }
         
         public static string tihuomaresult= "请输入提货码";//验证结果提示语
+        private Print print = null;
 
         private void label11_Click(object sender, EventArgs e)
         {
@@ -188,11 +189,11 @@ namespace SHJ
 
         private void button9_Click(object sender, EventArgs e)//确认提货
         {
-            //if (SummaryCheck())//打印机和设备连接检测
-            //{
-            //    textBox1.Text = "";
-            //    return;
-            //}
+            if (SummaryCheck())//打印机和设备连接检测
+            {
+                textBox1.Text = "";
+                return;
+            }
             this.label2.Focus();//获取焦点
             if (textBox1.Text.Length == 7)//提货码小于七位
             {
@@ -213,6 +214,7 @@ namespace SHJ
         {
             panelTest.Visible = false;
             tihuoma.tihuomaresult = "请输入提货码";
+            print = Print.GetExample();
         }
 
         private void label10_DoubleClick(object sender, EventArgs e)
@@ -249,8 +251,8 @@ namespace SHJ
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
-            if (SummaryCheck())
-                return;
+            //if (SummaryCheck())
+            //    return;
             if (String.IsNullOrEmpty(cmbCargoWay.Text))
             {
                 MessageBox.Show("请选择货道","提示");
@@ -291,7 +293,7 @@ namespace SHJ
         /// <returns>true：设备或打印机故障</returns>
         private bool SummaryCheck()
         {
-            if (Print.PrintFaultInspect()!=null)//打印机检查 
+            if (print.PrintFaultInspect()!=null)//打印机检查 
             {
                 textBox1.Text = "";
                 MessageBox.Show("打印机故障","打印机故障");

@@ -274,7 +274,6 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.panel_System = new System.Windows.Forms.Panel();
             this.panel13 = new System.Windows.Forms.Panel();
-            this.textBox1 = new System.Windows.Forms.TextBox();
             this.label163 = new System.Windows.Forms.Label();
             this.label161 = new System.Windows.Forms.Label();
             this.数据显示器69 = new PCHMI.数据显示器();
@@ -836,6 +835,7 @@
             this.label150.Size = new System.Drawing.Size(47, 19);
             this.label150.TabIndex = 65;
             this.label150.Text = "密码";
+            this.label150.DoubleClick += new System.EventHandler(this.label150_DoubleClick);
             // 
             // label24
             // 
@@ -1945,7 +1945,6 @@
             // panel13
             // 
             this.panel13.BackColor = System.Drawing.Color.Gray;
-            this.panel13.Controls.Add(this.textBox1);
             this.panel13.Controls.Add(this.label163);
             this.panel13.Controls.Add(this.label161);
             this.panel13.Controls.Add(this.数据显示器69);
@@ -1960,13 +1959,6 @@
             this.panel13.Name = "panel13";
             this.panel13.Size = new System.Drawing.Size(518, 225);
             this.panel13.TabIndex = 2;
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(376, 52);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 29);
-            this.textBox1.TabIndex = 84;
             // 
             // label163
             // 
@@ -1990,8 +1982,8 @@
             // 
             // 数据显示器69
             // 
-            this.数据显示器69.HDADDR = "D202";
-            this.数据显示器69.Location = new System.Drawing.Point(374, 101);
+            this.数据显示器69.HDADDR = "D301";
+            this.数据显示器69.Location = new System.Drawing.Point(376, 101);
             this.数据显示器69.Name = "数据显示器69";
             this.数据显示器69.PLC = ((uint)(0u));
             this.数据显示器69.Size = new System.Drawing.Size(100, 29);
@@ -2012,11 +2004,11 @@
             this.数据显示器69.小数位数 = ((uint)(0u));
             this.数据显示器69.总显示位数 = ((uint)(8u));
             this.数据显示器69.数值改变事件参数 = "NULL";
-            this.数据显示器69.数据类型 = PCHMI.数据显示器.DatType.INT32;
+            this.数据显示器69.数据类型 = PCHMI.数据显示器.DatType.INT16;
             this.数据显示器69.最大值 = "32768";
             this.数据显示器69.最小值 = "0";
             this.数据显示器69.权限提示文本 = "";
-            this.数据显示器69.输入方式 = PCHMI.数据显示器.INTYPE.软键盘;
+            this.数据显示器69.输入方式 = PCHMI.数据显示器.INTYPE.禁止;
             this.数据显示器69.键盘输入事件参数 = "NULL";
             this.数据显示器69.键盘进入方式 = PCHMI.数据显示器.KeyInMode.单击;
             this.数据显示器69.零抑制 = false;
@@ -2026,7 +2018,7 @@
             // 
             this.label159.AutoSize = true;
             this.label159.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label159.Location = new System.Drawing.Point(253, 107);
+            this.label159.Location = new System.Drawing.Point(264, 107);
             this.label159.Name = "label159";
             this.label159.Size = new System.Drawing.Size(104, 16);
             this.label159.TabIndex = 5;
@@ -8190,8 +8182,8 @@
             this.BackColor = System.Drawing.SystemColors.GrayText;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
             this.ControlBox = false;
-            this.Controls.Add(this.panel_Setting);
             this.Controls.Add(this.panel_System);
+            this.Controls.Add(this.panel_Setting);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -8597,7 +8589,6 @@
         private System.Windows.Forms.Panel panel15;
         private System.Windows.Forms.Panel panel14;
         private System.Windows.Forms.Panel panel17;
-        private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button button2;
     }
 }

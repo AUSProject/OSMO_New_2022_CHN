@@ -63,13 +63,13 @@ namespace SHJ
             switch (huodaorecv)
             {
                 case 1:
-                    new PCHMI.VAR().SEND_CTRL(0, "400208", "字写入", "257");
+                    new PCHMI.VAR().SEND_CTRL(0, "D208", "字写入", "257");
                     break;
                 case 2:
-                    new PCHMI.VAR().SEND_CTRL(0, "400208", "字写入", "513");
+                    new PCHMI.VAR().SEND_CTRL(0, "D208", "字写入", "513");
                     break;
                 case 3:
-                    new PCHMI.VAR().SEND_CTRL(0, "400208", "字写入", "769");
+                    new PCHMI.VAR().SEND_CTRL(0, "D208", "字写入", "769");
                     break;
             }
         }
@@ -950,8 +950,6 @@ namespace SHJ
         {
             updatemenu();
             
-            short D15 = new PCHMI.VAR().GET_INT16(0, "D15");
-            textBox1.Text = D15.ToString();
         }
 
         #endregion
@@ -1783,6 +1781,11 @@ namespace SHJ
         private void button2_Click(object sender, EventArgs e)
         {
             PEPrinter.needReset = true;
+        }
+
+        private void label150_DoubleClick(object sender, EventArgs e)
+        {
+            settingToken = true;
         }
     }
 }

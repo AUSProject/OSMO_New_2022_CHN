@@ -332,9 +332,9 @@
             this.btnTry.Font = new System.Drawing.Font("Comic Sans MS", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnTry.ForeColor = System.Drawing.Color.Transparent;
             this.btnTry.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
-            this.btnTry.Location = new System.Drawing.Point(1904, 1054);
+            this.btnTry.Location = new System.Drawing.Point(1810, 1051);
             this.btnTry.Name = "btnTry";
-            this.btnTry.Size = new System.Drawing.Size(10, 25);
+            this.btnTry.Size = new System.Drawing.Size(104, 25);
             this.btnTry.TabIndex = 46;
             this.btnTry.UseVisualStyleBackColor = false;
             this.btnTry.Click += new System.EventHandler(this.btnTry_Click);

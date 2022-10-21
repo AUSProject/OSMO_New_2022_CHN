@@ -10,19 +10,23 @@ namespace SHJ
     {
         public Machine()
         {
-            
+            log = LogHelper.GetExample();
+            print = Print.GetExample();
         }
+
+        private LogHelper log = null;
+        private Print print = null;
+
         public short runCode;//运行代码
         public static short faultCode;//错误代码
         public short mainCode;//主控程序
         public string curBit;//当前位
         public short curData;//当前位数据
-        public static int time = 150;
-        public int runTiming = time;
-        
+        public int runTiming = 150;
+
         /// <summary>
         /// <para>机器当前运行步骤</para>
-        /// 00:空闲 01:取盒子 02:抓取印面 03:等待打印  04:正在打印  05:正在组装 06:正在出货 07:等待取货 98:打印机故障 99:机器故障
+        /// 00:空闲 01:取盒子 02:抓取印面 03:等待打印  04:正在打印  05:正在组装 06:正在出货 07:等待取货 09:完成 98:打印机故障 99:机器故障
         /// </summary>
         public static byte nowStep;
 
@@ -35,9 +39,19 @@ namespace SHJ
             if (action)
             {
                 GetCode();
+                if (print.PrintFaultInspect() != null)//打印机报错
+                {
+                    mainCode = 99;
+                }
+
+                if (faultCode != 0)//机器报错
+                {
+                    mainCode = 99;
+                }
                 switch (mainCode)
                 {
                     case 0:
+                        IniMachine();
                         break;
                     case 1:
                         curBit = "D11：";
@@ -46,6 +60,7 @@ namespace SHJ
                     case 2:
                         curBit = "D6：";
                         curData = new PCHMI.VAR().GET_INT16(0, "D6");
+                        Printing();//开始打印
                         break;
                     case 3:
                         curBit = "D7：";
@@ -57,14 +72,16 @@ namespace SHJ
                         break;
                     case 5:
                         curBit = "D9：";
-                        Shipment();//出货
+                        ShipmentAndWaitShip();//出货,等待取货
                         break;
                     case 6:
-                        curBit = "D10：";
-                        WaitShip();//等待取货
+                        curBit = "D9：";
+                        //ShipmentAndWaitShip();//等待取货
+                        //IniMachine();
                         break;
                     case 7:
-                        IniMachine();//复位
+                        curBit = "D9：";
+                        //IniMachine();//复位
                         break;
                     case 98:
                         nowStep = 0x98;
@@ -85,17 +102,14 @@ namespace SHJ
             faultCode=new PCHMI.VAR().GET_INT16(0, "D209");
             runCode = new PCHMI.VAR().GET_INT16(0, "D208");
             mainCode = new PCHMI.VAR().GET_INT16(0, "D15");
-            if(faultCode != 0)//报错
-            {
-                mainCode = 99;
-            }
         }
         
         private  bool trayOut = false;//托盘是否弹出
         private  bool trayBack = false;//托盘是否回收打印
         private  bool trayReZero = false;//托盘是否归零
+
         /// <summary>
-        /// 安装印面监控程序
+        /// 安装印面程序
         /// </summary>
         private void InstallPrintFace()
         {
@@ -109,25 +123,34 @@ namespace SHJ
             {
                 nowStep = 0x02;
             }
-            else if (D11 >= 6 && D11 < 10 && !trayOut)
+            else if (D11 >= 6 && D11 < 8 && !trayOut)
             {
                 nowStep = 0x03;
                 trayOut = true;
                 PEPrinter.needMoveTray = 4;//弹出托盘
             }
-            else if (D11 == 10 && trayOut)
+            else if (D11 >= 8 && trayOut)
             {
                 trayBack = true;
                 trayOut = false;
                 PEPrinter.needMoveTray = 3;//回收托盘进行打印
+                log.Log("准备打印");
             }
-            else if (((PEPrinter.TrayCondition & 0x01) == 0x01) && trayBack && !String.IsNullOrEmpty(PEPrinter.PicPath))//开始打印
+        }
+
+        /// <summary>
+        /// 打印程序
+        /// </summary>
+        private void Printing()
+        {
+            if (((PEPrinter.TrayCondition & 0x01) == 0x01) && trayBack && !String.IsNullOrEmpty(PEPrinter.PicPath))//开始打印
             {
+                log.Log("打印开始了");
                 trayBack = false;
                 nowStep = 0x04;
-                Form1.isextbusy = 2;
+                //Form1.isextbusy = 2;
+                print.PrintAction();
             }
-            else { }
         }
 
         /// <summary>
@@ -146,9 +169,9 @@ namespace SHJ
         }
 
         /// <summary>
-        /// 出货过程
+        /// 出货和等待取货
         /// </summary>
-        private void Shipment()
+        private void ShipmentAndWaitShip()
         {
             short D9 = new PCHMI.VAR().GET_INT16(0, "D9");
             curData = D9;
@@ -156,33 +179,29 @@ namespace SHJ
             {
                 nowStep = 0x06;
             }
-        }
-
-        /// <summary>
-        ///等待取货
-        /// </summary>
-        private void WaitShip()
-        {
-            short D10 = new PCHMI.VAR().GET_INT16(0, "D10");
-            curData = D10;
-            if (D10 >= 0)
+            else if (D9 >= 7)
             {
+                log.Log("等待取货");
                 nowStep = 0x07;
             }
         }
+
+        #region 机器检测
 
         /// <summary>
         /// 复位数据
         /// </summary>
         private void IniMachine()
         {
-            if (runCode == 0)
+            short D9 = new PCHMI.VAR().GET_INT16(0, "D9");
+
+            if (D9 == 11)
             {
                 trayReZero = false;
                 trayBack = false;
                 trayOut = false;
-                nowStep = 0x00;
-                runTiming = time;
+                nowStep = 0x09;
+                runTiming = 150;
                 Form1.HMIstep = 1;
             }
         }
@@ -250,6 +269,8 @@ namespace SHJ
                 return false;
             }
         }
+
+        #endregion
 
     }
 }

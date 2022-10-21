@@ -332,13 +332,13 @@
             limits1.限制类型 = PCHMI.limits.LType.无效;
             this.config1.运行限制 = limits1;
             this.config1.通讯配置 = new string[] {
-        "MITSUBISHI_FX_SERIAL;COM=3,9600,2,7,1;SN=1;JumpBit="};
+        "MITSUBISHI_FX_SERIAL;COM=4,9600,2,7,1;SN=1;JumpBit="};
             this.config1.通讯配置文件名 = "PLC1";
             this.config1.随机数保存地址 = null;
             // 
             // timer3
             // 
-            this.timer3.Interval = 1000;
+            this.timer3.Interval = 500;
             this.timer3.Tick += new System.EventHandler(this.timer3_Tick);
             // 
             // Form1
