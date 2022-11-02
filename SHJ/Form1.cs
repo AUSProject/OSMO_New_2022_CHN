@@ -75,7 +75,7 @@ namespace SHJ
         {
             List<string> sections = new List<string>();
             byte[] buff = new byte[1000];
-            var charLength = GetPrivateProfileStringA(null, null, "", buff, 1000, imageUrlFile);
+            var charLength = GetPrivateProfileStringA(null, null, "", buff, 1000, imageUrlPath);
             int j = 0;
             for (int i = 0; i < charLength; i++)
             {
@@ -111,13 +111,11 @@ namespace SHJ
         #region Feild
 
         public static string logAddress;
-        private LogHelper log;
         private Print print = null;
 
-        private string imageUrlFile;//图片下载地址文件夹
+        private string imageUrlPath;//印章图片URL文件夹
         private string ErweimaUrl = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";//二维码地址
         Machine machine;//机器控制
-        private bool showData;//运行时显示数据
 
         public static bool needcloseform = false;//是否需要关闭窗体
         public static int HMIstep;//界面页面：0广告 1触摸选择商品 2支付页面
@@ -181,7 +179,7 @@ namespace SHJ
         public static string versionstring = "ADH816AZV3.3.02";
         private int[] liushui = new int[2];
         private int liushuirecv;//接收到的流水号
-        private int huodaorecv;//接收到的商品编号
+        private int aisleNum;//接收到的货道号
         public static string myTihuomastr = "";//输入的7位提货码
         public static bool checktihuoma;//需要验证提货码
         public static string showprintstate;//制作过程状态显示
@@ -268,10 +266,8 @@ namespace SHJ
         {
             nowform1 = this;
             pic_Erweima.Visible = false;//隐藏二维码
-            lbl_Title.Visible = false;
 
             machine = new Machine();
-            log = LogHelper.GetExample();
             print = Print.GetExample();
             
             config1.START((Control)this, System.Reflection.Assembly.GetExecutingAssembly(), null);
@@ -279,7 +275,7 @@ namespace SHJ
             this.panel1.Dock = DockStyle.Fill;
             this.panel4.Dock = DockStyle.Fill;
 
-            imageUrlFile = Directory.GetCurrentDirectory() + "\\imageUrl.ini";
+            imageUrlPath = Directory.GetCurrentDirectory() + "\\imageUrl.ini";
             logAddress = System.IO.Directory.GetCurrentDirectory() + "\\Log.txt";
 
             adimagesaddress = System.IO.Directory.GetCurrentDirectory() + "\\adimages";
@@ -321,9 +317,9 @@ namespace SHJ
             {
                 System.IO.Directory.CreateDirectory(dataaddress);
             }
-            if (!File.Exists(imageUrlFile))//二维码图片路径文件
+            if (!File.Exists(imageUrlPath))//二维码图片路径文件
             {
-                File.Create(imageUrlFile);
+                File.Create(imageUrlPath);
             }
             if (!File.Exists(logAddress))
             {
@@ -550,17 +546,15 @@ namespace SHJ
             qrCodeEncoder.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.L;
 
             pic_Erweima.Image = Image.FromFile(Path.Combine(adimagesaddress, "erweima.jpg"));
-            showData = myfunctionnode.Attributes.GetNamedItem("runDataShow").Value == "0" ? false : true;
-            if (showData)
-            {
-                lbl_D15.Visible = true;
-                lbl_Ds.Visible = true;
-            }
-            else
-            {
-                lbl_D15.Visible = false;
-                lbl_Ds.Visible = false;
-            }
+          
+            Machine.isAutoRun = myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value == "true" ? true : false;
+            Machine._MachineRunPlan = myfunctionnode.Attributes.GetNamedItem("runType").Value;
+            Machine.isRigPrint = myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value == "true" ? true : false;
+
+            setting.CPFRPass = myfunctionnode.Attributes.GetNamedItem("CPFRPass").Value;
+            setting.debugPass = myfunctionnode.Attributes.GetNamedItem("debugPass").Value;
+            setting.setupPass = myfunctionnode.Attributes.GetNamedItem("setupPass").Value;
+
         }
 
         #endregion
@@ -570,15 +564,44 @@ namespace SHJ
         private int netcount;//网络状态循环计时
         private int netreturncount;//网络等待计时
         private int myminute;//分钟计时
+        List<string> imageNames = new List<string>();
         private void timer1_Tick(object sender, EventArgs e)//1s
         {
-            List<string> imageNames = new List<string>();
-            imageNames = ReadSections(imageUrlFile);
-            bcmimagefiles = System.IO.Directory.GetFiles(bcmimagesaddress);//选择印章图片文件路径列表
+            imageNames = ReadSections(imageUrlPath);
+            foreach(var picFile in imageNames)
+            {
+                string picUrl = IniReadValue(picFile, "url", imageUrlPath);
+                bool picExist = Directory.GetFiles(bcmimagesaddress, Path.GetFileNameWithoutExtension(picFile)).Length > 0 ? true : false;
+                if (picExist)
+                {
+                    FileInfo fileInfo = new FileInfo(picFile);
+                    long len = 0;
+                    if (fileInfo.Length == 0)
+                    {
+                        len = fileInfo.Length;
+                        while (len < 5)
+                        {
+                            DownLoadPicture(picUrl, picFile);
+                            fileInfo.Refresh();
+                            len = len + fileInfo.Length + 1;
+                        }
+                        fileInfo.Refresh();
+                        if (fileInfo.Length > 0)
+                        {
+                            DeleteSection(picFile, imageUrlPath);
+                        }
+                    }
+                    else
+                    {
+                        DeleteSection(picFile, imageUrlPath);
+                    }
+                }
+            }//重新下载空包图片
+
             for (int i = 0; i < imageNames.Count; i++)
             {
                 string name = imageNames[i];
-                string url = IniReadValue(name, "url", imageUrlFile);
+                string url = IniReadValue(name, "url", imageUrlPath);
                 bool alikeName = false;
                 for (int m = 0; m < bcmimagefiles.Length; m++)//文件名称排序
                 {
@@ -599,13 +622,13 @@ namespace SHJ
                             file.Refresh();
                             if (file.Length > 0)
                             {
-                                DeleteSection(name, imageUrlFile);
+                                DeleteSection(name, imageUrlPath);
                             }
                         }
                     }
                 }
                 if (!alikeName)
-                    DeleteSection(name, imageUrlFile);
+                    DeleteSection(name, imageUrlPath);
             }
 
             if (myminute < 59)//最长1分钟，循环时间
@@ -863,6 +886,8 @@ namespace SHJ
         
         private void timer2_Tick(object sender, EventArgs e)
         {
+            label1.Text = new PCHMI.VAR().GET_INT16(0, "D5").ToString();
+            label3.Text = new PCHMI.VAR().GET_BIT(0, "M114").ToString();
             if (HMIstep == 0)//广告
             {
                 if (mytihuoma != null)
@@ -877,7 +902,6 @@ namespace SHJ
                 this.pictureBox1.Focus();//获取焦点
 
                 pic_Erweima.Visible = true;
-                lbl_Title.Visible = true;
             }
             else if (HMIstep == 1)//选货界面
             {
@@ -892,7 +916,6 @@ namespace SHJ
                 this.panel1.Visible = false;//广告面板关闭显示
                 this.panel4.Visible = false;//出货界面关闭显示
                 pic_Erweima.Visible = false;
-                lbl_Title.Visible = false;
             }
             else if (HMIstep == 2)//支付界面
             {
@@ -906,7 +929,6 @@ namespace SHJ
                 this.panel1.Visible = false;//广告面板关闭显示
                 this.panel4.Visible = false;//出货界面关闭显示
                 pic_Erweima.Visible = false;
-                lbl_Title.Visible = false;
             }
             else if (HMIstep == 3)//出货界面
             {
@@ -919,7 +941,6 @@ namespace SHJ
                 this.panel1.Visible = false;//广告面板关闭显示
                 this.panel4.Visible = true;//出货界面显示
                 pic_Erweima.Visible = false;
-                lbl_Title.Visible = false;
             }
             if ((needreturnHMIstep1 > 0) && (needreturnHMIstep1 < 10))
             {
@@ -1021,19 +1042,11 @@ namespace SHJ
         //运行控制和显示
         private void timer3_Tick(object sender, EventArgs e)
         {
-            machine.PlcAutoControl(true);
+            machine.MachineRun(aisleNum);
             RunningDisplay();
-            if (showData)
+            if (Machine._RunEnd)
             {
-                lbl_D15.Text = "D15：" + machine.mainCode.ToString();
-                lbl_Ds.Text = machine.curBit + machine.curData.ToString();
-            }
-            this.label2.Text = "编号:" + Encoding.ASCII.GetString(Form1.IMEI) + "  " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            if (isICYOK)
-                label2.ForeColor= System.Drawing.SystemColors.HighlightText;
-            else
-            {
-                this.label2.ForeColor = System.Drawing.Color.Red;
+                timer3.Enabled = false;
             }
         }
 
@@ -1200,17 +1213,16 @@ namespace SHJ
                             if (myTihuomastr == gettihuomastring)
                             {
                                 liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
-                                huodaorecv = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
-                                Machine.StartRunning(huodaorecv);//向设备发送货道号和开始指令
-                                if ((huodaorecv <= mynodelistshangpin.Count) && (huodaorecv > 0))
+                                aisleNum = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
+                                if ((aisleNum <= mynodelistshangpin.Count) && (aisleNum > 0))
                                 {
                                     if (Machine.nowStep==0x00)//机器空闲
                                     {
                                         for (i = 0; i < mynodelistshangpin.Count; i++)
                                         {
-                                            if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == huodaorecv)
+                                            if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == aisleNum)
                                             {
-                                                updateshangpin(huodaorecv.ToString());//更新商品信息
+                                                updateshangpin(aisleNum.ToString());//更新商品信息
                                                 if (BUYstep == 4)//货道正确
                                                 {
                                                     HMIstep = 3;//出货
@@ -1259,16 +1271,15 @@ namespace SHJ
                                                     try
                                                     {
                                                         bcmimagefiles = System.IO.Directory.GetFiles(bcmimagesaddress);//选择印章图片文件路径列表
-                                                        for (int m = 0; m < bcmimagefiles.Length; m++)//文件名称排序
+                                                        foreach (var picFile in bcmimagefiles)
                                                         {
-                                                            if (bcmimagefiles[m].Contains(myTihuomastr))
+                                                            if (picFile.Contains(myTihuomastr))
                                                             {
-                                                                string iName = Path.GetFileNameWithoutExtension(bcmimagefiles[m]);
-                                                                FileInfo file = new FileInfo(bcmimagefiles[m]);
+                                                                FileInfo file = new FileInfo(picFile);
                                                                 if (file.Length == 0)//如果为空包，则重新下载图片
                                                                 {
                                                                     tihuoma.tihuomaresult = "正在下载印章图案，请稍等";
-                                                                    string urlstr = IniReadValue(iName, "url", imageUrlFile);
+                                                                    string urlstr = IniReadValue(picFile, "url", imageUrlPath);//读取图片Url
                                                                     if (urlstr == "error")
                                                                     {
                                                                         tihuoma.tihuomaresult = "印章图案无法下载";
@@ -1279,7 +1290,7 @@ namespace SHJ
                                                                         long len = file.Length;
                                                                         while (len < 5)
                                                                         {
-                                                                            DownLoadPicture(urlstr, iName);
+                                                                            DownLoadPicture(urlstr, picFile);
                                                                             file.Refresh();
                                                                             len += file.Length + 1;
                                                                         }
@@ -1293,7 +1304,7 @@ namespace SHJ
                                                                 }
                                                                 else
                                                                 {
-                                                                    DeleteSection(iName, imageUrlFile);
+                                                                    DeleteSection(picFile, imageUrlPath);
                                                                 }
                                                                 setchuhuo();
                                                                 addpayrecord(shangpinjiage, "提货码");
@@ -1301,14 +1312,12 @@ namespace SHJ
                                                                 liushui[1] = 65535;
                                                                 try
                                                                 {
-                                                                    pictureBox7.Load(bcmimagefiles[m]);
+                                                                    pictureBox7.Load(picFile);
                                                                 }
                                                                 catch
                                                                 {
                                                                 }
-                                                                int mystartindex = bcmimagefiles[m].LastIndexOf('\\');
-                                                                string mycmdingdan = bcmimagefiles[m].Substring(mystartindex + 1, 14);
-                                                                PEPrinter.PicPath = bcmimagefiles[m];
+                                                                PEPrinter.PicPath = picFile;
                                                             }
                                                         }
                                                     }
@@ -1491,13 +1500,9 @@ namespace SHJ
                     await client.DownloadFileTaskAsync(uri, saveFileName);
                     client.DownloadFileCompleted += new AsyncCompletedEventHandler(tihuopicture_DownloadFileCompleted);
                 }
-                catch (WebException )//下载失败则写入文件
+                catch (Exception)
                 {
-                    IniWriteValue(imageName, "url", imageUrl, imageUrlFile);
-                }
-                catch (Exception )
-                {
-                    IniWriteValue(imageName, "url", imageUrl, imageUrlFile);
+                    IniWriteValue(imageName, "url", imageUrl, imageUrlPath);
                 }
             }
         }
@@ -1707,21 +1712,32 @@ namespace SHJ
             netdelayAttribute.Value = "60";
             NetNode.Attributes.Append(netdelayAttribute);//xml节点附件属性
             rootNode.AppendChild(NetNode);
-
+            
+            XmlNode functionNode = myxmldoc.CreateElement("function");//功能定义
+            XmlAttribute machineAutoRun = myxmldoc.CreateAttribute("isAutoRun");//机器运行模式
+            machineAutoRun.Value = "false";
+            functionNode.Attributes.Append(machineAutoRun);
+            XmlAttribute runType = myxmldoc.CreateAttribute("runType");//PC运行模式选择
+            runType.Value = "01";
+            functionNode.Attributes.Append(runType);
+            XmlAttribute isRigPrnit = myxmldoc.CreateAttribute("isRigPrint");//是否安装了印面
+            isRigPrnit.Value = "false";
+            functionNode.Attributes.Append(isRigPrnit);
             XmlAttribute dataShow = myxmldoc.CreateAttribute("runDataShow");//运行时显示数据
             dataShow.Value = "0";
-            XmlNode functionNode = myxmldoc.CreateElement("function");//功能定义
+            functionNode.Attributes.Append(dataShow);
             XmlAttribute netlogAttribute = myxmldoc.CreateAttribute("netlog");//网络日志
             netlogAttribute.Value = "0";
             functionNode.Attributes.Append(netlogAttribute);//xml节点附件属性
-            XmlAttribute kucunguanliAttribute = myxmldoc.CreateAttribute("kucunguanli");//库存管理
-            kucunguanliAttribute.Value = "0";
-            functionNode.Attributes.Append(kucunguanliAttribute);//xml节点附件属性
-            XmlAttribute mimaAttribute = myxmldoc.CreateAttribute("user");//密码
-            mimaAttribute.Value = "123";
-            functionNode.Attributes.Append(mimaAttribute);//xml节点附件属性
-            XmlAttribute PassAttribute = myxmldoc.CreateAttribute("pass");
-            PassAttribute.Value = "123";
+            XmlAttribute CPFRPassAttribute = myxmldoc.CreateAttribute("CPFRPass");//补货密码
+            CPFRPassAttribute.Value = "2022";
+            functionNode.Attributes.Append(CPFRPassAttribute);//xml节点附件属性
+            XmlAttribute setupPassAttribute = myxmldoc.CreateAttribute("setupPass");//系统设置密码
+            setupPassAttribute.Value = "2023";
+            functionNode.Attributes.Append(setupPassAttribute);//xml节点附件属性
+            XmlAttribute debugPassAttribute = myxmldoc.CreateAttribute("debugPass");//调试密码
+            debugPassAttribute.Value = "2024";
+            functionNode.Attributes.Append(debugPassAttribute);//xml节点附件属性
             XmlAttribute touchAttribute = myxmldoc.CreateAttribute("touch");//是否支持?
             touchAttribute.Value = "1";
             functionNode.Attributes.Append(touchAttribute);//xml节点附件属性
@@ -2007,21 +2023,7 @@ namespace SHJ
             this.pictureBox6.Location = new Point(800, 800);
             this.pictureBox7.Location = new Point(550, 400);
             this.pictureBox8.Location = new Point(1020, 400);
-            this.lbl_D15.Location = new Point(38, 22);
-            this.lbl_Ds.Location = new Point(38, 46);
-
-            showData = myfunctionnode.Attributes.GetNamedItem("runDataShow").Value == "0" ? false : true;
-            if (showData)
-            {
-                lbl_D15.Visible = true;
-                lbl_Ds.Visible = true;
-            }
-            else
-            {
-                lbl_D15.Visible = false;
-                lbl_Ds.Visible = false;
-            }
-
+            
             needupdatePlaylist = true;
         }
 
@@ -2468,8 +2470,8 @@ namespace SHJ
             myprint = new PEPrinter();
             netreturncount = 0;//超时计时停止
             int i = 0;
-            huodaorecv = huodaoNum;
-            if ((huodaorecv <= mynodelistshangpin.Count) && (huodaorecv > 0))
+            aisleNum = huodaoNum;
+            if ((aisleNum <= mynodelistshangpin.Count) && (aisleNum > 0))
             {
                 tihuoma.tihuomaresult = "提货码验证成功";
                 if (Machine.nowStep==0x00)//机器空闲
@@ -2478,9 +2480,9 @@ namespace SHJ
                     Machine.nowStep = 0x01;
                     for (i = 0; i < mynodelistshangpin.Count; i++)
                     {
-                        if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == huodaorecv)
+                        if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == aisleNum)
                         {
-                            updateshangpin(huodaorecv.ToString());//更新商品信息
+                            updateshangpin(aisleNum.ToString());//更新商品信息
                             if (BUYstep == 4)//货道正确
                             {
                                 HMIstep = 3;//出货
@@ -2518,7 +2520,7 @@ namespace SHJ
                                 }
                                 istestmode = false;
                                 guanggaoreturntime = 0;//返回广告页面计时清零
-                                zhifutype = 3;//支付方式为一码付
+                                zhifutype = 4;//支付方式为提货码
                                 try
                                 {
                                     setchuhuo();
@@ -2577,9 +2579,15 @@ namespace SHJ
                     showprintstate = "印章制作完成:等待取货,请稍等";
                     break;
                 case 0x09:
-                    timer3.Enabled = false;
-                    Machine.nowStep = 0x00;
-                    log.LogWriteComplete();
+                    break;
+                case 0x70:
+                    showprintstate = "打印机正在复位,请稍等";
+                    break;
+                case 0x80:
+                    showprintstate = "机器正在复位,请稍等";
+                    break;
+                case 0x81:
+                    showprintstate = "机器正在排故,请稍等";
                     break;
                 case 0x98:
                     showprintstate = "打印机故障";
@@ -2590,7 +2598,7 @@ namespace SHJ
                 default:
                     break;
             }
-            if(Machine.nowStep==0x98 || Machine.nowStep == 0x99)
+            if(Machine.nowStep >= 0x10)//出现故障
             {
                 label5.Text =  showprintstate + "     " + (machine.runTiming).ToString() + "s";
             }
@@ -2605,6 +2613,13 @@ namespace SHJ
                     label5.Text =  showprintstate + "     " + (machine.runTiming--).ToString() + "s";
                     timingCount = 0;
                 }
+            }
+            this.label2.Text = "编号:" + Encoding.ASCII.GetString(Form1.IMEI) + "  " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            if (isICYOK)
+                label2.ForeColor = System.Drawing.SystemColors.HighlightText;
+            else
+            {
+                this.label2.ForeColor = System.Drawing.Color.Red;
             }
         }
 

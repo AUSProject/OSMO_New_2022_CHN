@@ -215,6 +215,7 @@ namespace SHJ
             panelTest.Visible = false;
             tihuoma.tihuomaresult = "请输入提货码";
             print = Print.GetExample();
+            pic_Erweima.Image = Image.FromFile(System.IO.Path.Combine(Form1.adimagesaddress, "erweima.jpg"));
         }
 
         private void label10_DoubleClick(object sender, EventArgs e)
@@ -251,8 +252,8 @@ namespace SHJ
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
-            //if (SummaryCheck())
-            //    return;
+            if (SummaryCheck())
+                return;
             if (String.IsNullOrEmpty(cmbCargoWay.Text))
             {
                 MessageBox.Show("请选择货道","提示");
@@ -264,7 +265,6 @@ namespace SHJ
             else
             {
                 cargoWayNum = cmbCargoWay.SelectedIndex + 1;
-                Machine.StartRunning(cargoWayNum);
                 Form1.CallWorkingTest(cargoWayNum, imageFilePath);
                 this.Dispose();
                 this.Close();
@@ -296,18 +296,13 @@ namespace SHJ
             if (print.PrintFaultInspect()!=null)//打印机检查 
             {
                 textBox1.Text = "";
-                MessageBox.Show("打印机故障","打印机故障");
+                MessageBox.Show("打印机故障,正在尝试重启","故障");
                 return true;
             }
              if (!Machine.CheckPortConnect())//设备连接检查
             {
                 textBox1.Text = "";
                 MessageBox.Show("设备未连接,请检查连接或重启设备", "设备提示");
-                return true;
-            }
-            if (Machine.FaultShow()!=null)//机器故障检查
-            {
-                MessageBox.Show("设备故障,进入后台程序查看详情", "设备故障", MessageBoxButtons.OK);
                 return true;
             }
             if (!Machine.GoodsInspect())//印面数量检查

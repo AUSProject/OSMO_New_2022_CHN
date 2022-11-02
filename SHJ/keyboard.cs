@@ -11,9 +11,18 @@ namespace SHJ
 {
     public partial class keyboard : Form
     {
-        public keyboard()
+        private static keyboard _keyboard=null;
+
+        private keyboard()
         {
             InitializeComponent();
+        }
+
+        public static keyboard GetKeyboard()
+        {
+            if (_keyboard == null)
+                _keyboard = new keyboard();
+            return _keyboard;
         }
 
         private void button1_Click(object sender, EventArgs e)//1

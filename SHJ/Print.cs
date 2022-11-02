@@ -8,8 +8,6 @@ namespace SHJ
 {
     public class Print
     {
-        private LogHelper log = null;
-
         /// <summary>
         /// 打印机错误检测
         /// <para>无错误返回null</para>
@@ -17,7 +15,6 @@ namespace SHJ
         /// <returns></returns>
         private Print()
         {
-            log = LogHelper.GetExample();
         }
         private static Print _Pirnt = null;
         /// <summary>
@@ -41,12 +38,11 @@ namespace SHJ
         {
             if (PEPrinter.PEPrinterState == 65535)
             {
-                log.Log("打印机错误："+"打印机未连接");
                 return "打印机未连接";
             }
             else if(PEPrinter.PEPrinterState > 0x8000)
             {
-                log.Log("打印机错误：" + PEPrinter.PEPrinterStatedetail);
+                PrintReset();
                 return PEPrinter.PEPrinterStatedetail;
             }
             else
@@ -55,6 +51,14 @@ namespace SHJ
             }
         }
 
+        /// <summary>
+        /// 打印机复位
+        /// </summary>
+        private void PrintReset()
+        {
+            PEPrinter.needReset = true;
+        }
+        
         /// <summary>
         /// 启动打印程序
         /// </summary>
@@ -70,7 +74,6 @@ namespace SHJ
                 }
                 catch
                 {
-
                 }
                 switch (osmotype)
                 {
@@ -93,7 +96,6 @@ namespace SHJ
                 }
                 catch (Exception ex)
                 {
-                    log.Log(ex.Message);
                 }
                 PEPrinter.needPutImage = true;//加载图片并打印
             }

@@ -43,8 +43,8 @@
             this.imageList4 = new System.Windows.Forms.ImageList(this.components);
             this.imageList5 = new System.Windows.Forms.ImageList(this.components);
             this.panel4 = new System.Windows.Forms.Panel();
-            this.lbl_Ds = new System.Windows.Forms.Label();
-            this.lbl_D15 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -53,7 +53,6 @@
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
             this.pic_Erweima = new System.Windows.Forms.PictureBox();
-            this.lbl_Title = new System.Windows.Forms.Label();
             this.config1 = new PCHMI.CONFIG();
             this.timer3 = new System.Windows.Forms.Timer(this.components);
             this.panel1.SuspendLayout();
@@ -174,8 +173,8 @@
             // 
             this.panel4.BackgroundImage = global::SHJ.Properties.Resources.tihuo;
             this.panel4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.panel4.Controls.Add(this.lbl_Ds);
-            this.panel4.Controls.Add(this.lbl_D15);
+            this.panel4.Controls.Add(this.label3);
+            this.panel4.Controls.Add(this.label1);
             this.panel4.Controls.Add(this.label16);
             this.panel4.Controls.Add(this.label15);
             this.panel4.Controls.Add(this.label5);
@@ -189,31 +188,24 @@
             this.panel4.TabIndex = 14;
             this.panel4.Visible = false;
             // 
-            // lbl_Ds
+            // label3
             // 
-            this.lbl_Ds.AutoSize = true;
-            this.lbl_Ds.BackColor = System.Drawing.Color.Transparent;
-            this.lbl_Ds.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lbl_Ds.ForeColor = System.Drawing.Color.Red;
-            this.lbl_Ds.Location = new System.Drawing.Point(36, 42);
-            this.lbl_Ds.Name = "lbl_Ds";
-            this.lbl_Ds.Size = new System.Drawing.Size(44, 16);
-            this.lbl_Ds.TabIndex = 54;
-            this.lbl_Ds.Text = "D11:";
-            this.lbl_Ds.Visible = false;
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(12, 60);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(35, 12);
+            this.label3.TabIndex = 55;
+            this.label3.Text = "M114;";
             // 
-            // lbl_D15
+            // label1
             // 
-            this.lbl_D15.AutoSize = true;
-            this.lbl_D15.BackColor = System.Drawing.Color.Transparent;
-            this.lbl_D15.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lbl_D15.ForeColor = System.Drawing.Color.Red;
-            this.lbl_D15.Location = new System.Drawing.Point(36, 18);
-            this.lbl_D15.Name = "lbl_D15";
-            this.lbl_D15.Size = new System.Drawing.Size(44, 16);
-            this.lbl_D15.TabIndex = 54;
-            this.lbl_D15.Text = "D15:";
-            this.lbl_D15.Visible = false;
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label1.Location = new System.Drawing.Point(15, 30);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(32, 16);
+            this.label1.TabIndex = 54;
+            this.label1.Text = "D5:";
             // 
             // label16
             // 
@@ -298,23 +290,12 @@
             // 
             // pic_Erweima
             // 
-            this.pic_Erweima.Location = new System.Drawing.Point(1580, 750);
+            this.pic_Erweima.Location = new System.Drawing.Point(40, 40);
             this.pic_Erweima.Name = "pic_Erweima";
-            this.pic_Erweima.Size = new System.Drawing.Size(250, 250);
+            this.pic_Erweima.Size = new System.Drawing.Size(200, 200);
             this.pic_Erweima.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pic_Erweima.TabIndex = 16;
             this.pic_Erweima.TabStop = false;
-            // 
-            // lbl_Title
-            // 
-            this.lbl_Title.AutoSize = true;
-            this.lbl_Title.Font = new System.Drawing.Font("微软雅黑", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lbl_Title.ForeColor = System.Drawing.Color.Tomato;
-            this.lbl_Title.Location = new System.Drawing.Point(1640, 1010);
-            this.lbl_Title.Name = "lbl_Title";
-            this.lbl_Title.Size = new System.Drawing.Size(138, 28);
-            this.lbl_Title.TabIndex = 15;
-            this.lbl_Title.Text = "微信扫码购买";
             // 
             // config1
             // 
@@ -332,7 +313,7 @@
             limits1.限制类型 = PCHMI.limits.LType.无效;
             this.config1.运行限制 = limits1;
             this.config1.通讯配置 = new string[] {
-        "MITSUBISHI_FX_SERIAL;COM=4,9600,2,7,1;SN=1;JumpBit="};
+        "MITSUBISHI_FX_SERIAL;COM=3,9600,2,7,1;SN=1;JumpBit="};
             this.config1.通讯配置文件名 = "PLC1";
             this.config1.随机数保存地址 = null;
             // 
@@ -347,7 +328,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1490, 1080);
             this.Controls.Add(this.pic_Erweima);
-            this.Controls.Add(this.lbl_Title);
             this.Controls.Add(this.panel4);
             this.Controls.Add(this.panel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
@@ -395,11 +375,10 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.PictureBox pic_Erweima;
-        private System.Windows.Forms.Label lbl_Title;
         internal PCHMI.CONFIG config1;
-        private System.Windows.Forms.Label lbl_Ds;
-        private System.Windows.Forms.Label lbl_D15;
         private System.Windows.Forms.Timer timer3;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label3;
     }
 }
 

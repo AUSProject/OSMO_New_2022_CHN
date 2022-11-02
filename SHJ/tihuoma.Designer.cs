@@ -58,10 +58,12 @@
             this.btnQuit = new System.Windows.Forms.Button();
             this.buttonStart = new System.Windows.Forms.Button();
             this.btnPicChoice = new System.Windows.Forms.Button();
+            this.pic_Erweima = new System.Windows.Forms.PictureBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panelTest.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picPrintImage)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pic_Erweima)).BeginInit();
             this.SuspendLayout();
             // 
             // label2
@@ -434,6 +436,15 @@
             this.btnPicChoice.UseVisualStyleBackColor = true;
             this.btnPicChoice.Click += new System.EventHandler(this.btnPicChoice_Click);
             // 
+            // pic_Erweima
+            // 
+            this.pic_Erweima.Location = new System.Drawing.Point(40, 40);
+            this.pic_Erweima.Name = "pic_Erweima";
+            this.pic_Erweima.Size = new System.Drawing.Size(200, 200);
+            this.pic_Erweima.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pic_Erweima.TabIndex = 48;
+            this.pic_Erweima.TabStop = false;
+            // 
             // tihuoma
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -443,6 +454,7 @@
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(1918, 1078);
             this.ControlBox = false;
+            this.Controls.Add(this.pic_Erweima);
             this.Controls.Add(this.panelTest);
             this.Controls.Add(this.btnTry);
             this.Controls.Add(this.label10);
@@ -457,6 +469,7 @@
             this.panelTest.ResumeLayout(false);
             this.panelTest.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picPrintImage)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pic_Erweima)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -491,5 +504,6 @@
         private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.Button btnPicChoice;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.PictureBox pic_Erweima;
     }
 }

@@ -21,11 +21,13 @@ namespace SHJ
         {
             InitializeComponent();
         }
-        
+
         #region Feild
 
-        private bool cankucunguanli;//是否打开库存管理
-        private bool canyingshe = false;//是否编辑映射关系
+        public static string debugPass = null;//机器调试密码
+        public static string setupPass = null;//系统设置密码
+        public static string CPFRPass = null;//补货密码
+        
         private bool needsave = false;//是否需要保存配置
         private int stateOK;//货道状态是否正常
 
@@ -45,8 +47,7 @@ namespace SHJ
             }
             updatecaidan();
             showpayrecord();
-            txt_User.Text = "";
-            txt_pass.Text = "";
+            txt_Pass.Text = "";
         }
 
         #endregion
@@ -73,6 +74,26 @@ namespace SHJ
 
             Form1.mynetcofignode.Attributes.GetNamedItem("port").Value = textBox3.Text;
             Form1.mynetcofignode.Attributes.GetNamedItem("netdelay").Value = textBox4.Text;
+            if (rb_PC.Checked)
+            {
+                Form1.myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value = "false";
+                Machine.isAutoRun = false;
+            }
+            else
+            {
+                Form1.myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value = "true";
+                Machine.isAutoRun = true;
+            }
+            if (rb_RunType1.Checked)
+            {
+                Form1.myfunctionnode.Attributes.GetNamedItem("runType").Value = "01";
+                Machine._MachineRunPlan = "01";
+            }
+            else
+            {
+                Form1.myfunctionnode.Attributes.GetNamedItem("runType").Value = "02";
+                Machine._MachineRunPlan = "02";
+            }
             if (checkBox8.Checked)
             {
                 Form1.myfunctionnode.Attributes.GetNamedItem("netlog").Value = "1";
@@ -81,16 +102,7 @@ namespace SHJ
             {
                 Form1.myfunctionnode.Attributes.GetNamedItem("netlog").Value = "0";
             }
-
-            if (checkBox9.Checked)
-            {
-                Form1.myfunctionnode.Attributes.GetNamedItem("kucunguanli").Value = "1";
-            }
-            else
-            {
-                Form1.myfunctionnode.Attributes.GetNamedItem("kucunguanli").Value = "0";
-            }
-
+            
             if (checkBox5.Checked)
             {
                 Form1.myfunctionnode.Attributes.GetNamedItem("adupdate").Value = "0";
@@ -98,14 +110,6 @@ namespace SHJ
             else
             {
                 Form1.myfunctionnode.Attributes.GetNamedItem("adupdate").Value = "1";
-            }
-            if (ckb_runDataShow.Checked)
-            {
-                Form1.myfunctionnode.Attributes.GetNamedItem("runDataShow").Value = "1";
-            }
-            else
-            {
-                Form1.myfunctionnode.Attributes.GetNamedItem("runDataShow").Value = "0";
             }
 
             int i;
@@ -116,10 +120,9 @@ namespace SHJ
             }
             for (i = 0; i < dataGridView2.Rows.Count; i++)
             {
-                Form1.mynodelisthuodao[i].Attributes.GetNamedItem("fenzu").Value = dataGridView2.Rows[i].Cells[1].Value.ToString();
-                Form1.mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value = dataGridView2.Rows[i].Cells[2].Value.ToString();
-                Form1.mynodelisthuodao[i].Attributes.GetNamedItem("volume").Value = dataGridView2.Rows[i].Cells[4].Value.ToString();
-                Form1.mynodelisthuodao[i].Attributes.GetNamedItem("position").Value = dataGridView2.Rows[i].Cells[5].Value.ToString();
+                Form1.mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value = dataGridView2.Rows[i].Cells[1].Value.ToString();
+                Form1.mynodelisthuodao[i].Attributes.GetNamedItem("volume").Value = dataGridView2.Rows[i].Cells[3].Value.ToString();
+                Form1.mynodelisthuodao[i].Attributes.GetNamedItem("position").Value = dataGridView2.Rows[i].Cells[4].Value.ToString();
             }
             Form1.myfunctionnode.Attributes.GetNamedItem("temperature1").Value = hScrollBar1.Value.ToString();
             Form1.myfunctionnode.Attributes.GetNamedItem("temperature2").Value = hScrollBar2.Value.ToString();
@@ -144,6 +147,24 @@ namespace SHJ
             {
                 checkBox14.Checked = false;
             }
+
+            if(Machine.isAutoRun)
+            {
+                rb_PLC.Checked = true;
+            }
+            else
+            {
+                rb_PC.Checked = true;
+            }
+            if(Machine._MachineRunPlan=="01")
+            {
+                rb_RunType1.Checked = true;
+            }
+            else if(Machine._MachineRunPlan=="02")
+            {
+                rb_RunType2.Checked = true;
+            }
+
             textBox5.Text = Form1.mypayconfignode.Attributes.GetNamedItem("zhekou").Value;
             string[] ipstring = Form1.mynetcofignode.Attributes.GetNamedItem("ipconfig").Value.Split('.');
             if (ipstring.Length == 4)
@@ -163,17 +184,7 @@ namespace SHJ
             {
                 checkBox8.Checked = false;
             }
-            if (Form1.myfunctionnode.Attributes.GetNamedItem("kucunguanli").Value == "1")
-            {
-                checkBox9.Checked = true;
-                cankucunguanli = true;
-            }
-            else
-            {
-                checkBox9.Checked = false;
-                cankucunguanli = false;
-            }
-
+           
             if (Form1.myfunctionnode.Attributes.GetNamedItem("adupdate").Value == "1")
             {
                 checkBox5.Checked = false;
@@ -181,14 +192,6 @@ namespace SHJ
             else
             {
                 checkBox5.Checked = true;
-            }
-            if(Form1.myfunctionnode.Attributes.GetNamedItem("runDataShow").Value=="1")
-            {
-                ckb_runDataShow.Checked = true;
-            }
-            else
-            {
-                ckb_runDataShow.Checked = false;
             }
             textBox11.Text = Form1.mynodelistshangpin.Count.ToString();//商品数量
 
@@ -231,54 +234,49 @@ namespace SHJ
 
             textBox12.Text = Form1.mynodelisthuodao.Count.ToString();//货道数量
             dataGridView2.Columns.Add("c0", "货道");
-            dataGridView2.Columns.Add("c1", "组号");
-            dataGridView2.Columns.Add("c2", "库存");
-            dataGridView2.Columns.Add("c3", "状态");
-            dataGridView2.Columns.Add("c4", "容量");
-            dataGridView2.Columns.Add("c5", "类型");
+            dataGridView2.Columns.Add("c1", "库存");
+            dataGridView2.Columns.Add("c2", "状态");
+            dataGridView2.Columns.Add("c3", "容量");
+            dataGridView2.Columns.Add("c4", "类型");
             dataGridView2.Columns[0].ReadOnly = true;
+            dataGridView2.Columns[1].ReadOnly = false;
+            dataGridView2.Columns[2].ReadOnly = true;
             dataGridView2.Columns[3].ReadOnly = true;
-            dataGridView2.Columns[1].ReadOnly = true;
             dataGridView2.Columns[4].ReadOnly = true;
-            dataGridView2.Columns[5].ReadOnly = true;
 
             dataGridView2.Columns[0].SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView2.Columns[1].SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView2.Columns[2].SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView2.Columns[3].SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView2.Columns[4].SortMode = DataGridViewColumnSortMode.NotSortable;
-            dataGridView2.Columns[5].SortMode = DataGridViewColumnSortMode.NotSortable;
             stateOK = 0;
             foreach (XmlNode _node in Form1.mynodelisthuodao)
             {
                 dataGridView2.Rows.Add();
                 dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[0].Value = _node.Attributes.GetNamedItem("huodaonum").Value;
-                dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[1].Value = _node.Attributes.GetNamedItem("fenzu").Value;
-                dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = _node.Attributes.GetNamedItem("kucun").Value;
+                dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[1].Value = _node.Attributes.GetNamedItem("kucun").Value;
                 if (_node.Attributes.GetNamedItem("state").Value == "0")
                 {
-                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = "正常";
+                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "正常";
                     stateOK++;
                 }
                 else if (_node.Attributes.GetNamedItem("state").Value == "1")
                 {
-                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = "过流";
+                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "过流";
                 }
 				else if (_node.Attributes.GetNamedItem("state").Value == "2")
                 {
-                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = "断线";
+                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "断线";
                 }
 				else
                 {
-                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = "故障";
+                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "故障";
                 }
-                dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[4].Value = _node.Attributes.GetNamedItem("volume").Value;
-                dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[5].Value = _node.Attributes.GetNamedItem("position").Value;
+                dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = _node.Attributes.GetNamedItem("volume").Value;
+                dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[4].Value = _node.Attributes.GetNamedItem("position").Value;
             }
             dataGridView2.ClearSelection();
             
-            //showsalerecord();
-            needsave = false;//开始加载的数据变化不需要保存
         }
         
         #region 销售记录(停用)
@@ -529,20 +527,20 @@ namespace SHJ
                 {
                     if (Form1.mynodelisthuodao[i].Attributes.GetNamedItem("state").Value == "0")
                     {
-                        dataGridView2.Rows[i].Cells[3].Value = "正常";
+                        dataGridView2.Rows[i].Cells[2].Value = "正常";
                         stateOK++;
                     }
                     else if (Form1.mynodelisthuodao[i].Attributes.GetNamedItem("state").Value == "1")
                     {
-                        dataGridView2.Rows[i].Cells[3].Value = "过流";
+                        dataGridView2.Rows[i].Cells[2].Value = "过流";
                     }
                     else if (Form1.mynodelisthuodao[i].Attributes.GetNamedItem("state").Value == "2")
                     {
-                        dataGridView2.Rows[i].Cells[3].Value = "断线";
+                        dataGridView2.Rows[i].Cells[2].Value = "断线";
                     }
                     else
                     {
-                        dataGridView2.Rows[i].Cells[3].Value = "故障";
+                        dataGridView2.Rows[i].Cells[2].Value = "故障";
                     }
                 }
             }
@@ -611,30 +609,7 @@ namespace SHJ
                     textBox16.Text = Form1.keyboardstring;
                     break;
             }
-            if (cankucunguanli)
-            {
-                dataGridView2.Columns[2].Visible = true;
-            }
-            else
-            {
-                dataGridView2.Columns[2].Visible = false;
-            }
-
-            if (canyingshe)
-            {
-                dataGridView2.Columns[1].ReadOnly = false;
-                dataGridView2.Columns[4].ReadOnly = false;
-                dataGridView2.Columns[5].ReadOnly = false;
-                dataGridView1.Columns[2].ReadOnly = false;
-            }
-            else
-            {
-                dataGridView2.Columns[1].ReadOnly = true;
-                dataGridView2.Columns[4].ReadOnly = true;
-                dataGridView2.Columns[5].ReadOnly = true;
-                dataGridView1.Columns[2].ReadOnly = true;
-            }
-
+            
             //打印机状态
             if (PEPrinter.isconnected)
             {
@@ -653,6 +628,7 @@ namespace SHJ
             {
                 label2.Text = "机器状态:未准备好";
             }
+            label152.Text = label70.Text;
             label153.Text = label2.Text;
             label16.Text = "任务步骤:" + PEPrinter.PEloopstate;
             label157.Text = label16.Text;
@@ -690,6 +666,7 @@ namespace SHJ
                     break;
             }
             label162.Text = label67.Text;
+            label155.Text = label65.Text;
             label75.Text = "打印机编号:" + PEPrinter.ProductID.ToString("X4");
             label154.Text = label75.Text;
             label72.Text = "F/W版本号:V" + (PEPrinter.Version >> 8).ToString("X") + "." + (PEPrinter.Version & 0xff).ToString("X2");
@@ -724,7 +701,6 @@ namespace SHJ
         {
             try
             {
-                string mymima = txt_User.Text;
                 DriveInfo[] s = DriveInfo.GetDrives();
                 foreach (DriveInfo drive in s)
                 {
@@ -734,6 +710,7 @@ namespace SHJ
                         {
                             System.IO.Directory.CreateDirectory(drive.Name + "EPTON");
                         }
+                        string mymima = null;
                         string[] upanfiles;
                         switch (mymima)
                         {
@@ -940,10 +917,10 @@ namespace SHJ
             DialogResult myresult;
             if (needsave)
             {
-                needsave = false;
                 myresult = MessageBox.Show("配置已经修改，是否需要保存并退出后台管理？", "提示", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 if (myresult == DialogResult.Yes)
                 {
+                    needsave = false;
                     updatexml();
                     Form1.myxmldoc.Save(Form1.configxmlfile);
                     Form1.myxmldoc.Save(Form1.configxmlfilecopy);
@@ -1184,25 +1161,7 @@ namespace SHJ
         {
             needsave = true;//需要保存
         }
-
-        private void checkBox9_CheckedChanged(object sender, EventArgs e)
-        {
-            needsave = true;//需要保存
-            if (checkBox9.Checked)//打开库存管理
-            {
-                cankucunguanli = true;
-            }
-            else
-            {
-                cankucunguanli = false;
-            }
-        }
         
-        private void checkBox13_CheckedChanged(object sender, EventArgs e)
-        {
-            needsave = true;
-        }
-
         private void checkBox14_CheckedChanged(object sender, EventArgs e)
         {
             needsave = true;
@@ -1211,17 +1170,7 @@ namespace SHJ
         #endregion
 
         #region DataGridView
-
-        private void dataGridView1_CellLeave(object sender, DataGridViewCellEventArgs e)//商品表格编辑一次完成
-        {
-            if (e.RowIndex > 0)
-            {
-                if (dataGridView1.Rows[e.RowIndex - 1].Cells[e.ColumnIndex].Value.ToString() == "")
-                {
-                    dataGridView1.Rows[e.RowIndex - 1].Cells[e.ColumnIndex].Value = "0";
-                }
-            }
-        }
+        
 
         private void dataGridView2_CellLeave(object sender, DataGridViewCellEventArgs e)
         {
@@ -1236,19 +1185,15 @@ namespace SHJ
 
         private void dataGridView2_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if (this.dataGridView2.CurrentCell.ColumnIndex == 1)//分组
-            {
-                checkkeyboardstring(999);
-            }
-            else if (this.dataGridView2.CurrentCell.ColumnIndex == 2)//库存
+            if (this.dataGridView2.CurrentCell.ColumnIndex == 1)//库存
             {
                 checkkeyboardstring(255);
             }
-            else if (this.dataGridView2.CurrentCell.ColumnIndex == 4)//容量
+            else if (this.dataGridView2.CurrentCell.ColumnIndex == 3)//容量
             {
                 checkkeyboardstring(255);
             }
-            else if (this.dataGridView2.CurrentCell.ColumnIndex == 5)//印章类型
+            else if (this.dataGridView2.CurrentCell.ColumnIndex == 4)//印章类型
             {
                 checkkeyboardstring(3);
             }
@@ -1261,7 +1206,7 @@ namespace SHJ
 
         private void dataGridView2_Click(object sender, EventArgs e)
         {
-            if (this.dataGridView2.CurrentCell.ReadOnly == false)
+            if (this.dataGridView2.CurrentCell.ColumnIndex==1)
             {
                 Form1.keyboardstring = this.dataGridView2.CurrentCell.Value.ToString();
                 Form1.keyboardnum = 23;
@@ -1324,43 +1269,11 @@ namespace SHJ
         {
             for (int i = 0; i < dataGridView2.Rows.Count; i++)
             {
-                dataGridView2.Rows[i].Cells[2].Value = dataGridView2.Rows[i].Cells[4].Value;
+                dataGridView2.Rows[i].Cells[1].Value = dataGridView2.Rows[i].Cells[3].Value;
             }
             needsave = true;
         }
-
-        private void button3_Click(object sender, EventArgs e)//登录工程师
-        {
-            if (btn_Login.Text == "登陆")
-            {
-                if (txt_User.Text == Form1.myfunctionnode.Attributes.GetNamedItem("user").Value && txt_pass.Text==Form1.myfunctionnode.Attributes.GetNamedItem("pass").Value)//密码正确
-                {
-                    settingToken = true;
-                    canyingshe = true;
-                    this.button4.Enabled = true;
-                    this.button8.Enabled = true;
-                    btn_Login.Text = "退出";
-                    btn_Setting.Text = "设置";
-                }
-                else
-                {
-                    MessageBox.Show("密码错误");
-                    canyingshe = false;
-                }
-            }
-            else
-            {
-                btn_Login.Text = "登陆";
-                txt_User.Text = "";
-                txt_pass.Text = "";
-                this.button4.Enabled = false;
-                this.button8.Enabled = false;
-                canyingshe = false;
-                settingToken = false;
-                btn_Setting.Text = "登陆工程师号进入设置页面";
-            }
-        }
-
+        
         private void button4_Click(object sender, EventArgs e)
         {
             int tempnum = Convert.ToInt32(this.textBox11.Text, 10);
@@ -1424,7 +1337,7 @@ namespace SHJ
 
         private void button7_Click(object sender, EventArgs e)
         {
-            //updatepic();//更新图片
+            updatepic();//更新图片
             try
             {
                 System.Diagnostics.Process[] MyProcesses = System.Diagnostics.Process.GetProcesses();
@@ -1482,28 +1395,27 @@ namespace SHJ
 
                     dataGridView2.Rows.Add();
                     dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[0].Value = huodaoNode.Attributes.GetNamedItem("huodaonum").Value;
-                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[1].Value = huodaoNode.Attributes.GetNamedItem("fenzu").Value;
-                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = huodaoNode.Attributes.GetNamedItem("kucun").Value;
+                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[1].Value = huodaoNode.Attributes.GetNamedItem("kucun").Value;
 
                     if (huodaoNode.Attributes.GetNamedItem("state").Value == "0")
                     {
-                        dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = "正常";
+                        dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "正常";
                         stateOK++;
                     }
                     else if (huodaoNode.Attributes.GetNamedItem("state").Value == "1")
                     {
-                        dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = "过流";
+                        dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "过流";
                     }
                     else if (huodaoNode.Attributes.GetNamedItem("state").Value == "2")
                     {
-                        dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = "断线";
+                        dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "断线";
                     }
                     else// if (_node.Attributes.GetNamedItem("state").Value == "2")
                     {
-                        dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = "故障";
+                        dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "故障";
                     }
-                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[4].Value = huodaoNode.Attributes.GetNamedItem("volume").Value;
-                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[5].Value = huodaoNode.Attributes.GetNamedItem("position").Value;
+                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = huodaoNode.Attributes.GetNamedItem("volume").Value;
+                    dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[4].Value = huodaoNode.Attributes.GetNamedItem("position").Value;
                 }
             }
             else if (tempnum == 0)//货道数量为0
@@ -1611,6 +1523,8 @@ namespace SHJ
         private void button26_Click(object sender, EventArgs e)
         {
             PEPrinter.needPutImage = true;
+            Machine.isRigPrint = false;//打印机里已无印面
+            Form1.myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value = "false";
         }
 
         /// <summary>
@@ -1712,26 +1626,7 @@ namespace SHJ
         {
 
         }
-
-        bool settingToken = false;//是否登陆工程师号
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (settingToken)
-            {
-                panel_Setting.Visible = true;
-                panel_System.Visible = false;
-            }
-            else
-            {
-            }
-        }
-
-        private void btn_Back_Click(object sender, EventArgs e)
-        {
-            this.panel_Setting.Visible = false;
-            this.panel_System.Visible = true;
-        }
-
+        
         private void btn_PlcInfo_Click(object sender, EventArgs e)
         {
             new PCHMI.UpConfig().ShowDialog();
@@ -1741,30 +1636,130 @@ namespace SHJ
         {
             CloseProgram();
         }
-
-        private void txt_User_Click(object sender, EventArgs e)
-        {
-            this.txt_User.Text = "";
-        }
-
+        
         private void button1_Click_1(object sender, EventArgs e)
         {
             new PCHMI.VAR().SEND_INT16(0, "D209", 0);
-        }
-
-        private void ckb_runDataShow_CheckedChanged(object sender, EventArgs e)
-        {
-            needsave = true;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             PEPrinter.needReset = true;
         }
-
-        private void label150_DoubleClick(object sender, EventArgs e)
+        
+        private void rb_PLC_CheckedChanged(object sender, EventArgs e)
         {
-            settingToken = true;
+            needsave = true;
+            if (rb_PLC.Checked && Machine.isRigPrint)
+            {
+                if (MessageBox.Show("要切换到当前模式需要先前打印机托盘内的印面拿出!!!\r\n(确认拿出后单击\"确认\"按钮)", "重要提示", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    Machine.PrintFaceRecord(false);
+                }
+                else
+                {
+                }
+            }
+            if (rb_PLC.Checked)
+                pel_AutoType.Visible = false;
+            
+        }
+
+        private void rb_PC_CheckedChanged(object sender, EventArgs e)
+        {
+            needsave = true;
+            if(pel_runType.Visible==true && rb_PC.Checked)
+                pel_AutoType.Visible = true;
+        }
+
+        private void button3_Click_1(object sender, EventArgs e)
+        {
+            if (btn_RunType.Text == "关闭")
+            {
+                pel_runType.Visible = false;
+                pel_AutoType.Visible = false;
+                btn_RunType.Text = "运行模式选择";
+            }
+            else
+            {
+                pel_runType.Visible = true;
+                btn_RunType.Text = "关闭";
+                if (rb_PC.Checked)
+                    pel_AutoType.Visible = true;
+            }
+        }
+
+        private void rb_RunType1_CheckedChanged(object sender, EventArgs e)
+        {
+            needsave = true;
+        }
+
+        private void rb_RunType2_CheckedChanged(object sender, EventArgs e)
+        {
+            needsave = true;
+        }
+
+        private void btn_Quit_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btn_Login_Click(object sender, EventArgs e)
+        {
+            if (txt_Pass.Text == CPFRPass)
+            {
+                panel_Back.Visible = false;
+                panel_CPFR.Visible = true;
+            }
+            else if(txt_Pass.Text==setupPass)
+            {
+                panel_Back.Visible = false;
+                panel_setup.Visible = true;
+            }
+            else if (txt_Pass.Text == debugPass)
+            {
+                panel_Back.Visible = false;
+                panel_debug.Visible = true;
+            }
+            else
+            {
+                MessageBox.Show("密码错误！！");
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            PEPrinter.needMoveTray = comboBox2.SelectedIndex + 1;
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void label10_Click(object sender, EventArgs e)
+        {
+            CloseProgram();
+        }
+
+        private void label27_Click(object sender, EventArgs e)
+        {
+            CloseProgram();
+        }
+
+        private void label137_Click(object sender, EventArgs e)
+        {
+            CloseProgram();
         }
     }
 }
