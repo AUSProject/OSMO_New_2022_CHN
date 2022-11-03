@@ -9,186 +9,167 @@ using System.Windows.Forms;
 
 namespace SHJ
 {
-    public partial class keyboard : Form
+    public partial class Keyboard : Form
     {
-        private static keyboard _keyboard=null;
+        private static Keyboard _keyboard=null;
+        public string inputValue;//输入的值
+        public int maxNum;//合法值
+        public string valueType;//数值类型
 
-        private keyboard()
+        private Keyboard()
         {
             InitializeComponent();
         }
 
-        public static keyboard GetKeyboard()
+        public static Keyboard GetKeyboard()
         {
             if (_keyboard == null)
-                _keyboard = new keyboard();
+                _keyboard = new Keyboard();
             return _keyboard;
         }
 
         private void button1_Click(object sender, EventArgs e)//1
         {
-            Form1.keyboardstring += "1";
+            inputValue += "1";
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardnum == 30)
-            {
-                Form1.keyboardstring = "1";
-            }
-            textBox1.Text = Form1.keyboardstring.TrimStart('0');
+            textBox1.Text = inputValue;
         }
 
         private void button2_Click(object sender, EventArgs e)//2
         {
-            Form1.keyboardstring += "2";
+            inputValue += "2";
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardnum == 30)
-            {
-                Form1.keyboardstring = "1";
-            }
-            textBox1.Text = Form1.keyboardstring.TrimStart('0');
+            textBox1.Text = inputValue;
         }
 
         private void button3_Click(object sender, EventArgs e)//3
         {
-            Form1.keyboardstring += "3";
+            inputValue += "3";
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardnum == 30)
-            {
-                Form1.keyboardstring = "1";
-            }
-            textBox1.Text = Form1.keyboardstring.TrimStart('0');
+            textBox1.Text = inputValue;
         }
 
         private void button8_Click(object sender, EventArgs e)//4
         {
-            Form1.keyboardstring += "4";
+            inputValue += "4";
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardnum == 30)
-            {
-                Form1.keyboardstring = "1";
-            }
-            textBox1.Text = Form1.keyboardstring.TrimStart('0');
+            textBox1.Text = inputValue;
         }
 
         private void button7_Click(object sender, EventArgs e)//5
         {
-            Form1.keyboardstring += "5";
+            inputValue += "5";
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardnum == 30)
-            {
-                Form1.keyboardstring = "1";
-            }
-            textBox1.Text = Form1.keyboardstring.TrimStart('0');
+            textBox1.Text = inputValue;
         }
 
         private void button6_Click(object sender, EventArgs e)//6
         {
-            Form1.keyboardstring += "6";
+            inputValue += "6";
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardnum == 30)
-            {
-                Form1.keyboardstring = "1";
-            }
-            textBox1.Text = Form1.keyboardstring.TrimStart('0');
+            textBox1.Text = inputValue;
         }
 
         private void button12_Click(object sender, EventArgs e)//7
         {
-            Form1.keyboardstring += "7";
+            inputValue += "7";
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardnum == 30)
-            {
-                Form1.keyboardstring = "1";
-            }
-            textBox1.Text = Form1.keyboardstring.TrimStart('0');
+            textBox1.Text = inputValue;
         }
 
         private void button11_Click(object sender, EventArgs e)//8
         {
-            Form1.keyboardstring += "8";
+            inputValue += "8";
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardnum == 30)
-            {
-                Form1.keyboardstring = "1";
-            }
-            textBox1.Text = Form1.keyboardstring.TrimStart('0');
+            textBox1.Text = inputValue;
         }
 
         private void button10_Click(object sender, EventArgs e)//9
         {
-            Form1.keyboardstring += "9";
+            inputValue += "9";
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardnum == 30)
-            {
-                Form1.keyboardstring = "1";
-            }
-            textBox1.Text = Form1.keyboardstring.TrimStart('0');
+            textBox1.Text = inputValue;
         }
 
         private void button5_Click(object sender, EventArgs e)//0
         {
-            Form1.keyboardstring += "0";
-            Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardnum == 30)
+            //if (inputValue.Length > 0)
             {
-                Form1.keyboardstring = "0";
+                inputValue += "0";
+                Form1.guanggaoreturntime = 0;//返回广告页面计时清零
+                textBox1.Text += inputValue;
             }
-            textBox1.Text = Form1.keyboardstring.TrimStart('0');
-            if (textBox1.Text.Length==0)
-            {
-                textBox1.Text = "0";
-            }
-            
         }
 
         private void button9_Click(object sender, EventArgs e)//确定
         {
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零            
-            //Form1.Modbusdata = textBox1.Text;
-            //Form1.setModbusdata = true;
-            this.Visible=false;
+            this.Close();
         }
 
-        private void button4_Click(object sender, EventArgs e)//退出
+        private void button4_Click(object sender, EventArgs e)//清除
         {
             Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-            if (Form1.keyboardstring.Length > 0)
+            if (inputValue.Length > 0)
             {
-                Form1.keyboardstring = Form1.keyboardstring.Substring(0, Form1.keyboardstring.Length - 1);//去除一个字符
-                textBox1.Text = Form1.keyboardstring.TrimStart('0');
-                if (textBox1.Text.Length == 0)
+                inputValue = inputValue.Substring(0, inputValue.Length - 1);//去除一个字符
+                textBox1.Text = inputValue;
+            }
+        }
+
+        private void button13_Click(object sender, EventArgs e)//点
+        {
+            if (inputValue.Length == 0)
+            {
+                inputValue += "0.";
+                Form1.guanggaoreturntime = 0;//返回广告页面计时清零
+                textBox1.Text = inputValue;
+            }
+            else if (!inputValue.Contains(".") && inputValue.Length > 0)
+            {
+                inputValue += ".";
+                Form1.guanggaoreturntime = 0;//返回广告页面计时清零
+                textBox1.Text = inputValue;
+            }
+        }
+        
+        private void Keyboard_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (inputValue.Length == 0)
+            {
+                inputValue = "0";
+            }
+            else if(inputValue[inputValue.Length-1]=='.')//如果最后一位是小数
+            {
+                inputValue = inputValue.Substring(0, inputValue.Length - 1);//去除一个字符
+            }
+
+            if (inputValue.Contains(".") && valueType == "Int")//检查数值类型
+            {
+                MessageBox.Show("不能为小数");
+                e.Cancel = true;
+            }
+            else
+            {
+
+                double value = Convert.ToDouble(inputValue);
+                if (value > maxNum)//检查数值合法性
                 {
-                    textBox1.Text = "0";
+                    MessageBox.Show("数值过大");
+                    inputValue = maxNum.ToString();
                 }
+                else if(!inputValue.Contains("."))
+                {
+                    inputValue = inputValue.TrimStart('0');
+                }
+                this.DialogResult = DialogResult.OK;
             }
-            else if((Form1.keyboardnum == 30)||(Form1.keyboardnum == 31))
-            {
-                textBox1.Text = "0";
-            }
-            else
-            {
-                this.Visible = false;
-            }
-
         }
 
-        private void keyboard_Deactivate(object sender, EventArgs e)
+        private void Keyboard_Load(object sender, EventArgs e)
         {
-            Form1.keyboardnum = 0;
-            textBox1.Text = Form1.keyboardstring;
-            this.Visible = false;
+            textBox1.Text = inputValue;
         }
-
-        private void keyboard_Activated(object sender, EventArgs e)
-        {
-            if ((Form1.keyboardnum == 30) || (Form1.keyboardnum == 31))
-            {
-                textBox1.Visible = true;
-                textBox1.Text = Form1.keyboardstring;
-            }
-            else
-            {
-                textBox1.Visible = false;
-            }
-        }
+        
     }
 }

@@ -185,10 +185,6 @@ namespace SHJ
         public static string showprintstate;//制作过程状态显示
         public static int OSMOtype;
         
-        public static string keyboardstring = "";//键盘输入值
-        public static int keyboardnum;//键盘输入对应的文本框编号
-        public static keyboard mykeyborad = new keyboard();
-
         private int huohao;//商品货号
         public static int wulihuodao;//物理货道号
         private double shangpinjiage;

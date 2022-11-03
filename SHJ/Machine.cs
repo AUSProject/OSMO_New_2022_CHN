@@ -434,27 +434,27 @@ namespace SHJ
             string result = null;//是否有故障
             _RunEnd = false;//机器开始运行
             new PCHMI.VAR().SEND_CTRL(0, "M114", "置位", "");//开启控制
-            //X12 = new PCHMI.VAR().GET_BIT(0, "X12");
-            //X10 = new PCHMI.VAR().GET_BIT(0, "X10");
-            //X7 = new PCHMI.VAR().GET_BIT(0, "X7");
+            X12 = new PCHMI.VAR().GET_BIT(0, "X12");
+            X10 = new PCHMI.VAR().GET_BIT(0, "X10");
+            X7 = new PCHMI.VAR().GET_BIT(0, "X7");
             X13 = new PCHMI.VAR().GET_BIT(0, "X13");
             M34 = new PCHMI.VAR().GET_INT16(0, "M34");
             M35 = new PCHMI.VAR().GET_INT16(0, "M35");
-            //if (X12 == 1)
-            //{
-            //    trubleNum[0] = 1;
-            //    curState = 0x91;//进入排故程序
-            //}
-            //if (X10 == 1)
-            //{
-            //    trubleNum[1] = 1;
-            //    curState = 0x91;
-            //}
-            //if (X7 == 1)
-            //{
-            //    trubleNum[2] = 1;
-            //    curState = 0x91;
-            //}
+            if (X12 == 1)
+            {
+                trubleNum[0] = 1;
+                curState = 0x91;//进入排故程序
+            }
+            if (X10 == 1)
+            {
+                trubleNum[1] = 1;
+                curState = 0x91;
+            }
+            if (X7 == 1)
+            {
+                trubleNum[2] = 1;
+                curState = 0x91;
+            }
 
             if (X13 == 1)
             {
@@ -492,7 +492,7 @@ namespace SHJ
                     RigPrintFace();
                     checkD11 = true;
                 }
-                if(X13==0 && X6==0 &&checkD11==false) //无印面则补印面
+                if(X13==0 && X6==0 && checkD11==false) //无印面则补印面
                 {
                     new PCHMI.VAR().SEND_CTRL(0, "M114", "复位", "");
                 }

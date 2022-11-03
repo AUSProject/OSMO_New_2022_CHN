@@ -23,7 +23,7 @@ namespace SHJ
         }
 
         #region Feild
-
+        
         public static string debugPass = null;//机器调试密码
         public static string setupPass = null;//系统设置密码
         public static string CPFRPass = null;//补货密码
@@ -33,8 +33,12 @@ namespace SHJ
 
         public static string helpimgaddress;
 
+        private Keyboard keyboard = null;
+
+        private Point defualtPoint = new Point(508, 78);
+
         #endregion
-        
+
         #region Load
 
         private void setting_Load(object sender, EventArgs e)
@@ -48,12 +52,59 @@ namespace SHJ
             updatecaidan();
             showpayrecord();
             txt_Pass.Text = "";
+            keyboard = Keyboard.GetKeyboard();//获取实例
         }
 
         #endregion
 
         #region Method
-        
+
+      
+        /// <summary>
+        /// 键盘
+        /// </summary>
+        /// <param name="maxNum">最大值</param>
+        /// <param name="inputNum">初始值</param>
+        /// <param name="point">位置</param>
+        /// <returns></returns>
+        private string ShowKeyboard(int maxNum, string inputNum, Point point, string valueType = "Int")
+        {
+            keyboard.maxNum = maxNum;
+            keyboard.inputValue = inputNum;
+            keyboard.Location = point;
+            keyboard.valueType = valueType;
+            if (keyboard.ShowDialog() == DialogResult.OK)
+            {
+                return keyboard.inputValue;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 程序退出
+        /// </summary>
+        private void CloseProgram()
+        {
+            try
+            {
+                System.Diagnostics.Process[] MyProcesses = System.Diagnostics.Process.GetProcesses();
+                foreach (System.Diagnostics.Process MyProcess in MyProcesses)
+                {
+                    if (MyProcess.ProcessName.CompareTo("ADHStart") == 0)
+                    {
+                        MyProcess.Kill();
+                    }
+                }
+            }
+            catch { }
+            Form1.needcloseform = true;
+            ShowWindow(FindWindow("Shell_TrayWnd", null), SW_RESTORE);
+            ShowWindow(FindWindow("Button", null), SW_RESTORE);
+        }
+
         /// <summary>
         /// 将修改保存到XML
         /// </summary>
@@ -544,71 +595,6 @@ namespace SHJ
                     }
                 }
             }
-            switch (Form1.keyboardnum)
-            {
-                case 11://textBox1
-                    //textBox1.Text = Form1.keyboardstring;
-                    break;
-                case 12://textBox2
-                    //textBox2.Text = Form1.keyboardstring;
-                    break;
-                case 13://textBox5
-                    textBox5.Text = Form1.keyboardstring;
-                    break;
-                case 14://textBox6
-                    textBox6.Text = Form1.keyboardstring;
-                    break;
-                case 15://textBox7
-                    textBox7.Text = Form1.keyboardstring;
-                    break;
-                case 16://textBox8
-                    textBox8.Text = Form1.keyboardstring;
-                    break;
-                case 17://textBox9
-                    textBox9.Text = Form1.keyboardstring;
-                    break;
-                case 18://textBox3
-                    textBox3.Text = Form1.keyboardstring;
-                    break;
-                case 19://textBox4
-                    textBox4.Text = Form1.keyboardstring;
-                    break;
-                case 21://textBox11
-                    textBox11.Text = Form1.keyboardstring;
-                    break;
-                case 22://dataGridView1
-                    try
-                    {
-                        if (this.dataGridView1.CurrentCell.ColumnIndex == 1)//价格
-                        {
-                            this.dataGridView1.CurrentCell.Value = (double.Parse(Form1.keyboardstring) / 10).ToString("f1");
-                        }
-                        else
-                        {
-                            this.dataGridView1.CurrentCell.Value = Form1.keyboardstring;
-                        }
-                    }
-                    catch
-                    {
-                        this.dataGridView1.CurrentCell.Value = "0";
-                    }
-                    break;
-                case 23://dataGridView2
-                    this.dataGridView2.CurrentCell.Value = Form1.keyboardstring;
-                    break;
-                case 24://textBox12
-                    textBox12.Text = Form1.keyboardstring;
-                    break;
-                case 25://textBox13
-                    textBox13.Text = Form1.keyboardstring;
-                    break;
-                case 26://textBox14
-                    textBox14.Text = Form1.keyboardstring;
-                    break;
-                case 28://textBox16
-                    textBox16.Text = Form1.keyboardstring;
-                    break;
-            }
             
             //打印机状态
             if (PEPrinter.isconnected)
@@ -860,44 +846,7 @@ namespace SHJ
                 MessageBox.Show(myexp.Message);
             }
         }
-
-        /// <summary>
-        /// 检查键盘值是否正确
-        /// </summary>
-        private void checkkeyboardstring(int mymaxnum)
-        {
-            int tempkeyv;
-            try
-            {
-                tempkeyv = Convert.ToInt32(Form1.keyboardstring, 10);
-            }
-            catch//货道文本非数字
-            {
-                Form1.keyboardstring = "0";
-                tempkeyv = 0;
-            }
-            if (Form1.keyboardstring.Length > 1)
-            {
-                if (tempkeyv > mymaxnum)
-                {
-                    Form1.keyboardstring = Form1.keyboardstring.Substring(1).TrimStart('0');
-                }
-                else if (Form1.keyboardstring.Length > 2)
-                {
-                    Form1.keyboardstring = Form1.keyboardstring.TrimStart('0');
-                }
-                else if (tempkeyv == 0)
-                {
-                    Form1.keyboardstring = "0";
-                }
-            }
-            else if (Form1.keyboardstring.Length == 0)
-            {
-                Form1.keyboardstring = "0";
-            }
-            needsave = true;//需要保存
-        }
-
+        
         #endregion
 
         #region Timer
@@ -941,213 +890,69 @@ namespace SHJ
         }
 
         #endregion
-
+        
         #region TextBox
         
         private void textBox5_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox5.Text;
-            Form1.keyboardnum = 13;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(508, 78);
+            textBox5.Text=ShowKeyboard(99, textBox5.Text, defualtPoint);
         }
 
         private void textBox6_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox6.Text;
-            Form1.keyboardnum = 14;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(508, 78);
+            textBox6.Text = ShowKeyboard(255, textBox6.Text, defualtPoint);
         }
 
         private void textBox7_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox7.Text;
-            Form1.keyboardnum = 15;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(508, 78);
+            textBox7.Text = ShowKeyboard(255, textBox7.Text, defualtPoint);
         }
 
         private void textBox8_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox8.Text;
-            Form1.keyboardnum = 16;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(508, 78);
+            textBox8.Text = ShowKeyboard(255, textBox8.Text, defualtPoint);
         }
 
         private void textBox9_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox9.Text;
-            Form1.keyboardnum = 17;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(508, 78);
+            textBox9.Text = ShowKeyboard(255, textBox9.Text, defualtPoint);
         }
 
         private void textBox3_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox3.Text;
-            Form1.keyboardnum = 18;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(508, 78);
+            textBox3.Text = ShowKeyboard(65535, textBox3.Text, defualtPoint);
         }
 
         private void textBox4_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox4.Text;
-            Form1.keyboardnum = 19;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(508, 78);
+            textBox4.Text = ShowKeyboard(180, textBox4.Text, defualtPoint);
         }
 
         private void textBox11_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox11.Text;
-            Form1.keyboardnum = 21;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(508, 78);
+            textBox11.Text = ShowKeyboard(1000, textBox11.Text, defualtPoint);
         }
-        
+
         private void textBox12_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox12.Text;
-            Form1.keyboardnum = 24;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(508, 78);
+            textBox12.Text = ShowKeyboard(1000, textBox12.Text, defualtPoint);
         }
 
         private void textBox13_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox13.Text;
-            Form1.keyboardnum = 25;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(995, 600);
+            textBox13.Text = ShowKeyboard(150, textBox13.Text, defualtPoint);
         }
 
         private void textBox14_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox14.Text;
-            Form1.keyboardnum = 26;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(995, 600);
+            textBox14.Text = ShowKeyboard(10000, textBox14.Text, defualtPoint);
         }
 
         private void textBox16_Click(object sender, EventArgs e)
         {
-            Form1.keyboardstring = this.textBox16.Text;
-            Form1.keyboardnum = 28;
-            Form1.mykeyborad.Show();
-            Form1.mykeyborad.Location = new Point(995, 600);
-        }
-
-        private void textBox5_TextChanged(object sender, EventArgs e)//非现金折扣 0-1.0
-        {
-            checkkeyboardstring(100);
-            if (textBox5.Text.Length == 0)
-            {
-                textBox5.Text = "0";
-            }
-        }
-
-        private void textBox6_TextChanged(object sender, EventArgs e)//ip1
-        {
-            checkkeyboardstring(255);
-            if (textBox6.Text.Length == 0)
-            {
-                textBox6.Text = "0";
-            }
-        }
-
-        private void textBox7_TextChanged(object sender, EventArgs e)//ip2
-        {
-            checkkeyboardstring(255);
-            if (textBox7.Text.Length == 0)
-            {
-                textBox7.Text = "0";
-            }
-        }
-
-        private void textBox8_TextChanged(object sender, EventArgs e)//ip3
-        {
-            checkkeyboardstring(255);
-            if (textBox8.Text.Length == 0)
-            {
-                textBox8.Text = "0";
-            }
-        }
-
-        private void textBox9_TextChanged(object sender, EventArgs e)//ip4
-        {
-            checkkeyboardstring(255);
-            if (textBox9.Text.Length == 0)
-            {
-                textBox9.Text = "0";
-            }
-        }
-
-        private void textBox3_TextChanged(object sender, EventArgs e)//port
-        {
-            checkkeyboardstring(65535);
-            if (textBox3.Text.Length == 0)
-            {
-                textBox3.Text = "0";
-            }
-        }
-
-        private void textBox4_TextChanged(object sender, EventArgs e)//网络上报间隔
-        {
-            checkkeyboardstring(180);
-            if (textBox4.Text.Length == 0)
-            {
-                textBox4.Text = "0";
-            }
-        }
-
-        private void textBox11_TextChanged(object sender, EventArgs e)//商品数量
-        {
-            checkkeyboardstring(1000);
-            if (textBox11.Text.Length == 0)
-            {
-                textBox11.Text = "0";
-            }
+            textBox16.Text = ShowKeyboard(150, textBox16.Text, defualtPoint);
         }
         
-        private void textBox12_TextChanged(object sender, EventArgs e)
-        {
-            checkkeyboardstring(1000);
-            if (textBox12.Text.Length == 0)
-            {
-                textBox12.Text = "0";
-            }
-        }
-
-        private void textBox13_TextChanged(object sender, EventArgs e)
-        {
-            checkkeyboardstring(150);
-            if (textBox13.Text.Length == 0)
-            {
-                textBox13.Text = "0";
-            }
-        }
-
-        private void textBox14_TextChanged(object sender, EventArgs e)
-        {
-            checkkeyboardstring(10000);
-            if (textBox14.Text.Length == 0)
-            {
-                textBox14.Text = "0";
-            }
-        }
-
-        private void textBox16_TextChanged(object sender, EventArgs e)
-        {
-            checkkeyboardstring(150);
-            if (textBox16.Text.Length == 0)
-            {
-                textBox16.Text = "0";
-            }
-        }
-
         #endregion
         
         #region CheckBox
@@ -1182,85 +987,30 @@ namespace SHJ
                 }
             }
         }
-
-        private void dataGridView2_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            if (this.dataGridView2.CurrentCell.ColumnIndex == 1)//库存
-            {
-                checkkeyboardstring(255);
-            }
-            else if (this.dataGridView2.CurrentCell.ColumnIndex == 3)//容量
-            {
-                checkkeyboardstring(255);
-            }
-            else if (this.dataGridView2.CurrentCell.ColumnIndex == 4)//印章类型
-            {
-                checkkeyboardstring(3);
-            }
-
-            if (this.dataGridView2.CurrentCell.Value.ToString().Length == 0)
-            {
-                this.dataGridView2.CurrentCell.Value = "0";
-            }
-        }
-
+        
         private void dataGridView2_Click(object sender, EventArgs e)
         {
             if (this.dataGridView2.CurrentCell.ColumnIndex==1)
             {
-                Form1.keyboardstring = this.dataGridView2.CurrentCell.Value.ToString();
-                Form1.keyboardnum = 23;
-                Form1.mykeyborad.Show();
-                Form1.mykeyborad.Location = new Point(508, 78);
+                this.dataGridView2.CurrentCell.Value = ShowKeyboard(255, this.dataGridView2.CurrentCell.Value.ToString(), defualtPoint);
+            }
+            else if (this.dataGridView2.CurrentCell.ColumnIndex == 3)
+            {
+                this.dataGridView2.CurrentCell.Value = ShowKeyboard(255, this.dataGridView2.CurrentCell.Value.ToString(), defualtPoint);
+            }
+            else if (this.dataGridView2.CurrentCell.ColumnIndex == 4)
+            {
+                this.dataGridView2.CurrentCell.Value = ShowKeyboard(3, this.dataGridView2.CurrentCell.Value.ToString(), defualtPoint);
             }
         }
         private void dataGridView1_Click(object sender, EventArgs e)
         {
-            if (this.dataGridView1.CurrentCell.ReadOnly == false)
-            {
-                string tempstr = this.dataGridView1.CurrentCell.Value.ToString();
-                try
-                {
-                    if (this.dataGridView1.CurrentCell.ColumnIndex == 1)//价格
-                    {
-                        Form1.keyboardstring = ((int)(double.Parse(tempstr) * 10)).ToString();
-                    }
-                    else
-                    {
-                        Form1.keyboardstring = tempstr;
-                    }
-                }
-                catch
-                {
-                    Form1.keyboardstring = "0";
-                }
-                Form1.keyboardnum = 22;
-                Form1.mykeyborad.Show();
-                Form1.mykeyborad.Location = new Point(508, 78);
-            }
-        }
-
-        private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
             if (this.dataGridView1.CurrentCell.ColumnIndex == 1)//价格
             {
-                checkkeyboardstring(10000);
-            }
-            else if (this.dataGridView1.CurrentCell.ColumnIndex == 2)//库存
-            {
-                checkkeyboardstring(255);
-            }
-            else if (this.dataGridView1.CurrentCell.ColumnIndex == 3)//映射
-            {
-                checkkeyboardstring(999);
-            }
-
-            if (this.dataGridView1.CurrentCell.Value.ToString().Length == 0)
-            {
-                this.dataGridView1.CurrentCell.Value = "0";
+                this.dataGridView1.CurrentCell.Value = ShowKeyboard(1000, this.dataGridView1.CurrentCell.Value.ToString(), defualtPoint,"Double");
             }
         }
-
+        
         #endregion
 
         #region Button
@@ -1569,74 +1319,11 @@ namespace SHJ
             
         }
 
-        #endregion
-
-        #region hScrollBar
-
-        private int PEPrinterupdatedelay;
-        private void hScrollBar1_ValueChanged(object sender, EventArgs e)
-        {
-            label30.Text = "设定橡胶打印行速:" + hScrollBar1.Value.ToString();
-            PEPrinterupdatedelay = 1;
-            needsave = true;
-        }
-        
-        private void hScrollBar2_ValueChanged(object sender, EventArgs e)
-        {
-            label31.Text = "设定输出灰度值:" + hScrollBar2.Value.ToString();
-            PEPrinterupdatedelay = 1;
-            needsave = true;
-        }
-
-        #endregion
-
-        #region HideButton
-
-        private void CloseProgram()
-        {
-            try
-            {
-                System.Diagnostics.Process[] MyProcesses = System.Diagnostics.Process.GetProcesses();
-                foreach (System.Diagnostics.Process MyProcess in MyProcesses)
-                {
-                    if (MyProcess.ProcessName.CompareTo("ADHStart") == 0)
-                    {
-                        MyProcess.Kill();
-                    }
-                }
-            }
-            catch { }
-            Form1.needcloseform = true;
-            ShowWindow(FindWindow("Shell_TrayWnd", null), SW_RESTORE);
-            ShowWindow(FindWindow("Button", null), SW_RESTORE);
-        }
-
-        #endregion
-
-
-        private void listBox1_DoubleClick(object sender, EventArgs e)
-        {
-            if (listBox1.Items.Count > 0)
-            {
-                listBox1.SelectedIndex = 0;
-            }
-        }
-
-        private void label140_Click(object sender, EventArgs e)
-        {
-
-        }
-        
         private void btn_PlcInfo_Click(object sender, EventArgs e)
         {
             new PCHMI.UpConfig().ShowDialog();
         }
 
-        private void label22_DoubleClick(object sender, EventArgs e)
-        {
-            CloseProgram();
-        }
-        
         private void button1_Click_1(object sender, EventArgs e)
         {
             new PCHMI.VAR().SEND_INT16(0, "D209", 0);
@@ -1645,58 +1332,6 @@ namespace SHJ
         private void button2_Click(object sender, EventArgs e)
         {
             PEPrinter.needReset = true;
-        }
-        
-        private void rb_PLC_CheckedChanged(object sender, EventArgs e)
-        {
-            needsave = true;
-            if (rb_PLC.Checked && Machine.isRigPrint)
-            {
-                if (MessageBox.Show("要切换到当前模式需要先前打印机托盘内的印面拿出!!!\r\n(确认拿出后单击\"确认\"按钮)", "重要提示", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                {
-                    Machine.PrintFaceRecord(false);
-                }
-                else
-                {
-                }
-            }
-            if (rb_PLC.Checked)
-                pel_AutoType.Visible = false;
-            
-        }
-
-        private void rb_PC_CheckedChanged(object sender, EventArgs e)
-        {
-            needsave = true;
-            if(pel_runType.Visible==true && rb_PC.Checked)
-                pel_AutoType.Visible = true;
-        }
-
-        private void button3_Click_1(object sender, EventArgs e)
-        {
-            if (btn_RunType.Text == "关闭")
-            {
-                pel_runType.Visible = false;
-                pel_AutoType.Visible = false;
-                btn_RunType.Text = "运行模式选择";
-            }
-            else
-            {
-                pel_runType.Visible = true;
-                btn_RunType.Text = "关闭";
-                if (rb_PC.Checked)
-                    pel_AutoType.Visible = true;
-            }
-        }
-
-        private void rb_RunType1_CheckedChanged(object sender, EventArgs e)
-        {
-            needsave = true;
-        }
-
-        private void rb_RunType2_CheckedChanged(object sender, EventArgs e)
-        {
-            needsave = true;
         }
 
         private void btn_Quit_Click(object sender, EventArgs e)
@@ -1711,7 +1346,7 @@ namespace SHJ
                 panel_Back.Visible = false;
                 panel_CPFR.Visible = true;
             }
-            else if(txt_Pass.Text==setupPass)
+            else if (txt_Pass.Text == setupPass)
             {
                 panel_Back.Visible = false;
                 panel_setup.Visible = true;
@@ -1747,6 +1382,97 @@ namespace SHJ
             this.Close();
         }
 
+        private void button3_Click_1(object sender, EventArgs e)
+        {
+            if (btn_RunType.Text == "关闭")
+            {
+                pel_runType.Visible = false;
+                pel_AutoType.Visible = false;
+                btn_RunType.Text = "运行模式选择";
+            }
+            else
+            {
+                pel_runType.Visible = true;
+                btn_RunType.Text = "关闭";
+                if (rb_PC.Checked)
+                    pel_AutoType.Visible = true;
+            }
+        }
+
+        #endregion
+
+        #region hScrollBar
+
+        private int PEPrinterupdatedelay;
+        private void hScrollBar1_ValueChanged(object sender, EventArgs e)
+        {
+            label30.Text = "设定橡胶打印行速:" + hScrollBar1.Value.ToString();
+            PEPrinterupdatedelay = 1;
+            needsave = true;
+        }
+        
+        private void hScrollBar2_ValueChanged(object sender, EventArgs e)
+        {
+            label31.Text = "设定输出灰度值:" + hScrollBar2.Value.ToString();
+            PEPrinterupdatedelay = 1;
+            needsave = true;
+        }
+
+        #endregion
+
+        #region radioButton
+
+        private void rb_PLC_CheckedChanged(object sender, EventArgs e)
+        {
+            needsave = true;
+            if (rb_PLC.Checked && Machine.isRigPrint)
+            {
+                if (MessageBox.Show("要切换到当前模式需要先前打印机托盘内的印面拿出!!!\r\n(确认拿出后单击\"确认\"按钮)", "重要提示", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    Machine.PrintFaceRecord(false);
+                }
+                else
+                {
+                }
+            }
+            if (rb_PLC.Checked)
+                pel_AutoType.Visible = false;
+
+        }
+
+        private void rb_PC_CheckedChanged(object sender, EventArgs e)
+        {
+            needsave = true;
+            if (pel_runType.Visible == true && rb_PC.Checked)
+                pel_AutoType.Visible = true;
+        }
+        
+        private void rb_RunType1_CheckedChanged(object sender, EventArgs e)
+        {
+            needsave = true;
+        }
+
+        private void rb_RunType2_CheckedChanged(object sender, EventArgs e)
+        {
+            needsave = true;
+        }
+
+        #endregion
+
+
+        private void listBox1_DoubleClick(object sender, EventArgs e)
+        {
+            if (listBox1.Items.Count > 0)
+            {
+                listBox1.SelectedIndex = 0;
+            }
+        }
+
+        private void label22_DoubleClick(object sender, EventArgs e)
+        {
+            CloseProgram();
+        }
+        
         private void label10_Click(object sender, EventArgs e)
         {
             CloseProgram();
