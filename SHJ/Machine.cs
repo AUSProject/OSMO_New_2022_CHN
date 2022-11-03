@@ -11,6 +11,7 @@ namespace SHJ
         public Machine()
         {
             print = Print.GetExample();
+            logHelper = LogHelper.GetLogHelper();//获取实例
             curState = 0x90;
         }
 
@@ -22,6 +23,7 @@ namespace SHJ
         public static byte nowStep;
         
         private Print print = null;
+        private LogHelper logHelper;
 
         public static bool _RunEnd=false;//机器运行结束
         public static bool isAutoRun = true;

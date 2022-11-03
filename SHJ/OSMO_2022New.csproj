@@ -138,6 +138,7 @@
     <Compile Include="Keyboard.Designer.cs">
       <DependentUpon>Keyboard.cs</DependentUpon>
     </Compile>
+    <Compile Include="LogHelper.cs" />
     <Compile Include="Machine.cs" />
     <Compile Include="PEPrinter.cs" />
     <Compile Include="Print.cs" />

@@ -109,9 +109,11 @@ namespace SHJ
         #endregion
 
         #region Feild
-
-        public static string logAddress;
+        
         private Print print = null;
+        public static string LogPath=null;
+
+        private LogHelper logHelper = null;
 
         private string imageUrlPath;//印章图片URL文件夹
         private string ErweimaUrl = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";//二维码地址
@@ -262,7 +264,8 @@ namespace SHJ
         {
             nowform1 = this;
             pic_Erweima.Visible = false;//隐藏二维码
-
+            
+            logHelper = LogHelper.GetLogHelper();
             machine = new Machine();
             print = Print.GetExample();
             
@@ -272,7 +275,7 @@ namespace SHJ
             this.panel4.Dock = DockStyle.Fill;
 
             imageUrlPath = Directory.GetCurrentDirectory() + "\\imageUrl.ini";
-            logAddress = System.IO.Directory.GetCurrentDirectory() + "\\Log.txt";
+            LogPath = System.IO.Directory.GetCurrentDirectory() + "\\Log";
 
             adimagesaddress = System.IO.Directory.GetCurrentDirectory() + "\\adimages";
             bkimagesaddress = System.IO.Directory.GetCurrentDirectory() + "\\bkimages";
@@ -317,9 +320,9 @@ namespace SHJ
             {
                 File.Create(imageUrlPath);
             }
-            if (!File.Exists(logAddress))
+            if (!File.Exists(LogPath))//日志文件路径
             {
-                File.Create(logAddress);
+                File.Create(LogPath);
             }
 
             if (System.IO.File.Exists(configxmlfile))
@@ -1457,7 +1460,13 @@ namespace SHJ
                         timerecord[3, m] = GSMRxBuffer[lenrxbuf - 8 + m];//记录时间戳
                     }
                     imageName = bcmimagesaddress + "\\" + updatetimestring + ".jpg";
-                    DownLoadPicture(imageUrl, imageName);
+                    IniWriteValue(imageName, "url", imageUrl, imageUrlPath);//将url写入文件
+                    DownLoadPicture(imageUrl, imageName);//下载印章图片
+                    FileInfo picInfo = new FileInfo(imageName);
+                    if (picInfo.Length > 0)//检查图片是否为空包
+                    {
+                        DeleteSection(imageName, imageUrlPath);//不为空则删除url
+                    }
                 }
                 catch
                 {
@@ -1488,7 +1497,6 @@ namespace SHJ
             Uri uri = new Uri(downloadFile.FileName);
             string saveFileName = downloadFile.SaveFileName;
             CreateFile(saveFileName);
-
             using (WebClient client = new WebClient())
             {
                 try
@@ -1498,7 +1506,6 @@ namespace SHJ
                 }
                 catch (Exception)
                 {
-                    IniWriteValue(imageName, "url", imageUrl, imageUrlPath);
                 }
             }
         }
@@ -2051,6 +2058,7 @@ namespace SHJ
                 );
             });
             Task.WaitAll(tList.ToArray());
+
         }
 
         /// <summary>
