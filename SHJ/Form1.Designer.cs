@@ -43,8 +43,6 @@
             this.imageList4 = new System.Windows.Forms.ImageList(this.components);
             this.imageList5 = new System.Windows.Forms.ImageList(this.components);
             this.panel4 = new System.Windows.Forms.Panel();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -173,8 +171,6 @@
             // 
             this.panel4.BackgroundImage = global::SHJ.Properties.Resources.tihuo;
             this.panel4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.panel4.Controls.Add(this.label3);
-            this.panel4.Controls.Add(this.label1);
             this.panel4.Controls.Add(this.label16);
             this.panel4.Controls.Add(this.label15);
             this.panel4.Controls.Add(this.label5);
@@ -187,25 +183,6 @@
             this.panel4.Size = new System.Drawing.Size(784, 612);
             this.panel4.TabIndex = 14;
             this.panel4.Visible = false;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 60);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(35, 12);
-            this.label3.TabIndex = 55;
-            this.label3.Text = "M114;";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label1.Location = new System.Drawing.Point(15, 30);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(32, 16);
-            this.label1.TabIndex = 54;
-            this.label1.Text = "D5:";
             // 
             // label16
             // 
@@ -377,8 +354,6 @@
         private System.Windows.Forms.PictureBox pic_Erweima;
         internal PCHMI.CONFIG config1;
         private System.Windows.Forms.Timer timer3;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label3;
     }
 }
 

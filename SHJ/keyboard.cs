@@ -97,7 +97,7 @@ namespace SHJ
             {
                 inputValue += "0";
                 Form1.guanggaoreturntime = 0;//返回广告页面计时清零
-                textBox1.Text += inputValue;
+                textBox1.Text = inputValue;
             }
         }
 
@@ -151,7 +151,6 @@ namespace SHJ
             }
             else
             {
-
                 double value = Convert.ToDouble(inputValue);
                 if (value > maxNum)//检查数值合法性
                 {
@@ -160,7 +159,7 @@ namespace SHJ
                 }
                 else if(!inputValue.Contains("."))
                 {
-                    inputValue = inputValue.TrimStart('0');
+                    inputValue = inputValue == "0" ? "0" : inputValue.TrimStart('0');
                 }
                 this.DialogResult = DialogResult.OK;
             }

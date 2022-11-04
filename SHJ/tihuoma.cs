@@ -189,6 +189,11 @@ namespace SHJ
 
         private void button9_Click(object sender, EventArgs e)//确认提货
         {
+            if (Machine.nowStep != 0x00)
+            {
+                MessageBox.Show("机器正在运行中，请稍等","提示");
+                return;
+            }
             if (SummaryCheck())//打印机和设备连接检测
             {
                 textBox1.Text = "";

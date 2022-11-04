@@ -121,7 +121,6 @@ namespace SHJ
 
         public static bool needcloseform = false;//是否需要关闭窗体
         public static int HMIstep;//界面页面：0广告 1触摸选择商品 2支付页面
-        private int BUYstep;//购买步骤0等待输入商品编号，1货道故障，2库存不足，3编号不正确
         //private const int RXTXBUFLEN = 512;
         private const int GSMRXTXBUFLEN = 1500;
         private setting mysetting;//设置窗口
@@ -160,8 +159,7 @@ namespace SHJ
         private int MAXreturntime = 120;
         private QRCodeEncoder qrCodeEncoder = new QRCodeEncoder();//二维码
         private PEPrinter myprint;
-
-        public static bool renewpaystate = false;//重新开始支付状态，计时清零，二维码清除
+        
         public static int paytypes;//第一位为支付宝、第二位为微信、第三位为一码付、第四位为银联闪付、第五位为会员卡
 
         //GPRS变量
@@ -179,24 +177,19 @@ namespace SHJ
         private string myMAC;//MAC地址
         public static byte[] IMEI = new byte[15];//设备唯一号
         public static string versionstring = "ADH816AZV3.3.02";
-        private int[] liushui = new int[2];
         private int liushuirecv;//接收到的流水号
-        private int aisleNum;//接收到的货道号
         public static string myTihuomastr = "";//输入的7位提货码
         public static bool checktihuoma;//需要验证提货码
         public static string showprintstate;//制作过程状态显示
         public static int OSMOtype;
         
-        private int huohao;//商品货号
         public static int wulihuodao;//物理货道号
         private double shangpinjiage;
-        private double maxprice = 0;//商品最高价格
         private int zhifutype;//0现金1支付宝2微信3一码付4提货码
         private int totalshangpinnum = 16;//显示的商品总数
         private int totalhuodaonum = 16;//显示的货道总数
         
         private int Aisleoutcount;//电机输出超时计时
-        public static int tempAisleNUM;//商品货号选择
         public static bool istestmode;//测试出货模式
 
         #endregion
@@ -710,9 +703,7 @@ namespace SHJ
                     if (guanggaoreturntime >= MAXreturntime)//3分钟
                     {
                         guanggaoreturntime = 0;
-                        huohao = 0;
-                        liushui[0] = 0;//前面的订单号取消，不能出货
-                        liushui[1] = 0;//前面的订单号取消，不能出货
+                        item = 0;
                         HMIstep = 0;//广告页面
 
                         needupdatePlaylist = true;//需要更新播放列表
@@ -885,8 +876,8 @@ namespace SHJ
         
         private void timer2_Tick(object sender, EventArgs e)
         {
-            label1.Text = new PCHMI.VAR().GET_INT16(0, "D5").ToString();
-            label3.Text = new PCHMI.VAR().GET_BIT(0, "M114").ToString();
+            myprint.PEloop();//处理打印机事务
+
             if (HMIstep == 0)//广告
             {
                 if (mytihuoma != null)
@@ -895,14 +886,12 @@ namespace SHJ
                     mytihuoma.Close();
                     mytihuoma = null;
                 }
-
                 this.panel1.Visible = true;//广告面板关闭显示
                 this.panel4.Visible = false;//出货界面关闭显示
                 this.pictureBox1.Focus();//获取焦点
-
-                pic_Erweima.Visible = true;
+                pic_Erweima.Visible = true;//显示二维码
             }
-            else if (HMIstep == 1)//选货界面
+            else if (HMIstep == 1)//提货码输入界面
             {
                 if (mytihuoma == null)
                 {
@@ -912,19 +901,6 @@ namespace SHJ
                     }
                     mytihuoma = null;
                 }
-                this.panel1.Visible = false;//广告面板关闭显示
-                this.panel4.Visible = false;//出货界面关闭显示
-                pic_Erweima.Visible = false;
-            }
-            else if (HMIstep == 2)//支付界面
-            {
-                if (mytihuoma != null)
-                {
-                    checktihuoma = false;//取消验证
-                    mytihuoma.Close();
-                    mytihuoma = null;
-                }
-
                 this.panel1.Visible = false;//广告面板关闭显示
                 this.panel4.Visible = false;//出货界面关闭显示
                 pic_Erweima.Visible = false;
@@ -941,37 +917,7 @@ namespace SHJ
                 this.panel4.Visible = true;//出货界面显示
                 pic_Erweima.Visible = false;
             }
-            if ((needreturnHMIstep1 > 0) && (needreturnHMIstep1 < 10))
-            {
-                needreturnHMIstep1++;
-            }
-            if (needreturnHMIstep1 > 6)//2s
-            {
-                needreturnHMIstep1 = 0;
-                liushui[0] = 0;//前面的订单号取消，不能出货
-                liushui[1] = 0;//前面的订单号取消，不能出货
-                huohao = 0;
-                BUYstep = 0;
-                shangpinjiage = 0;
-                renewpaystate = true;
-                HMIstep = 1;//
-            }
-            for (int k = 0; k < mynodelistshangpin.Count; k++)//查找最高价格
-            {
-                double tempjiage = double.Parse(mynodelistshangpin[k].Attributes.GetNamedItem("jiage").Value);
-                if (maxprice < tempjiage)
-                {
-                    maxprice = tempjiage;
-                }
-            }
-            if (renewpaystate)
-            {
-                renewpaystate = false;
-                guanggaoreturntime = 0;
-                liushui[0] = 0;
-                liushui[1] = 0;
-            }
-
+            
             if ((Aisleoutcount > 0) && (Aisleoutcount < 1000))//最长1000*300 = 300s
             {
                 Aisleoutcount++;
@@ -981,34 +927,26 @@ namespace SHJ
                 Aisleoutcount = 0;
                 if (istestmode == false)//购买模式需要退币
                 {
-                    if (zhifutype == 0)//现金支付
+                    switch (zhifutype)
                     {
+                        case 1:
+                            addnettrade(0xe3, shangpinjiage, 6, liushuirecv);
+                            break;
+                        case 2:
+                            addnettrade(0xe3, shangpinjiage, 7, liushuirecv);
+                            break;
+                        case 3:
+                            addnettrade(0xe3, shangpinjiage, 6, liushuirecv);
+                            break;
+                        case 4:
+                            addnettrade(0xe3, shangpinjiage, 6, liushuirecv);
+                            break;
                     }
-                    else
-                    {
-                        switch (zhifutype)
-                        {
-                            case 1:
-                                addnettrade(0xe3, shangpinjiage, 6, liushuirecv);
-                                break;
-                            case 2:
-                                addnettrade(0xe3, shangpinjiage, 7, liushuirecv);
-                                break;
-                            case 3:
-                                addnettrade(0xe3, shangpinjiage, 6, liushuirecv);
-                                break;
-                            case 4:
-                                addnettrade(0xe3, shangpinjiage, 6, liushuirecv);
-                                break;
-                        }
-                    }
-
                 }
-                needreturnHMIstep1 = 1;//需要返回选货画面
+                ReturnInputPage();//返回提货码页面
             }
             
-            myprint.PEloop();//处理打印机事务
-
+            
             if (needopensettingform)
             {
                 needopensettingform = false;
@@ -1031,7 +969,7 @@ namespace SHJ
                     netdatastream = System.IO.File.Create(dataaddress);
                 }
                 ShowCursor(0);//关闭鼠标
-                renewpaystate = true;
+                guanggaoreturntime = 0;
             }
         }
 
@@ -1041,7 +979,7 @@ namespace SHJ
         //运行控制和显示
         private void timer3_Tick(object sender, EventArgs e)
         {
-            machine.MachineRun(aisleNum);
+            machine.MachineRun(item);
             RunningDisplay();
             if (Machine._RunEnd)
             {
@@ -1207,133 +1145,92 @@ namespace SHJ
                     {
                         case 0x01://验证成功
                             tihuoma.tihuomaresult = "取货码验证成功";
-                            timer3.Enabled = true;
                             string gettihuomastring = Encoding.Default.GetString(GSMRxBuffer, 6, 7);
                             if (myTihuomastr == gettihuomastring)
                             {
-                                liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
-                                aisleNum = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
-                                if ((aisleNum <= mynodelistshangpin.Count) && (aisleNum > 0))
+                                try//检查印章图案是否为空
                                 {
-                                    if (Machine.nowStep==0x00)//机器空闲
+                                    bcmimagefiles = System.IO.Directory.GetFiles(bcmimagesaddress);//选择印章图片文件路径列表
+                                    foreach (var picFile in bcmimagefiles)
                                     {
-                                        for (i = 0; i < mynodelistshangpin.Count; i++)
+                                        if (picFile.Contains(myTihuomastr))
                                         {
-                                            if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == aisleNum)
+                                            FileInfo file = new FileInfo(picFile);
+                                            if (file.Length == 0)//如果为空包，则重新下载图片
                                             {
-                                                updateshangpin(aisleNum.ToString());//更新商品信息
-                                                if (BUYstep == 4)//货道正确
+                                                tihuoma.tihuomaresult = "正在下载印章图案，请稍等";
+                                                string urlstr = IniReadValue(picFile, "url", imageUrlPath);//读取图片Url
+                                                if (urlstr == "error")
                                                 {
-                                                    HMIstep = 3;//出货
-                                                    guanggaoreturntime = 0;
-
-                                                    for (int k = 0; k < 6; k++)//记录时间戳清除防止进支付页面后生成上次请求的的二维码
+                                                    tihuoma.tihuomaresult = "印章图案无法下载";
+                                                    return;
+                                                }
+                                                else
+                                                {
+                                                    long len = file.Length;
+                                                    while (len < 5)
                                                     {
-                                                        timerecord[0, k] = 0;
-                                                        timerecord[1, k] = 0;
-                                                        timerecord[2, k] = 0;
+                                                        DownLoadPicture(urlstr, picFile);
+                                                        file.Refresh();
+                                                        len += file.Length + 1;
                                                     }
-                                                    huohao = tempAisleNUM;//实际出货商品号
-                                                    shangpinjiage = double.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("jiage").Value);//实际出货商品价格
-                                                    for (int k = 0; k < mynodelisthuodao.Count; k++)
-                                                    {
-                                                        if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("huodao").Value)
-                                                            == int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value))
-                                                        {
-                                                            if ((int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("state").Value) == 0)//货道反馈正常（状态）
-                                                                && (int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("kucun").Value) > 0))//对应货道库存不为0
-                                                            {
-                                                                wulihuodao = int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value);
-                                                            }
-                                                            else
-                                                            {
-                                                                for (int index = 0; index < mynodelisthuodao.Count; index++)
-                                                                {
-                                                                    if (int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("fenzu").Value)
-                                                                         == int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("fenzu").Value))
-                                                                    {
-                                                                        if ((int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("state").Value) == 0)//货道反馈正常（状态）
-                                                                            && (int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("kucun").Value) > 0))//对应货道库存不为0
-                                                                        {
-                                                                            wulihuodao = int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("huodaonum").Value);
-                                                                            break;
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                            break;
-                                                        }
-                                                    }
-                                                    istestmode = false;
-                                                    guanggaoreturntime = 0;//返回广告页面计时清零
-                                                    zhifutype = 3;//支付方式为一码付
+                                                }
+                                                file.Refresh();
+                                                if (file.Length == 0)
+                                                {
+                                                    tihuoma.tihuomaresult = "印章图案下载失败";
+                                                    return;
+                                                }
+                                                else
+                                                {
+                                                    DeleteSection(picFile, imageUrlPath);
                                                     try
                                                     {
-                                                        bcmimagefiles = System.IO.Directory.GetFiles(bcmimagesaddress);//选择印章图片文件路径列表
-                                                        foreach (var picFile in bcmimagefiles)
-                                                        {
-                                                            if (picFile.Contains(myTihuomastr))
-                                                            {
-                                                                FileInfo file = new FileInfo(picFile);
-                                                                if (file.Length == 0)//如果为空包，则重新下载图片
-                                                                {
-                                                                    tihuoma.tihuomaresult = "正在下载印章图案，请稍等";
-                                                                    string urlstr = IniReadValue(picFile, "url", imageUrlPath);//读取图片Url
-                                                                    if (urlstr == "error")
-                                                                    {
-                                                                        tihuoma.tihuomaresult = "印章图案无法下载";
-                                                                        return;
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        long len = file.Length;
-                                                                        while (len < 5)
-                                                                        {
-                                                                            DownLoadPicture(urlstr, picFile);
-                                                                            file.Refresh();
-                                                                            len += file.Length + 1;
-                                                                        }
-                                                                    }
-                                                                }
-                                                                file.Refresh();
-                                                                if (file.Length == 0)
-                                                                {
-                                                                    tihuoma.tihuomaresult = "印章图案下载失败";
-                                                                    return;
-                                                                }
-                                                                else
-                                                                {
-                                                                    DeleteSection(picFile, imageUrlPath);
-                                                                }
-                                                                setchuhuo();
-                                                                addpayrecord(shangpinjiage, "提货码");
-                                                                liushui[0] = 65535;
-                                                                liushui[1] = 65535;
-                                                                try
-                                                                {
-                                                                    pictureBox7.Load(picFile);
-                                                                }
-                                                                catch
-                                                                {
-                                                                }
-                                                                PEPrinter.PicPath = picFile;
-                                                            }
-                                                        }
+                                                        PEPrinter.PicPath = picFile;
+                                                        pictureBox7.Load(picFile);
                                                     }
-                                                    catch
-                                                    {
-                                                        tihuoma.tihuomaresult = "印章图案下载失败";
-                                                        return;
-                                                    }
+                                                    catch { }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                try
+                                                {
+                                                    PEPrinter.PicPath = picFile;
+                                                    pictureBox7.Load(picFile);
+                                                }
+                                                catch { }
+                                            }
+                                            liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
+                                            item = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
+                                            int result = CargoStockAndStateCheck(item.ToString());
+                                            if (result < 90)
+                                            {
+                                                shangpinjiage = double.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("jiage").Value);//实际出货商品价格
+                                                istestmode = false;
+                                                zhifutype = 4;//支付方式为提货码
+
+                                                HMIstep = 3;//出货
+                                                guanggaoreturntime = 0;
+                                                timer3.Enabled = true;
+                                                wulihuodao = result;
+                                                setchuhuo();
+                                                addpayrecord(shangpinjiage, "提货码");
+
+                                                for (int k = 0; k < 6; k++)//记录时间戳清除防止进支付页面后生成上次请求的的二维码
+                                                {
+                                                    timerecord[0, k] = 0;
+                                                    timerecord[1, k] = 0;
+                                                    timerecord[2, k] = 0;
                                                 }
                                             }
                                         }
                                     }
-                                    else
-                                    {
-                                        tihuoma.tihuomaresult = "设备正在运行";
-                                    }
-                                    renewpaystate = true;
+                                }
+                                catch
+                                {
+                                    tihuoma.tihuomaresult = "印章图案下载失败";
+                                    return;
                                 }
                             }
                             break;
@@ -1586,31 +1483,19 @@ namespace SHJ
         }
 
         /// <summary>
-        /// 更新商品信息
+        /// 加载盒体图片
         /// </summary>
-        private void updateshangpin(string tempshangpinnum)
+        private void AddCoverPicture(int tempshangpinnum)
         {
-            int i;
-            try
+            for (int i = 0; i < mynodelistshangpin.Count; i++)
             {
-                tempAisleNUM = Convert.ToInt32(tempshangpinnum, 10);
-            }
-            catch//货道文本非数字
-            {
-                tempAisleNUM = 0;
-            }
-            
-            for (i = 0; i < mynodelistshangpin.Count; i++)
-            {
-                if (tempAisleNUM == int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value))
+                string coverNum = mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value;
+                if (tempshangpinnum == int.Parse(coverNum))
                 {
-                    int j;
-                    for (j = 0; j < cmimagefiles.Length; j++)
+                    for (int j = 0; j < cmimagefiles.Length; j++)
                     {
-                        int mystartindex = cmimagefiles[j].LastIndexOf('\\');
-                        int myendindex = cmimagefiles[j].LastIndexOf('.');
-                        string mycmname = cmimagefiles[j].Substring(mystartindex + 1, myendindex - mystartindex - 1);
-                        if ((mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value == mycmname))//文件名正确
+                        string mycmname = Path.GetFileNameWithoutExtension(cmimagefiles[j]);
+                        if (coverNum == mycmname)//文件名正确
                         {
                             try
                             {
@@ -1618,58 +1503,21 @@ namespace SHJ
                             }
                             catch
                             {
+                                pictureBox8.Image = global::SHJ.Properties.Resources.shangpin;
                             }
                             break;
                         }
-                    }
-                    if (j == cmimagefiles.Length)//未找到图片
-                    {
-                        try
+                        else if (j == cmimagefiles.Length)
                         {
-                            pictureBox8.Image = global::SHJ.Properties.Resources.shangpin;
-                        }
-                        catch
-                        {
-                        }
-                    }
-                    //查找库存和货道状态
-                    if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("state").Value) != 0)//货道停售（状态）
-                    {
-                        BUYstep = 1;
-                    }
-                    for (int k = 0; k < mynodelisthuodao.Count; k++)
-                    {
-                        if(int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("huodao").Value)
-                            ==int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value))
-                        {
-                            int totalkuncun = 0;//计算总库存
-                            if (int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("state").Value) == 0)//货道反馈正常（状态） 
+                            try
                             {
-                                totalkuncun += int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("kucun").Value);//对应货道库存
+                                pictureBox8.Image = global::SHJ.Properties.Resources.shangpin;
                             }
-                            for (int index = 0; index < mynodelisthuodao.Count; index++)
+                            catch
                             {
-                                if (int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("fenzu").Value)
-                                     == int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("fenzu").Value))
-                                {
-                                    if (int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("state").Value) == 0)//货道反馈正常（状态）
-                                    {
-                                        totalkuncun += int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("kucun").Value);
-                                    }
-                                }
-                            }                         
-                            
-                            if (totalkuncun == 0)
-                            {
-                                BUYstep = 2;
-                                return;
                             }
                         }
-                    }
-                    
-                    {
-                        BUYstep = 4;
-                    }                  
+                    }  
                     break;
                 }
             }
@@ -2058,7 +1906,6 @@ namespace SHJ
                 );
             });
             Task.WaitAll(tList.ToArray());
-
         }
 
         /// <summary>
@@ -2227,6 +2074,7 @@ namespace SHJ
             netcount = 0;//状态数据发送间隔重新开始
         }
 
+        private int item;//商品号
         private int suijinshu;
         /// <summary>
         ///  添加向服务器发送的数据
@@ -2235,6 +2083,7 @@ namespace SHJ
         /// <param name="jine">金额</param>
         /// <param name="paytype">支付方式</param>
         /// <param name="netliushui">网络流水号</param>
+        /// <param name="item">商品号</param>
         private void addnettrade(byte tradetype,double jine,byte paytype, int netliushui)
         {
             if (needsendrecordnum < 200)
@@ -2253,7 +2102,7 @@ namespace SHJ
                 if ((tradetype == 0x03)|| (tradetype == 0xE3))//出货
                 {
                     netsendrecord[netsendrecordindex, 22] = 0x00;
-                    netsendrecord[netsendrecordindex, 23] = (byte)huohao;
+                    netsendrecord[netsendrecordindex, 23] = (byte)item;
                 }
                 else
                 {
@@ -2408,8 +2257,7 @@ namespace SHJ
         #endregion
 
         #region 控件
-
-        private int needreturnHMIstep1 = 0;//返回到选货界面1计时
+        
         public static bool needopensettingform;
         private void button2_Click(object sender, EventArgs e)
         {
@@ -2425,8 +2273,7 @@ namespace SHJ
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             HMIstep = 1;//触摸选货界面
-            BUYstep = 0;
-            renewpaystate = true;
+            guanggaoreturntime = 0;
             axWindowsMediaPlayer1.Visible = false;
             axWindowsMediaPlayer1.Ctlcontrols.stop();
             axWindowsMediaPlayer1.currentPlaylist.clear();
@@ -2461,89 +2308,42 @@ namespace SHJ
         #endregion
 
         #region WorkingTest
-        
+        /// <summary>
+        /// 模拟运行
+        /// </summary>
+        /// <param name="huodaoNum">商品号</param>
+        /// <param name="PicPath">印章图案路径</param>
         public void WorkingTest(int huodaoNum,string PicPath)
         {
-            try
+            int result = CargoStockAndStateCheck(huodaoNum.ToString());
+            if(result < 90 && Machine.nowStep == 0x00)//无报错
             {
-                pictureBox7.Load(PicPath);
-            }
-            catch
-            {
-            }
-            myprint = new PEPrinter();
-            netreturncount = 0;//超时计时停止
-            int i = 0;
-            aisleNum = huodaoNum;
-            if ((aisleNum <= mynodelistshangpin.Count) && (aisleNum > 0))
-            {
-                tihuoma.tihuomaresult = "提货码验证成功";
-                if (Machine.nowStep==0x00)//机器空闲
+                netreturncount = 0;//超时计时停止
+                tihuoma.tihuomaresult = "模拟运行开始";
+                try
                 {
-                    timer3.Enabled = true;
-                    Machine.nowStep = 0x01;
-                    for (i = 0; i < mynodelistshangpin.Count; i++)
-                    {
-                        if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == aisleNum)
-                        {
-                            updateshangpin(aisleNum.ToString());//更新商品信息
-                            if (BUYstep == 4)//货道正确
-                            {
-                                HMIstep = 3;//出货
-                                guanggaoreturntime = 0;
-                                huohao = tempAisleNUM;//实际出货商品号
-                                shangpinjiage = 0;//实际出货商品价格
-                                for (int k = 0; k < mynodelisthuodao.Count; k++)
-                                {
-                                    if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("huodao").Value)
-                                        == int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value))
-                                    {
-                                        if ((int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("state").Value) == 0)//货道反馈正常（状态）
-                                            && (int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("kucun").Value) > 0))//对应货道库存不为0
-                                        {
-                                            wulihuodao = int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value);
-                                        }
-                                        else
-                                        {
-                                            for (int index = 0; index < mynodelisthuodao.Count; index++)
-                                            {
-                                                if (int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("fenzu").Value)
-                                                     == int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("fenzu").Value))
-                                                {
-                                                    if ((int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("state").Value) == 0)//货道反馈正常（状态）
-                                                        && (int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("kucun").Value) > 0))//对应货道库存不为0
-                                                    {
-                                                        wulihuodao = int.Parse(mynodelisthuodao[index].Attributes.GetNamedItem("huodaonum").Value);
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
-                                istestmode = false;
-                                guanggaoreturntime = 0;//返回广告页面计时清零
-                                zhifutype = 4;//支付方式为提货码
-                                try
-                                {
-                                    setchuhuo();
-                                    liushui[0] = 65535;
-                                    liushui[1] = 65535;
-                                    PEPrinter.PicPath = PicPath;
-                                }
-                                catch
-                                {
-                                }
-                            }
-                        }
-                    }
+                    AddCoverPicture(huodaoNum);//加载盒体图片
+                    pictureBox7.Load(PicPath);//加载印章图案
+                    HMIstep = 3;//显示出货页面
                 }
-                else
+                catch { }
+                myprint = new PEPrinter();
+                wulihuodao = result;
+                timer3.Enabled = true;
+                Machine.nowStep = 0x01;
+
+                item = result;//实际出货商品号
+                guanggaoreturntime = 0;
+                shangpinjiage = 0;//实际出货商品价格
+                zhifutype = 4;//支付方式为提货码
+                try
                 {
-                    tihuoma.tihuomaresult = "设备正在运行";
+                    setchuhuo();
+                    PEPrinter.PicPath = PicPath;
                 }
-                renewpaystate = true;
+                catch
+                {
+                }
             }
         }
 
@@ -2628,7 +2428,68 @@ namespace SHJ
         }
 
         #endregion
-        
+
+        /// <summary>
+        /// 货道状态和库存检测
+        /// <para>return 90:商品号出错 91:货道故障 92:货道无库存</para>
+        /// </summary>
+        /// <param name="aisleNum">商品号</param>
+        /// <returns></returns>
+        private int CargoStockAndStateCheck(string aisleNum)
+        {
+            int result = 90;//商品号出错
+
+            if (int.Parse(aisleNum) > mynodelistshangpin.Count || int.Parse(aisleNum) <= 0)
+            {
+                result = 90;
+                HMIstep = 1;
+            }
+            else
+            {
+                for (int i = 0; i < mynodelistshangpin.Count; i++)
+                {
+                    if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == int.Parse(aisleNum))
+                    {
+
+                        for (int k = 0; k < mynodelisthuodao.Count; k++)
+                        {
+                            if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("huodao").Value)
+                                == int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value))
+                            {
+                                if ((int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("state").Value) != 0))//货道反馈异常（状态）
+                                {
+                                    result = 91;//货道故障
+                                    HMIstep = 1;//返回提货码页
+                                }
+                                else if (int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("kucun").Value) <= 0)//无库存
+                                {
+                                    result = 92;//无库存
+                                    HMIstep = 1;
+                                }
+                                else
+                                {
+                                    result = int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 返回到提货码页面
+        /// </summary>
+        private void ReturnInputPage()
+        {
+            item = 0;
+            shangpinjiage = 0;
+            guanggaoreturntime = 0;
+            HMIstep = 1;
+        }
+
     }
     public class DownloadFile
     {
