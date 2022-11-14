@@ -11,7 +11,6 @@ namespace SHJ
         public Machine()
         {
             print = Print.GetExample();
-            logHelper = LogHelper.GetLogHelper();//获取实例
             curState = 0x90;
         }
 
@@ -122,7 +121,6 @@ namespace SHJ
         private void IniData()
         {
             new PCHMI.VAR().SEND_INT16(0, "D0",0);
-            new PCHMI.VAR().SEND_INT16(0, "D5",0);
             new PCHMI.VAR().SEND_INT16(0, "D6",0);
             new PCHMI.VAR().SEND_INT16(0, "D7",0);
             new PCHMI.VAR().SEND_INT16(0, "D8",0);
@@ -225,7 +223,7 @@ namespace SHJ
         /// </summary>
         public static string _MachineRunPlan;
 
-        private const int _Start=1;
+        private const int _Start=1;//置位标志
 
         /// <summary>
         /// 机器当前执行任务
@@ -266,7 +264,7 @@ namespace SHJ
                     PrinterTakeAndRig();//打印机位置出料
                     PrintTakeBack();//回收打印机托盘
                     break;
-                case 0x07:
+                case 0x07:  
                     RigLid();//装配盖子
                     break;
                 case 0x08:
@@ -310,6 +308,8 @@ namespace SHJ
         private bool trayOut = false;//托盘是否弹出
         private bool trayBack = false;//托盘是否回收打印
         private bool trayReZero = false;//托盘是否归零
+        private bool printing = false;//开始打印
+        private bool InPrintPos = false;//托盘是否在打印位置
 
         /// <summary>
         /// 托盘状态查询和操作
@@ -318,25 +318,37 @@ namespace SHJ
         {
             if (isRigPrint)//托盘已有印面
             {
-                if (PEPrinter.TrayCondition == 0x01)//托盘归位
+                if (!InPrintPos)//未在打印位置
                 {
-                    PEPrinter.needMoveTray = 4;//弹出托盘
+                    if (!trayOut)
+                    {
+                        PEPrinter.needMoveTray = 2;//弹出托盘
+                        trayOut = true;
+                    }
+                    else if ((PEPrinter.TrayCondition==0x02 || PEPrinter.TrayCondition==0x06) && !trayBack)
+                    {
+                        PEPrinter.needMoveTray = 3;//托盘回收(打印位置)
+                        trayBack = true;
+                    } 
+                    else if ((PEPrinter.TrayCondition == 0x05 || PEPrinter.TrayCondition == 0x01) && trayBack && !printing) 
+                    {
+                        Printing();
+                        printing = true;
+                    }
                 }
-                else if (PEPrinter.TrayCondition == 0x02)//托盘弹出
+                else//已经在打印位置
                 {
-                    //trayOut = true;//回收托盘
-                    PEPrinter.needMoveTray = 3;//回收托盘
+                    if (!printing)
+                    {
+                        trayBack = true;
+                        printing = true;
+                        Printing();
+                    }
                 }
-                else if (PEPrinter.TrayCondition == 0x05)//托盘在打印位置
+                if (D0 == 5 && printing)//取盖子
                 {
-                    trayBack = true;//开始打印
-                    Printing();
                     curState = 0x05;
-                }
-
-                if (D0 == 5 && (trayOut || trayBack))//取盖子
-                {
-                    curState = 0x05;
+                    printing = false;
                 }
             }
             else if (!isRigPrint && OverToken)//托盘无印面
@@ -372,6 +384,9 @@ namespace SHJ
             }
             if (D0 == 5 && D11 == 10)//印面接收完成，货道出货完成
             {
+                PEPrinter.needMoveTray = 3;//回收托盘进行打印
+                trayBack = true;
+                PrintFaceRecord(true);
                 OverToken = true;
                 curState = 0x05;
             }
@@ -382,15 +397,9 @@ namespace SHJ
         /// </summary>
         private void Printing()
         {
-            if (trayOut)
+            if (((PEPrinter.TrayCondition & 0x01) == 0x01) && trayBack && !String.IsNullOrEmpty(PEPrinter.PicPath))//开始打印
             {
-                trayBack = true;
                 trayOut = false;
-                PEPrinter.needMoveTray = 3;//回收托盘进行打印
-                PrintFaceRecord(true);
-            }
-            else if (((PEPrinter.TrayCondition & 0x01) == 0x01) && trayBack && !String.IsNullOrEmpty(PEPrinter.PicPath))//开始打印
-            {
                 trayBack = false;
                 nowStep = 0x04;
                 print.PrintAction();
@@ -417,10 +426,17 @@ namespace SHJ
         /// <param name="Is">已装配:true 未装配:false</param>
         public static void PrintFaceRecord(bool Is)
         {
-            isRigPrint = Is;
-            Form1.myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value = Is.ToString();
-            Form1.myxmldoc.Save(Form1.configxmlfile);
-            Form1.myxmldoc.Save(Form1.configxmlfilecopy);
+            try
+            {
+                isRigPrint = Is;
+                Form1.myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value = Is.ToString();
+                Form1.myxmldoc.Save(Form1.configxmlfile);
+                Form1.myxmldoc.Save(Form1.configxmlfilecopy);
+            }
+            catch
+            {
+                isRigPrint = Is;
+            }
         }
 
         #endregion
@@ -435,7 +451,6 @@ namespace SHJ
         {
             string result = null;//是否有故障
             _RunEnd = false;//机器开始运行
-            new PCHMI.VAR().SEND_CTRL(0, "M114", "置位", "");//开启控制
             X12 = new PCHMI.VAR().GET_BIT(0, "X12");
             X10 = new PCHMI.VAR().GET_BIT(0, "X10");
             X7 = new PCHMI.VAR().GET_BIT(0, "X7");
@@ -490,21 +505,17 @@ namespace SHJ
                 {
                     IniData();
                     new PCHMI.VAR().SEND_INT16(0, "D5", 0);
-                    new PCHMI.VAR().SEND_CTRL(0, "M114", "置位", "");
                     RigPrintFace();
                     checkD11 = true;
-                }
-                if(X13==0 && X6==0 && checkD11==false) //无印面则补印面
-                {
-                    new PCHMI.VAR().SEND_CTRL(0, "M114", "复位", "");
                 }
                 if (checkD11)
                 {
                     PrinterReceivePrintFace();
                     if (D11 == 10)
                     {
-                        PEPrinter.needMoveTray = 3;
-                        new PCHMI.VAR().SEND_INT16(0, "D5", _Start);//复位
+                        PEPrinter.needMoveTray = 3;//托盘回收(打印位置)
+                        InPrintPos = true;//托盘在打印位置
+                        new PCHMI.VAR().SEND_CTRL(0, "M36", "反转","");//机器复位
                         PrintFaceRecord(true);//印面已经装配完成，不用再装
                         checkD11 = false;
                         ResetProgram();
@@ -515,7 +526,6 @@ namespace SHJ
             {
                 ResetProgram();
             }
-        
         }
 
         /// <summary>
@@ -526,7 +536,6 @@ namespace SHJ
             OverToken = true;
             isAisleSell = true;
             curState = 0x90;
-            new PCHMI.VAR().SEND_CTRL(0, "M114", "复位", "");
             IniMachine();
             IniData();
         }
@@ -654,7 +663,6 @@ namespace SHJ
                 OverToken = false;
                 nowStep = 0x06;
             }
-
             D9 = new PCHMI.VAR().GET_INT16(0, "D9");
             if (D9 == 13)
             {
@@ -811,6 +819,8 @@ namespace SHJ
         {
             ushort x13 = new PCHMI.VAR().GET_BIT(0, "X13");
             ushort x6 = new PCHMI.VAR().GET_BIT(0, "X6");
+            x13 = new PCHMI.VAR().GET_BIT(0, "X13");
+            x6 = new PCHMI.VAR().GET_BIT(0, "X6");
             if (x13 == 1 || x6==0)
                 return false;
             else

@@ -651,6 +651,8 @@ namespace SHJ
                     label65.Text = "媒介状态:未知";
                     break;
             }
+            label67.Text += PEPrinter.TrayCondition.ToString();
+
             label162.Text = label67.Text;
             label155.Text = label65.Text;
             label75.Text = "打印机编号:" + PEPrinter.ProductID.ToString("X4");
@@ -1487,5 +1489,6 @@ namespace SHJ
         {
             CloseProgram();
         }
+        
     }
 }

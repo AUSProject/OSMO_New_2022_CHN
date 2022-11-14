@@ -105,19 +105,19 @@ namespace SHJ
                 nowform1.WorkingTest(num, path);
             }
         }
-
+        
         #endregion
 
         #region Feild
         
         private Print print = null;
         public static string LogPath=null;
-
-        private LogHelper logHelper = null;
-
+        
         private string imageUrlPath;//印章图片URL文件夹
         private string ErweimaUrl = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";//二维码地址
         Machine machine;//机器控制
+
+        public static string runningImage;
 
         public static bool needcloseform = false;//是否需要关闭窗体
         public static int HMIstep;//界面页面：0广告 1触摸选择商品 2支付页面
@@ -258,7 +258,6 @@ namespace SHJ
             nowform1 = this;
             pic_Erweima.Visible = false;//隐藏二维码
             
-            logHelper = LogHelper.GetLogHelper();
             machine = new Machine();
             print = Print.GetExample();
             
@@ -269,6 +268,7 @@ namespace SHJ
 
             imageUrlPath = Directory.GetCurrentDirectory() + "\\imageUrl.ini";
             LogPath = System.IO.Directory.GetCurrentDirectory() + "\\Log";
+            runningImage= Directory.GetCurrentDirectory() + "\\runningImage";
 
             adimagesaddress = System.IO.Directory.GetCurrentDirectory() + "\\adimages";
             bkimagesaddress = System.IO.Directory.GetCurrentDirectory() + "\\bkimages";
@@ -317,7 +317,10 @@ namespace SHJ
             {
                 File.Create(LogPath);
             }
-
+            if(Directory.Exists(runningImage)==false)
+            {
+                Directory.CreateDirectory(runningImage);
+            }
             if (System.IO.File.Exists(configxmlfile))
             {
                 try
@@ -541,7 +544,7 @@ namespace SHJ
           
             Machine.isAutoRun = myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value == "true" ? true : false;
             Machine._MachineRunPlan = myfunctionnode.Attributes.GetNamedItem("runType").Value;
-            Machine.isRigPrint = myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value == "true" ? true : false;
+            Machine.isRigPrint = myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value == "True" ? true : false;
 
             setting.CPFRPass = myfunctionnode.Attributes.GetNamedItem("CPFRPass").Value;
             setting.debugPass = myfunctionnode.Attributes.GetNamedItem("debugPass").Value;
@@ -980,6 +983,7 @@ namespace SHJ
         private void timer3_Tick(object sender, EventArgs e)
         {
             machine.MachineRun(item);
+            myprint.PEloop();
             RunningDisplay();
             if (Machine._RunEnd)
             {
@@ -988,8 +992,19 @@ namespace SHJ
         }
 
         #endregion
-        
+
         #region 网络，初始化，更新
+
+        /// <summary>
+        /// 返回到提货码页面
+        /// </summary>
+        private void ReturnInputPage()
+        {
+            item = 0;
+            shangpinjiage = 0;
+            guanggaoreturntime = 0;
+            HMIstep = 1;
+        }
 
         /// <summary>
         /// 生成二维码
@@ -1008,6 +1023,56 @@ namespace SHJ
             bt = qrCodeEncoder.Encode(url, Encoding.UTF8);
             string erweimaImgName = "erweima.jpg";
             bt.Save(Path.Combine(adimagesaddress, erweimaImgName));
+        }
+
+        /// <summary>
+        /// 货道状态和库存检测
+        /// <para>return 90:商品号出错 91:货道故障 92:货道无库存</para>
+        /// </summary>
+        /// <param name="aisleNum">商品号</param>
+        /// <returns></returns>
+        private int CargoStockAndStateCheck(string aisleNum)
+        {
+            int result = 90;//商品号出错
+
+            if (int.Parse(aisleNum) > mynodelistshangpin.Count || int.Parse(aisleNum) <= 0)
+            {
+                result = 90;
+                HMIstep = 1;
+            }
+            else
+            {
+                for (int i = 0; i < mynodelistshangpin.Count; i++)
+                {
+                    if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == int.Parse(aisleNum))
+                    {
+
+                        for (int k = 0; k < mynodelisthuodao.Count; k++)
+                        {
+                            if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("huodao").Value)
+                                == int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value))
+                            {
+                                if ((int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("state").Value) != 0))//货道反馈异常（状态）
+                                {
+                                    result = 91;//货道故障
+                                    HMIstep = 1;//返回提货码页
+                                }
+                                else if (int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("kucun").Value) <= 0)//无库存
+                                {
+                                    result = 92;//无库存
+                                    HMIstep = 1;
+                                }
+                                else
+                                {
+                                    result = int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         private string revstringnet = "";
@@ -2345,6 +2410,15 @@ namespace SHJ
                 {
                 }
             }
+            else if (result == 90)
+            {
+            }
+            else if (result == 91)
+            {
+            }
+            else if (result == 92)
+            {
+            }
         }
 
         #endregion
@@ -2428,68 +2502,7 @@ namespace SHJ
         }
 
         #endregion
-
-        /// <summary>
-        /// 货道状态和库存检测
-        /// <para>return 90:商品号出错 91:货道故障 92:货道无库存</para>
-        /// </summary>
-        /// <param name="aisleNum">商品号</param>
-        /// <returns></returns>
-        private int CargoStockAndStateCheck(string aisleNum)
-        {
-            int result = 90;//商品号出错
-
-            if (int.Parse(aisleNum) > mynodelistshangpin.Count || int.Parse(aisleNum) <= 0)
-            {
-                result = 90;
-                HMIstep = 1;
-            }
-            else
-            {
-                for (int i = 0; i < mynodelistshangpin.Count; i++)
-                {
-                    if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == int.Parse(aisleNum))
-                    {
-
-                        for (int k = 0; k < mynodelisthuodao.Count; k++)
-                        {
-                            if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("huodao").Value)
-                                == int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value))
-                            {
-                                if ((int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("state").Value) != 0))//货道反馈异常（状态）
-                                {
-                                    result = 91;//货道故障
-                                    HMIstep = 1;//返回提货码页
-                                }
-                                else if (int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("kucun").Value) <= 0)//无库存
-                                {
-                                    result = 92;//无库存
-                                    HMIstep = 1;
-                                }
-                                else
-                                {
-                                    result = int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value);
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// 返回到提货码页面
-        /// </summary>
-        private void ReturnInputPage()
-        {
-            item = 0;
-            shangpinjiage = 0;
-            guanggaoreturntime = 0;
-            HMIstep = 1;
-        }
-
+        
     }
     public class DownloadFile
     {
