@@ -128,22 +128,22 @@ namespace SHJ
             if (rb_PC.Checked)
             {
                 Form1.myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value = "false";
-                Machine.isAutoRun = false;
+                PLCHelper.isAutoRun = false;
             }
             else
             {
                 Form1.myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value = "true";
-                Machine.isAutoRun = true;
+                PLCHelper.isAutoRun = true;
             }
             if (rb_RunType1.Checked)
             {
                 Form1.myfunctionnode.Attributes.GetNamedItem("runType").Value = "01";
-                Machine._MachineRunPlan = "01";
+                PLCHelper._MachineRunPlan = "01";
             }
             else
             {
                 Form1.myfunctionnode.Attributes.GetNamedItem("runType").Value = "02";
-                Machine._MachineRunPlan = "02";
+                PLCHelper._MachineRunPlan = "02";
             }
             if (checkBox8.Checked)
             {
@@ -199,7 +199,7 @@ namespace SHJ
                 checkBox14.Checked = false;
             }
 
-            if(Machine.isAutoRun)
+            if(PLCHelper.isAutoRun)
             {
                 rb_PLC.Checked = true;
             }
@@ -207,11 +207,11 @@ namespace SHJ
             {
                 rb_PC.Checked = true;
             }
-            if(Machine._MachineRunPlan=="01")
+            if(PLCHelper._MachineRunPlan=="01")
             {
                 rb_RunType1.Checked = true;
             }
-            else if(Machine._MachineRunPlan=="02")
+            else if(PLCHelper._MachineRunPlan=="02")
             {
                 rb_RunType2.Checked = true;
             }
@@ -1275,7 +1275,7 @@ namespace SHJ
         private void button26_Click(object sender, EventArgs e)
         {
             PEPrinter.needPutImage = true;
-            Machine.isRigPrint = false;//打印机里已无印面
+            PLCHelper.isRigPrint = false;//打印机里已无印面
             Form1.myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value = "false";
         }
 
@@ -1427,11 +1427,11 @@ namespace SHJ
         private void rb_PLC_CheckedChanged(object sender, EventArgs e)
         {
             needsave = true;
-            if (rb_PLC.Checked && Machine.isRigPrint)
+            if (rb_PLC.Checked && PLCHelper.isRigPrint)
             {
                 if (MessageBox.Show("要切换到当前模式需要先前打印机托盘内的印面拿出!!!\r\n(确认拿出后单击\"确认\"按钮)", "重要提示", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
-                    Machine.PrintFaceRecord(false);
+                    PLCHelper.PrintFaceRecord(false);
                 }
                 else
                 {
@@ -1489,6 +1489,31 @@ namespace SHJ
         {
             CloseProgram();
         }
-        
+
+        private void txt_Pass_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (txt_Pass.Text == CPFRPass)
+                {
+                    panel_Back.Visible = false;
+                    panel_CPFR.Visible = true;
+                }
+                else if (txt_Pass.Text == setupPass)
+                {
+                    panel_Back.Visible = false;
+                    panel_setup.Visible = true;
+                }
+                else if (txt_Pass.Text == debugPass)
+                {
+                    panel_Back.Visible = false;
+                    panel_debug.Visible = true;
+                }
+                else
+                {
+                    MessageBox.Show("密码错误！！");
+                }
+            }
+        }
     }
 }

@@ -59,11 +59,15 @@
             this.buttonStart = new System.Windows.Forms.Button();
             this.btnPicChoice = new System.Windows.Forms.Button();
             this.pic_Erweima = new System.Windows.Forms.PictureBox();
+            this.panel_Error = new System.Windows.Forms.Panel();
+            this.lbl_Msg = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panelTest.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picPrintImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pic_Erweima)).BeginInit();
+            this.panel_Error.SuspendLayout();
             this.SuspendLayout();
             // 
             // label2
@@ -445,6 +449,37 @@
             this.pic_Erweima.TabIndex = 48;
             this.pic_Erweima.TabStop = false;
             // 
+            // panel_Error
+            // 
+            this.panel_Error.Controls.Add(this.lbl_Msg);
+            this.panel_Error.Controls.Add(this.label4);
+            this.panel_Error.Location = new System.Drawing.Point(520, 395);
+            this.panel_Error.Name = "panel_Error";
+            this.panel_Error.Size = new System.Drawing.Size(841, 647);
+            this.panel_Error.TabIndex = 49;
+            // 
+            // lbl_Msg
+            // 
+            this.lbl_Msg.AutoSize = true;
+            this.lbl_Msg.Font = new System.Drawing.Font("宋体", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_Msg.ForeColor = System.Drawing.Color.SkyBlue;
+            this.lbl_Msg.Location = new System.Drawing.Point(232, 306);
+            this.lbl_Msg.Name = "lbl_Msg";
+            this.lbl_Msg.Size = new System.Drawing.Size(330, 35);
+            this.lbl_Msg.TabIndex = 0;
+            this.lbl_Msg.Text = "设备故障，暂停使用";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("宋体", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label4.ForeColor = System.Drawing.Color.SkyBlue;
+            this.label4.Location = new System.Drawing.Point(63, 59);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(85, 35);
+            this.label4.TabIndex = 0;
+            this.label4.Text = "抱歉";
+            // 
             // tihuoma
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -454,6 +489,7 @@
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(1918, 1078);
             this.ControlBox = false;
+            this.Controls.Add(this.panel_Error);
             this.Controls.Add(this.pic_Erweima);
             this.Controls.Add(this.panelTest);
             this.Controls.Add(this.btnTry);
@@ -470,6 +506,8 @@
             this.panelTest.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picPrintImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pic_Erweima)).EndInit();
+            this.panel_Error.ResumeLayout(false);
+            this.panel_Error.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -505,5 +543,8 @@
         private System.Windows.Forms.Button btnPicChoice;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.PictureBox pic_Erweima;
+        private System.Windows.Forms.Panel panel_Error;
+        private System.Windows.Forms.Label lbl_Msg;
+        private System.Windows.Forms.Label label4;
     }
 }

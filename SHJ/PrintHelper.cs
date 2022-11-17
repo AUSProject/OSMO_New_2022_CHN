@@ -6,26 +6,26 @@ using System.Threading.Tasks;
 
 namespace SHJ
 {
-    public class Print
+    public class PrintHelper
     {
         /// <summary>
         /// 打印机错误检测
         /// <para>无错误返回null</para>
         /// </summary>
         /// <returns></returns>
-        private Print()
+        private PrintHelper()
         {
         }
-        private static Print _Pirnt = null;
+        private static PrintHelper _Pirnt = null;
         /// <summary>
         /// 获取实例
         /// </summary>
         /// <returns></returns>
-        public static Print GetExample()
+        public static PrintHelper GetExample()
         {
             if (_Pirnt == null)
             {
-                _Pirnt = new Print();
+                _Pirnt = new PrintHelper();
             }
             return _Pirnt;
         }

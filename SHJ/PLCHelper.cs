@@ -6,13 +6,20 @@ using System.Threading.Tasks;
 
 namespace SHJ
 {
-    class Machine
+    /// <summary>
+    /// PLC控制类
+    /// <para>设备的自动和手动控制</para>
+    /// </summary>
+    class PLCHelper
     {
-        public Machine()
+        public PLCHelper()
         {
-            print = Print.GetExample();
+            print = PrintHelper.GetExample();
+            log = LogHelper.GetLogHelperExamlpe();
             curState = 0x90;
         }
+
+        #region Feild
 
         /// <summary>
         /// <para>机器当前运行步骤</para>
@@ -21,8 +28,8 @@ namespace SHJ
         /// </summary>
         public static byte nowStep;
         
-        private Print print = null;
-        private LogHelper logHelper;
+        private PrintHelper print = null;
+        private LogHelper log;
 
         public static bool _RunEnd=false;//机器运行结束
         public static bool isAutoRun = true;
@@ -31,6 +38,8 @@ namespace SHJ
         public short mainCode;//主控程序
         public int runTiming = 150;
         public static bool isRigPrint;//是否装配印面 false:未安装  true:已安装 
+
+        #endregion
 
         #region 控制地址
 
@@ -128,9 +137,9 @@ namespace SHJ
             new PCHMI.VAR().SEND_INT16(0, "D10",0);
             new PCHMI.VAR().SEND_INT16(0, "D11", 0);
         }
-        
-        #endregion  
 
+        #endregion
+        
         /// <summary>
         /// 设备运行
         /// </summary>
@@ -150,6 +159,7 @@ namespace SHJ
                     {
                         StartRunning(number);
                         sendOver = true;
+                        Form1.ReduceStock(number.ToString());//印章库存减一
                     }
                     PrintControlAndShow();
                 }
@@ -238,7 +248,14 @@ namespace SHJ
         /// </summary>
         private bool OverToken=true;
 
-        private int[] trubleNum = new int[]{ 0, 0, 0 };//排故序号
+        private int[] trubleNum = new int[]{ 0, 0, 0 };//排故序号 
+
+        List<string> cargoMsg = new List<string>();//货道出货记录
+        List<string> printMsg = new List<string>();//打印机状态记录
+        List<string> ligMsg = new List<string>();//装取盖子记录
+        List<string> rigPrintMsg = new List<string>();//装配印面记录
+        List<string> outSellerMsg = new List<string>();//出货记录
+        
         /// <summary>
         /// 机器操作和监控
         /// </summary>
@@ -322,13 +339,17 @@ namespace SHJ
                 {
                     if (!trayOut)
                     {
+                        printMsg.Add("印面已安装");
+                        printMsg.Add("正在调整打印机托盘位置");
                         PEPrinter.needMoveTray = 2;//弹出托盘
                         trayOut = true;
+                        printMsg.Add("托盘弹出");
                     }
                     else if ((PEPrinter.TrayCondition==0x02 || PEPrinter.TrayCondition==0x06) && !trayBack)
                     {
                         PEPrinter.needMoveTray = 3;//托盘回收(打印位置)
                         trayBack = true;
+                        printMsg.Add("托盘回收到打印位置");
                     } 
                     else if ((PEPrinter.TrayCondition == 0x05 || PEPrinter.TrayCondition == 0x01) && trayBack && !printing) 
                     {
@@ -340,6 +361,8 @@ namespace SHJ
                 {
                     if (!printing)
                     {
+                        printMsg.Add("印面已安装");
+                        printMsg.Add("托盘位置正确");
                         trayBack = true;
                         printing = true;
                         Printing();
@@ -349,6 +372,7 @@ namespace SHJ
                 {
                     curState = 0x05;
                     printing = false;
+                    cargoMsg.Add("货道出货完成");
                 }
             }
             else if (!isRigPrint && OverToken)//托盘无印面
@@ -381,6 +405,7 @@ namespace SHJ
                 nowStep = 0x03;
                 trayOut = true;
                 PEPrinter.needMoveTray = 4;//弹出托盘
+                printMsg.Add("托盘弹出");
             }
             if (D0 == 5 && D11 == 10)//印面接收完成，货道出货完成
             {
@@ -389,6 +414,11 @@ namespace SHJ
                 PrintFaceRecord(true);
                 OverToken = true;
                 curState = 0x05;
+                printMsg.Add("托盘收回到打印位置");
+                cargoMsg.Add("货道出货完成");
+
+                log.WriteStepLog(StepType.货道出货, cargoMsg);//写入日志
+                cargoMsg.Clear();
             }
         }
 
@@ -403,6 +433,7 @@ namespace SHJ
                 trayBack = false;
                 nowStep = 0x04;
                 print.PrintAction();
+                printMsg.Add("印章开始打印");
             }
         }
 
@@ -417,6 +448,10 @@ namespace SHJ
                 nowStep = 0x05;
                 PEPrinter.needMoveTray = 1;//回收托盘
                 PrintFaceRecord(false);
+
+                printMsg.Add("取货成功,托盘回收");
+                log.WriteStepLog(StepType.印面打印, printMsg);
+                printMsg.Clear();
             }
         }
 
@@ -557,7 +592,7 @@ namespace SHJ
             {
                 curState = 0x01;
                 OverToken = true;
-            }
+            } 
         }
 
         private bool isAisleSell = true;//货道是否出货
@@ -584,8 +619,13 @@ namespace SHJ
                     default:
                         throw new Exception("货道错误");
                 }
+
+                cargoMsg.Add(aisleNum.ToString() + "号货道开始出货");//日志记录
+
                 new PCHMI.VAR().SEND_INT16(0, "D4", _Start);
                 isAisleSell = false;
+
+                Form1.ReduceStock(aisleNum.ToString());//印章库存减一
             }
             D0 = new PCHMI.VAR().GET_INT16(0, "D0");
         }
@@ -596,6 +636,7 @@ namespace SHJ
         private void RigPrintFace()
         {
             new PCHMI.VAR().SEND_INT16(0, "D11", _Start);
+            printMsg.Add("开始取印面");
         }
 
         /// <summary>
@@ -605,6 +646,7 @@ namespace SHJ
         {
             if (OverToken)
             {
+                ligMsg.Add("开始取盖子");
                 new PCHMI.VAR().SEND_INT16(0, "D6", _Start);
                 OverToken = false;
             }
@@ -613,6 +655,10 @@ namespace SHJ
             {
                 curState = 0x06;
                 OverToken = true;
+                ligMsg.Add("取盖子完成");
+
+                log.WriteStepLog(StepType.取盖子, ligMsg);//写入日志
+                ligMsg.Clear();
             }
         }
 
@@ -625,12 +671,22 @@ namespace SHJ
             {
                 new PCHMI.VAR().SEND_INT16(0, "D7", _Start);
                 OverToken = false;
+                rigPrintMsg.Add("等待打印完成");
             }
             D7 = new PCHMI.VAR().GET_INT16(0, "D7");
-            if (D7 == 10)
+            if (D7 > 1 && D7 < 3)
+            {
+                printMsg.Add("打印完成,托盘出货成功");
+                rigPrintMsg.Add("开始装配印面");
+            }
+            else if (D7 == 10)
             {
                 curState = 0x07;
                 OverToken = true;
+
+                rigPrintMsg.Add("印面装配完成");
+                log.WriteStepLog(StepType.安装印面, rigPrintMsg);//写入日志
+                rigPrintMsg.Clear();
             }
         }
 
@@ -643,12 +699,17 @@ namespace SHJ
             {
                 new PCHMI.VAR().SEND_INT16(0, "D8", _Start);
                 OverToken = false;
+                ligMsg.Add("开始装配盖子");
             }
             D8 = new PCHMI.VAR().GET_INT16(0, "D8");
             if (D8 == 11)
             {
                 OverToken = true;
                 curState = 0x08;
+
+                ligMsg.Add("装配盖子完成");
+                log.WriteStepLog(StepType.装配盒子, ligMsg);
+                ligMsg.Clear();
             }
         }
 
@@ -662,12 +723,16 @@ namespace SHJ
                 new PCHMI.VAR().SEND_INT16(0, "D9", _Start);
                 OverToken = false;
                 nowStep = 0x06;
+
+                outSellerMsg.Add("等待出货");
             }
             D9 = new PCHMI.VAR().GET_INT16(0, "D9");
             if (D9 == 13)
             {
                 curState = 0x09;
                 OverToken = true;
+
+                outSellerMsg.Add("开始出货");
             }
         }
 
@@ -687,6 +752,11 @@ namespace SHJ
             {
                 curState = 0x11;
                 OverToken = true;
+
+                outSellerMsg.Add("出货完成,机器复位");
+                log.WriteStepLog(StepType.货道出货, outSellerMsg);
+                outSellerMsg.Clear();
+                log.SaveRunningLog();
             }
         }
 
@@ -819,8 +889,6 @@ namespace SHJ
         {
             ushort x13 = new PCHMI.VAR().GET_BIT(0, "X13");
             ushort x6 = new PCHMI.VAR().GET_BIT(0, "X6");
-            x13 = new PCHMI.VAR().GET_BIT(0, "X13");
-            x6 = new PCHMI.VAR().GET_BIT(0, "X6");
             if (x13 == 1 || x6==0)
                 return false;
             else

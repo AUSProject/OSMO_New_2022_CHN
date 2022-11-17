@@ -106,16 +106,18 @@ namespace SHJ
             }
         }
         
+        
         #endregion
 
         #region Feild
         
-        private Print print = null;
+        private PrintHelper print = null;
         public static string LogPath=null;
         
         private string imageUrlPath;//印章图片URL文件夹
         private string ErweimaUrl = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";//二维码地址
-        Machine machine;//机器控制
+        PLCHelper PLC;//机器控制
+        LogHelper log;//运行日志
 
         public static string runningImage;
 
@@ -258,8 +260,9 @@ namespace SHJ
             nowform1 = this;
             pic_Erweima.Visible = false;//隐藏二维码
             
-            machine = new Machine();
-            print = Print.GetExample();
+            PLC = new PLCHelper();
+            print = PrintHelper.GetExample();//获取打印机实例
+            log = LogHelper.GetLogHelperExamlpe();//获取日志实例
             
             config1.START((Control)this, System.Reflection.Assembly.GetExecutingAssembly(), null);
             
@@ -313,9 +316,9 @@ namespace SHJ
             {
                 File.Create(imageUrlPath);
             }
-            if (!File.Exists(LogPath))//日志文件路径
+            if (!Directory.Exists(LogPath))//日志文件路径
             {
-                File.Create(LogPath);
+                Directory.CreateDirectory(LogPath);
             }
             if(Directory.Exists(runningImage)==false)
             {
@@ -542,9 +545,9 @@ namespace SHJ
 
             pic_Erweima.Image = Image.FromFile(Path.Combine(adimagesaddress, "erweima.jpg"));
           
-            Machine.isAutoRun = myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value == "true" ? true : false;
-            Machine._MachineRunPlan = myfunctionnode.Attributes.GetNamedItem("runType").Value;
-            Machine.isRigPrint = myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value == "True" ? true : false;
+            PLCHelper.isAutoRun = myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value == "true" ? true : false;
+            PLCHelper._MachineRunPlan = myfunctionnode.Attributes.GetNamedItem("runType").Value;
+            PLCHelper.isRigPrint = myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value == "True" ? true : false;
 
             setting.CPFRPass = myfunctionnode.Attributes.GetNamedItem("CPFRPass").Value;
             setting.debugPass = myfunctionnode.Attributes.GetNamedItem("debugPass").Value;
@@ -982,10 +985,10 @@ namespace SHJ
         //运行控制和显示
         private void timer3_Tick(object sender, EventArgs e)
         {
-            machine.MachineRun(item);
+            PLC.MachineRun(item);
             myprint.PEloop();
             RunningDisplay();
-            if (Machine._RunEnd)
+            if (PLCHelper._RunEnd)
             {
                 timer3.Enabled = false;
             }
@@ -994,6 +997,20 @@ namespace SHJ
         #endregion
 
         #region 网络，初始化，更新
+
+        /// <summary>
+        /// 返回机器剩余总库存
+        /// </summary>
+        /// <returns>库存数</returns>
+        public static int ReturnStock()
+        {
+            int total = 0;
+            for (int i = 0; i < mynodelisthuodao.Count; i++)
+            {
+                total += int.Parse(mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value);
+            }
+            return total;
+        }
 
         /// <summary>
         /// 返回到提货码页面
@@ -1037,6 +1054,7 @@ namespace SHJ
 
             if (int.Parse(aisleNum) > mynodelistshangpin.Count || int.Parse(aisleNum) <= 0)
             {
+                log.WriteStepLog(StepType.货道检测, "商品号出错");
                 result = 90;
                 HMIstep = 1;
             }
@@ -1056,15 +1074,19 @@ namespace SHJ
                                 {
                                     result = 91;//货道故障
                                     HMIstep = 1;//返回提货码页
+                                    log.WriteStepLog(StepType.货道检测, "货道故障");
                                 }
                                 else if (int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("kucun").Value) <= 0)//无库存
                                 {
                                     result = 92;//无库存
                                     HMIstep = 1;
+                                    log.WriteStepLog(StepType.货道检测, "货道无库存");
                                 }
                                 else
                                 {
                                     result = int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value);
+                                    log.WriteStepLog(StepType.货道检测, "状态正常");
+                                    break;
                                 }
                                 break;
                             }
@@ -1073,6 +1095,25 @@ namespace SHJ
                 }
             }
             return result;
+        }
+
+        /// <summary>
+        /// 库存减一
+        /// </summary>
+        /// <param name="cargoNum"> 货道号</param>
+        public static void ReduceStock(string cargoNum)
+        {
+            for(int i = 0; i < mynodelisthuodao.Count; i++)
+            {
+                if (cargoNum == mynodelisthuodao[i].Attributes.GetNamedItem("huodaonum").Value)
+                {
+                    int newKucun = int.Parse(mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value) - 1;
+                    mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value = newKucun.ToString();
+                    myxmldoc.Save(configxmlfile);
+                    myxmldoc.Save(configxmlfilecopy);
+                    break;
+                }
+            }
         }
 
         private string revstringnet = "";
@@ -2380,8 +2421,9 @@ namespace SHJ
         /// <param name="PicPath">印章图案路径</param>
         public void WorkingTest(int huodaoNum,string PicPath)
         {
+            log.CreateRunningLog("A1234", "白色印章", "90", "00", huodaoNum.ToString(), "模拟运行" + DateTime.Now.ToShortTimeString());
             int result = CargoStockAndStateCheck(huodaoNum.ToString());
-            if(result < 90 && Machine.nowStep == 0x00)//无报错
+            if(result < 90 && PLCHelper.nowStep == 0x00)//无报错
             {
                 netreturncount = 0;//超时计时停止
                 tihuoma.tihuomaresult = "模拟运行开始";
@@ -2390,12 +2432,14 @@ namespace SHJ
                     AddCoverPicture(huodaoNum);//加载盒体图片
                     pictureBox7.Load(PicPath);//加载印章图案
                     HMIstep = 3;//显示出货页面
+
+                    log.WriteStepLog(StepType.印章图案检查, "状态正常");//日志记录
                 }
                 catch { }
                 myprint = new PEPrinter();
                 wulihuodao = result;
                 timer3.Enabled = true;
-                Machine.nowStep = 0x01;
+                PLCHelper.nowStep = 0x01;
 
                 item = result;//实际出货商品号
                 guanggaoreturntime = 0;
@@ -2406,7 +2450,7 @@ namespace SHJ
                     setchuhuo();
                     PEPrinter.PicPath = PicPath;
                 }
-                catch
+                catch(Exception ex)
                 {
                 }
             }
@@ -2431,7 +2475,7 @@ namespace SHJ
         /// </summary>
         private void RunningDisplay()
         {
-            switch (Machine.nowStep)
+            switch (PLCHelper.nowStep)
             {
                 case 0x00:
                     break;
@@ -2476,9 +2520,9 @@ namespace SHJ
                 default:
                     break;
             }
-            if(Machine.nowStep >= 0x10)//出现故障
+            if(PLCHelper.nowStep >= 0x10)//出现故障
             {
-                label5.Text =  showprintstate + "     " + (machine.runTiming).ToString() + "s";
+                label5.Text =  showprintstate + "     " + (PLC.runTiming).ToString() + "s";
             }
             else
             {
@@ -2488,7 +2532,7 @@ namespace SHJ
                 }
                 else
                 {
-                    label5.Text =  showprintstate + "     " + (machine.runTiming--).ToString() + "s";
+                    label5.Text =  showprintstate + "     " + (PLC.runTiming--).ToString() + "s";
                     timingCount = 0;
                 }
             }
