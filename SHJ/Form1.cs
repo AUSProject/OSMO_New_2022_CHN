@@ -532,7 +532,7 @@ namespace SHJ
                 isregedit = true;
             }
 
-            myprint = new PEPrinter();
+            myprint = PEPrinter.GetPEPrinterExample();
             
             myTcpCli.ReceivedDatagram += new NetEvent(myTcpCli_ReceivedDatagram);
             myTcpCli.DisConnectedServer += new NetEvent(myTcpCli_DisConnectedServer);
@@ -1402,7 +1402,6 @@ namespace SHJ
                         }
                         else
                         {
-                            //sendRETURNOK(1, false);
                         }
                     }
                 }
@@ -2436,7 +2435,7 @@ namespace SHJ
                     log.WriteStepLog(StepType.印章图案检查, "状态正常");//日志记录
                 }
                 catch { }
-                myprint = new PEPrinter();
+                myprint = PEPrinter.GetPEPrinterExample();
                 wulihuodao = result;
                 timer3.Enabled = true;
                 PLCHelper.nowStep = 0x01;

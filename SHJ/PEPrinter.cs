@@ -91,9 +91,22 @@ namespace SHJ
 
         #endregion
 
-        public PEPrinter()
+        private PEPrinter()
         {
 
+        }
+
+        private static PEPrinter _Peprinter = null;
+
+        /// <summary>
+        /// 获取实例
+        /// </summary>
+        /// <returns></returns>
+        public static PEPrinter GetPEPrinterExample()
+        {
+            if (_Peprinter == null)
+                _Peprinter = new PEPrinter();
+            return _Peprinter;
         }
 
         /// <summary>
