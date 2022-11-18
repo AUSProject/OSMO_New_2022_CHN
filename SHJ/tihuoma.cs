@@ -15,6 +15,8 @@ namespace SHJ
         public static string tihuomaresult= "请输入提货码";//验证结果提示语
         private PrintHelper print = null;
 
+        public static bool ErrorToken = false;//设置故障标志
+
         private void label11_Click(object sender, EventArgs e)
         {
             Form1.checktihuoma = false;//取消验证
@@ -56,29 +58,40 @@ namespace SHJ
         private void timer1_Tick(object sender, EventArgs e)
         {
             updateshow();
-            if (Form1.ReturnStock() == 0)//库存检测
+            if (ErrorToken)
+            {
+                panel_Error.Visible = true;
+                lbl_Msg.Text = "设备故障，暂停使用";
+                lbl_Msg2.Visible = true;
+            }
+            else if (Form1.ReturnStock() == 0)//库存检测
             {
                 panel_Error.Visible = true;
                 lbl_Msg.Text = "设备无库存，暂停使用";
+                lbl_Msg2.Visible = false;
             }
             else if (print.PrintFaultInspect() != null)//打印机检查 
             {
                 panel_Error.Visible = true;
                 lbl_Msg.Text ="设备故障，暂停使用";
+                lbl_Msg2.Visible = false;
             }
             else if (!PLCHelper.CheckPortConnect())//设备连接检查
             {
                 lbl_Msg.Text = "设备故障，暂停使用";
                 panel_Error.Visible = true;
+                lbl_Msg2.Visible = false;
             }
             else if (!PLCHelper.GoodsInspect())//印面数量检查
             {
-                lbl_Msg.Text = "设备故障，暂停使用";
+                lbl_Msg.Text = "设备无库存，暂停使用";
                 panel_Error.Visible = true;
+                lbl_Msg2.Visible = false;
             }
             else
             {
                 panel_Error.Visible = false;
+                lbl_Msg2.Visible = false;
             }
         }
 
@@ -294,6 +307,7 @@ namespace SHJ
 
         private void btnTry_Click(object sender, EventArgs e)
         {
+            ErrorToken = true;
             panelTest.BackColor = Color.FromArgb(98, Color.White);
             panelTest.Visible = true;
         }
@@ -309,6 +323,35 @@ namespace SHJ
         }
         
         #endregion
-        
+
+        /// <summary>
+        /// 故障报错提示
+        /// </summary>
+        /// <param name="type">故障类型</param>
+        public static void ReportErrors(ErrorType type)
+        {
+            switch (type)
+            {
+                case ErrorType.machineError:
+                    break;
+                case ErrorType.pictureError:
+                    break;
+                case ErrorType.printerError:
+                    break;
+                case ErrorType.stockError:
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 错误类型
+    /// </summary>
+    public enum ErrorType
+    {
+        printerError,//打印机错误
+        machineError,//机器错误
+        pictureError,//印章图案错误
+        stockError//库存
     }
 }

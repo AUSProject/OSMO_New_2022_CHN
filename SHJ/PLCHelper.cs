@@ -38,7 +38,7 @@ namespace SHJ
         public short mainCode;//主控程序
         public int runTiming = 150;
         public static bool isRigPrint;//是否装配印面 false:未安装  true:已安装 
-
+        
         #endregion
 
         #region 控制地址

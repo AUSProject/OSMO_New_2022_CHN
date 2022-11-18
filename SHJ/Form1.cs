@@ -127,7 +127,7 @@ namespace SHJ
         private const int GSMRXTXBUFLEN = 1500;
         private setting mysetting;//设置窗口
 
-        private int guanggaoindex = 0;//广告文件夹中图片索引号
+        private int guanggaoindex = 0;//广告文件夹中图片索引号 
         public static string adimagesaddress;//广告图片路径
         public static string bkimagesaddress;//背景图片路径
         public static string cmimagesaddress;//商品图片路径
@@ -990,6 +990,12 @@ namespace SHJ
             RunningDisplay();
             if (PLCHelper._RunEnd)
             {
+                timer3.Enabled = false;
+            }
+            if (PLC.runTiming == 0)
+            {
+                HMIstep = 1;
+                tihuoma.ErrorToken = true;
                 timer3.Enabled = false;
             }
         }
