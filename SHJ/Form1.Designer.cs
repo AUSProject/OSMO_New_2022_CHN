@@ -29,11 +29,10 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            PCHMI.limits limits14 = new PCHMI.limits();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            PCHMI.limits limits1 = new PCHMI.limits();
             this.panel1 = new System.Windows.Forms.Panel();
             this.button2 = new System.Windows.Forms.Button();
-            this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
@@ -53,14 +52,21 @@
             this.pic_Erweima = new System.Windows.Forms.PictureBox();
             this.config1 = new PCHMI.CONFIG();
             this.timer3 = new System.Windows.Forms.Timer(this.components);
+            this.video1 = new AForge.Controls.VideoSourcePlayer();
+            this.pel_SellTips = new System.Windows.Forms.Panel();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
+            this.label1 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox8)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pic_Erweima)).BeginInit();
+            this.pel_SellTips.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -88,18 +94,6 @@
             this.button2.UseVisualStyleBackColor = false;
             this.button2.Visible = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // axWindowsMediaPlayer1
-            // 
-            this.axWindowsMediaPlayer1.Enabled = true;
-            this.axWindowsMediaPlayer1.Location = new System.Drawing.Point(157, 12);
-            this.axWindowsMediaPlayer1.Name = "axWindowsMediaPlayer1";
-            this.axWindowsMediaPlayer1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axWindowsMediaPlayer1.OcxState")));
-            this.axWindowsMediaPlayer1.Size = new System.Drawing.Size(149, 96);
-            this.axWindowsMediaPlayer1.TabIndex = 1;
-            this.axWindowsMediaPlayer1.Visible = false;
-            this.axWindowsMediaPlayer1.PlayStateChange += new AxWMPLib._WMPOCXEvents_PlayStateChangeEventHandler(this.axWindowsMediaPlayer1_PlayStateChange);
-            this.axWindowsMediaPlayer1.ClickEvent += new AxWMPLib._WMPOCXEvents_ClickEventHandler(this.axWindowsMediaPlayer1_ClickEvent);
             // 
             // pictureBox1
             // 
@@ -171,6 +165,7 @@
             // 
             this.panel4.BackgroundImage = global::SHJ.Properties.Resources.tihuo;
             this.panel4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.panel4.Controls.Add(this.pel_SellTips);
             this.panel4.Controls.Add(this.label16);
             this.panel4.Controls.Add(this.label15);
             this.panel4.Controls.Add(this.label5);
@@ -245,7 +240,7 @@
             // pictureBox6
             // 
             this.pictureBox6.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox6.Image = global::SHJ.Properties.Resources.wait;
+            this.pictureBox6.Image = global::SHJ.Properties.Resources.waitnew;
             this.pictureBox6.Location = new System.Drawing.Point(18, 165);
             this.pictureBox6.Name = "pictureBox6";
             this.pictureBox6.Size = new System.Drawing.Size(316, 248);
@@ -285,10 +280,10 @@
             this.config1.数据路径 = "D:\\";
             this.config1.画面 = null;
             this.config1.登录方式 = PCHMI.CONFIG.LOGType.快速登录;
-            limits1.PLC = ((uint)(0u));
-            limits1.地址 = "";
-            limits1.限制类型 = PCHMI.limits.LType.无效;
-            this.config1.运行限制 = limits1;
+            limits14.PLC = ((uint)(0u));
+            limits14.地址 = "";
+            limits14.限制类型 = PCHMI.limits.LType.无效;
+            this.config1.运行限制 = limits14;
             this.config1.通讯配置 = new string[] {
         "MITSUBISHI_FX_SERIAL;COM=4,9600,2,7,1;SN=1;JumpBit="};
             this.config1.通讯配置文件名 = "PLC1";
@@ -299,12 +294,67 @@
             this.timer3.Interval = 500;
             this.timer3.Tick += new System.EventHandler(this.timer3_Tick);
             // 
+            // video1
+            // 
+            this.video1.Location = new System.Drawing.Point(0, 0);
+            this.video1.Name = "video1";
+            this.video1.Size = new System.Drawing.Size(878, 597);
+            this.video1.TabIndex = 17;
+            this.video1.Text = "videoSourcePlayer1";
+            this.video1.VideoSource = null;
+            this.video1.Visible = false;
+            // 
+            // pel_SellTips
+            // 
+            this.pel_SellTips.BackColor = System.Drawing.Color.Transparent;
+            this.pel_SellTips.Controls.Add(this.label1);
+            this.pel_SellTips.Controls.Add(this.pictureBox2);
+            this.pel_SellTips.Location = new System.Drawing.Point(1600, 750);
+            this.pel_SellTips.Name = "pel_SellTips";
+            this.pel_SellTips.Size = new System.Drawing.Size(329, 347);
+            this.pel_SellTips.TabIndex = 54;
+            this.pel_SellTips.Visible = false;
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
+            this.pictureBox2.Location = new System.Drawing.Point(46, 59);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(228, 265);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox2.TabIndex = 0;
+            this.pictureBox2.TabStop = false;
+            // 
+            // axWindowsMediaPlayer1
+            // 
+            this.axWindowsMediaPlayer1.Enabled = true;
+            this.axWindowsMediaPlayer1.Location = new System.Drawing.Point(157, 12);
+            this.axWindowsMediaPlayer1.Name = "axWindowsMediaPlayer1";
+            this.axWindowsMediaPlayer1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axWindowsMediaPlayer1.OcxState")));
+            this.axWindowsMediaPlayer1.Size = new System.Drawing.Size(149, 96);
+            this.axWindowsMediaPlayer1.TabIndex = 1;
+            this.axWindowsMediaPlayer1.Visible = false;
+            this.axWindowsMediaPlayer1.PlayStateChange += new AxWMPLib._WMPOCXEvents_PlayStateChangeEventHandler(this.axWindowsMediaPlayer1_PlayStateChange);
+            this.axWindowsMediaPlayer1.ClickEvent += new AxWMPLib._WMPOCXEvents_ClickEventHandler(this.axWindowsMediaPlayer1_ClickEvent);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("宋体", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label1.ForeColor = System.Drawing.Color.Red;
+            this.label1.Location = new System.Drawing.Point(7, 21);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(295, 35);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "请于下方拿取印章";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1490, 1080);
             this.Controls.Add(this.pic_Erweima);
+            this.Controls.Add(this.video1);
             this.Controls.Add(this.panel4);
             this.Controls.Add(this.panel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
@@ -317,7 +367,6 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
@@ -325,6 +374,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pic_Erweima)).EndInit();
+            this.pel_SellTips.ResumeLayout(false);
+            this.pel_SellTips.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -354,6 +407,10 @@
         private System.Windows.Forms.PictureBox pic_Erweima;
         internal PCHMI.CONFIG config1;
         private System.Windows.Forms.Timer timer3;
+        private AForge.Controls.VideoSourcePlayer video1;
+        private System.Windows.Forms.Panel pel_SellTips;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.Label label1;
     }
 }
 

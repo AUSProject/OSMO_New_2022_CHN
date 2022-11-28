@@ -12,6 +12,8 @@ using System.Runtime.InteropServices;
 using Ibms.Net.TcpCSFramework;
 using ThoughtWorks.QRCode.Codec;    
 using System.Threading.Tasks;
+using AForge.Controls;
+using System.Drawing.Imaging;
 
 namespace SHJ
 {
@@ -43,7 +45,7 @@ namespace SHJ
         /// <param name="key">键</param>
         /// <param name="value">值</param>
         /// <param name="path">路径</param>
-        private void IniWriteValue(string section, string key, string value, string path)
+        public static void IniWriteValue(string section, string key, string value, string path)
         {
             WritePrivateProfileString(section, key, value, path);
         }
@@ -54,7 +56,7 @@ namespace SHJ
         /// <param name="section">项目名称</param>
         /// <param name="key">键</param>
         /// <param name="path">路径</param>
-        private string IniReadValue(string section, string key, string path)
+        public static string IniReadValue(string section, string key, string path)
         {
             StringBuilder temp = new StringBuilder(6000);
             GetPrivateProfileString(section, key, "error", temp, 6000, path);
@@ -66,7 +68,7 @@ namespace SHJ
         /// </summary>
         /// <param name="section"></param>
         /// <param name="path"></param>
-        private void DeleteSection(string section, string path)
+        public static void DeleteSection(string section, string path)
         {
             WritePrivateProfileString(section, null, null, path);
         }
@@ -105,21 +107,32 @@ namespace SHJ
                 nowform1.WorkingTest(num, path);
             }
         }
-        
+        /// <summary>
+        /// 拍照
+        /// </summary>
+        /// <param name="picName"></param>
+        public static void CallTakePhoto(string picName)
+        {
+            if (nowform1 != null)
+            {
+                nowform1.TakePhoto(picName);
+            }
+        }
         
         #endregion
 
         #region Feild
         
         private PrintHelper print = null;
-        public static string LogPath=null;
-        
+
+        private string logPath = null;//日志文件夹
+        private string nowLogPath = null;//当前日志
         private string imageUrlPath;//印章图片URL文件夹
         private string ErweimaUrl = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";//二维码地址
         PLCHelper PLC;//机器控制
         LogHelper log;//运行日志
 
-        public static string runningImage;
+        public static string cameraParaFile;//摄像机参数文件
 
         public static bool needcloseform = false;//是否需要关闭窗体
         public static int HMIstep;//界面页面：0广告 1触摸选择商品 2支付页面
@@ -257,7 +270,6 @@ namespace SHJ
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            nowform1 = this;
             pic_Erweima.Visible = false;//隐藏二维码
             
             PLC = new PLCHelper();
@@ -270,8 +282,8 @@ namespace SHJ
             this.panel4.Dock = DockStyle.Fill;
 
             imageUrlPath = Directory.GetCurrentDirectory() + "\\imageUrl.ini";
-            LogPath = System.IO.Directory.GetCurrentDirectory() + "\\Log";
-            runningImage= Directory.GetCurrentDirectory() + "\\runningImage";
+            logPath = Directory.GetCurrentDirectory() + "\\Logs";
+            cameraParaFile = Directory.GetCurrentDirectory() + "\\cameraPara.ini";
 
             adimagesaddress = System.IO.Directory.GetCurrentDirectory() + "\\adimages";
             bkimagesaddress = System.IO.Directory.GetCurrentDirectory() + "\\bkimages";
@@ -316,13 +328,43 @@ namespace SHJ
             {
                 File.Create(imageUrlPath);
             }
-            if (!Directory.Exists(LogPath))//日志文件路径
+            if (!Directory.Exists(logPath))//日志路径
             {
-                Directory.CreateDirectory(LogPath);
+                Directory.CreateDirectory(logPath);
             }
-            if(Directory.Exists(runningImage)==false)
+            if (!File.Exists(cameraParaFile))//摄像机参数文件
             {
-                Directory.CreateDirectory(runningImage);
+                try
+                {
+                    File.Create(cameraParaFile);
+                }
+                catch { }
+            }
+            else
+            {
+                CameraHelper.fontSize=int.Parse(IniReadValue("Camera","fontSize",cameraParaFile));//字体大小
+                CameraHelper._CameraName = IniReadValue("Camera", "cameraName", cameraParaFile);//相机名称
+                CameraHelper.watermarkType = IniReadValue("Camera", "watermarkType", cameraParaFile);//水印类型
+                CameraHelper.videoCapabilitieItem = int.Parse(IniReadValue("Camera", "capabilitieItem", cameraParaFile));//分辨率
+                string picType = IniReadValue("Camera", "picType", cameraParaFile);
+                switch (picType)//图片格式
+                {
+                    case "Jpeg":
+                        CameraHelper.imageExt = ImageFormat.Jpeg;
+                        break;
+                    case "Bmp":
+                        CameraHelper.imageExt = ImageFormat.Bmp;
+                        break;
+                    case "Png":
+                        CameraHelper.imageExt = ImageFormat.Png;
+                        break;
+                    case "Gif":
+                        CameraHelper.imageExt = ImageFormat.Gif;
+                        break;
+                    default:
+                        CameraHelper.imageExt = ImageFormat.Jpeg;
+                        break;
+                }
             }
             if (System.IO.File.Exists(configxmlfile))
             {
@@ -552,7 +594,9 @@ namespace SHJ
             setting.CPFRPass = myfunctionnode.Attributes.GetNamedItem("CPFRPass").Value;
             setting.debugPass = myfunctionnode.Attributes.GetNamedItem("debugPass").Value;
             setting.setupPass = myfunctionnode.Attributes.GetNamedItem("setupPass").Value;
-
+            
+            nowform1 = this;
+            
         }
 
         #endregion
@@ -566,36 +610,6 @@ namespace SHJ
         private void timer1_Tick(object sender, EventArgs e)//1s
         {
             imageNames = ReadSections(imageUrlPath);
-            foreach(var picFile in imageNames)
-            {
-                string picUrl = IniReadValue(picFile, "url", imageUrlPath);
-                bool picExist = Directory.GetFiles(bcmimagesaddress, Path.GetFileNameWithoutExtension(picFile)).Length > 0 ? true : false;
-                if (picExist)
-                {
-                    FileInfo fileInfo = new FileInfo(picFile);
-                    long len = 0;
-                    if (fileInfo.Length == 0)
-                    {
-                        len = fileInfo.Length;
-                        while (len < 5)
-                        {
-                            DownLoadPicture(picUrl, picFile);
-                            fileInfo.Refresh();
-                            len = len + fileInfo.Length + 1;
-                        }
-                        fileInfo.Refresh();
-                        if (fileInfo.Length > 0)
-                        {
-                            DeleteSection(picFile, imageUrlPath);
-                        }
-                    }
-                    else
-                    {
-                        DeleteSection(picFile, imageUrlPath);
-                    }
-                }
-            }//重新下载空包图片
-
             for (int i = 0; i < imageNames.Count; i++)
             {
                 string name = imageNames[i];
@@ -990,13 +1004,25 @@ namespace SHJ
             RunningDisplay();
             if (PLCHelper._RunEnd)
             {
+                tihuoma.ErrorToken=true;//显示故障
                 timer3.Enabled = false;
+                pel_SellTips.Visible = false;
+                try
+                {
+                    CloseCamera();//关闭摄像头
+                }
+                catch { }
             }
             if (PLC.runTiming == 0)
             {
                 HMIstep = 1;
-                tihuoma.ErrorToken = true;
                 timer3.Enabled = false;
+                pel_SellTips.Visible = false;
+                try
+                {
+                    CloseCamera();//关闭摄像头
+                }
+                catch { }
             }
         }
 
@@ -2426,6 +2452,13 @@ namespace SHJ
         /// <param name="PicPath">印章图案路径</param>
         public void WorkingTest(int huodaoNum,string PicPath)
         {
+            ConnectCamera();//打开摄像头
+            nowLogPath = logPath + "\\" + "模拟测试" + DateTime.Now.ToString("MM-dd HH：mm：ss");
+            if (!Directory.Exists(nowLogPath))
+            {
+                Directory.CreateDirectory(nowLogPath);
+            }//添加日志文件夹
+
             log.CreateRunningLog("A1234", "白色印章", "90", "00", huodaoNum.ToString(), "模拟运行" + DateTime.Now.ToShortTimeString());
             int result = CargoStockAndStateCheck(huodaoNum.ToString());
             if(result < 90 && PLCHelper.nowStep == 0x00)//无报错
@@ -2458,15 +2491,6 @@ namespace SHJ
                 catch(Exception ex)
                 {
                 }
-            }
-            else if (result == 90)
-            {
-            }
-            else if (result == 91)
-            {
-            }
-            else if (result == 92)
-            {
             }
         }
 
@@ -2501,6 +2525,7 @@ namespace SHJ
                     break;
                 case 0x06:
                     showprintstate = "印章制作中:正在出货,请稍等";
+                    pel_SellTips.Visible = true;
                     break;
                 case 0x07:
                     showprintstate = "印章制作完成:等待取货,请稍等";
@@ -2551,7 +2576,47 @@ namespace SHJ
         }
 
         #endregion
+
+        #region Camera
         
+        /// <summary>
+        /// 打开摄像头
+        /// </summary>
+        private void ConnectCamera()
+        {
+            CameraHelper.IniCamera();
+            video1.VideoSource = CameraHelper.VideoDevice;
+            video1.Start();
+        }
+        
+        /// <summary>
+        /// 关闭摄像头
+        /// </summary>
+        private void CloseCamera()
+        {
+            video1.SignalToStop();
+            video1.WaitForStop();
+            video1.VideoSource = null;
+        }
+
+        /// <summary>
+        /// 拍照
+        /// </summary>
+        /// <param name="picName">名称</param>
+        public void TakePhoto(string picName)
+        {
+            try
+            {
+                Bitmap photo = video1.GetCurrentVideoFrame();
+                string path = logPath + "//" + picName + ".jpg";
+                photo.Save(path, System.Drawing.Imaging.ImageFormat.Jpeg);
+            }
+            catch(Exception e)
+            { }
+        }
+
+        #endregion
+
     }
     public class DownloadFile
     {

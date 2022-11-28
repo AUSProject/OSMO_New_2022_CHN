@@ -11,8 +11,8 @@ namespace SHJ
         {
             InitializeComponent();
         }
-        
-        public static string tihuomaresult= "请输入提货码";//验证结果提示语
+
+        public static string tihuomaresult = "请输入提货码";//验证结果提示语
         private PrintHelper print = null;
 
         public static bool ErrorToken = false;//设置故障标志
@@ -24,18 +24,18 @@ namespace SHJ
             Form1.needupdatePlaylist = true;//需要更新播放列表
             this.DialogResult = DialogResult.No;
             this.Close();
-        }     
+        }
 
         public static string tihuomastring;
 
         private void updateshow()
         {
-            if(Form1.myfunctionnode.Attributes.GetNamedItem("vendortype").Value == "1")//印章打印机
+            if (Form1.myfunctionnode.Attributes.GetNamedItem("vendortype").Value == "1")//印章打印机
             {
                 tihuomaresult = tihuomaresult.Replace("提货", "打印");
             }
             label2.Text = tihuomaresult;
-            if(Form1.isICYOK)
+            if (Form1.isICYOK)
             {
                 this.label10.ForeColor = System.Drawing.SystemColors.HighlightText;
             }
@@ -58,7 +58,7 @@ namespace SHJ
         private void timer1_Tick(object sender, EventArgs e)
         {
             updateshow();
-            if (ErrorToken)
+            if (ErrorToken)//运行时出现故障
             {
                 panel_Error.Visible = true;
                 lbl_Msg.Text = "设备故障，暂停使用";
@@ -73,12 +73,12 @@ namespace SHJ
             else if (print.PrintFaultInspect() != null)//打印机检查 
             {
                 panel_Error.Visible = true;
-                lbl_Msg.Text ="设备故障，暂停使用";
+                lbl_Msg.Text = "打印机故障，暂停使用";
                 lbl_Msg2.Visible = false;
             }
             else if (!PLCHelper.CheckPortConnect())//设备连接检查
             {
-                lbl_Msg.Text = "设备故障，暂停使用";
+                lbl_Msg.Text = "设备未连接，暂停使用";
                 panel_Error.Visible = true;
                 lbl_Msg2.Visible = false;
             }
@@ -105,7 +105,7 @@ namespace SHJ
         private void button13_Click(object sender, EventArgs e)
         {
             this.label2.Focus();//获取焦点
-            if(textBox1.Text.Length<7)//提货码七位
+            if (textBox1.Text.Length < 7)//提货码七位
             {
                 textBox1.Text += "1";
             }
@@ -215,7 +215,7 @@ namespace SHJ
         private void button4_Click(object sender, EventArgs e)//清除
         {
             this.label2.Focus();//获取焦点
-            if (textBox1.Text.Length>0)
+            if (textBox1.Text.Length > 0)
             {
                 textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 1);//去除一个字符
             }
@@ -227,7 +227,7 @@ namespace SHJ
         {
             if (PLCHelper.nowStep != 0x00)
             {
-                MessageBox.Show("机器正在运行中，请稍等","提示");
+                MessageBox.Show("机器正在运行中，请稍等", "提示");
                 return;
             }
             this.label2.Focus();//获取焦点
@@ -290,11 +290,11 @@ namespace SHJ
         {
             if (String.IsNullOrEmpty(cmbCargoWay.Text))
             {
-                MessageBox.Show("请选择货道","提示");
+                MessageBox.Show("请选择货道", "提示");
             }
             else if (String.IsNullOrEmpty(imageFilePath))
             {
-                MessageBox.Show("请选择印章图章","提示");
+                MessageBox.Show("请选择印章图章", "提示");
             }
             else
             {
@@ -307,7 +307,6 @@ namespace SHJ
 
         private void btnTry_Click(object sender, EventArgs e)
         {
-            ErrorToken = true;
             panelTest.BackColor = Color.FromArgb(98, Color.White);
             panelTest.Visible = true;
         }
@@ -321,37 +320,12 @@ namespace SHJ
         {
             panelTest.Visible = false;
         }
-        
+
         #endregion
-
-        /// <summary>
-        /// 故障报错提示
-        /// </summary>
-        /// <param name="type">故障类型</param>
-        public static void ReportErrors(ErrorType type)
+        
+        private void button2_Click_1(object sender, EventArgs e)
         {
-            switch (type)
-            {
-                case ErrorType.machineError:
-                    break;
-                case ErrorType.pictureError:
-                    break;
-                case ErrorType.printerError:
-                    break;
-                case ErrorType.stockError:
-                    break;
-            }
+            Form1.HMIstep = 3;
         }
-    }
-
-    /// <summary>
-    /// 错误类型
-    /// </summary>
-    public enum ErrorType
-    {
-        printerError,//打印机错误
-        machineError,//机器错误
-        pictureError,//印章图案错误
-        stockError//库存
     }
 }

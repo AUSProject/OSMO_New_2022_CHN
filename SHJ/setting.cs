@@ -5,12 +5,16 @@ using System.Windows.Forms;
 using System.Xml;
 using System.IO;
 using System.Runtime.InteropServices;
+using AForge.Video.DirectShow;
+using System.Drawing.Imaging;
 
 namespace SHJ
 {
     public partial class setting : Form
     {
         private const int SW_RESTORE = 9;//显示任务栏
+        private VideoCaptureDevice tempDevice;//临时摄像
+        private string photoTestPath=AppDomain.CurrentDomain.BaseDirectory+"//TestImages//Photos";//拍照测试路径
 
         [DllImport("user32.dll")]
         public static extern int ShowWindow(int hwnd, int nCmdShow);
@@ -53,6 +57,20 @@ namespace SHJ
             showpayrecord();
             txt_Pass.Text = "";
             keyboard = Keyboard.GetKeyboard();//获取实例
+
+            if (!Directory.Exists(photoTestPath))
+            {
+                Directory.CreateDirectory(photoTestPath);
+            }
+            else//删除临时拍照图片
+            {
+                DirectoryInfo dir = new DirectoryInfo(photoTestPath);
+                FileSystemInfo[] fileinfo = dir.GetFileSystemInfos();
+                foreach (var item in fileinfo)
+                {
+                    File.Delete(item.FullName);
+                }
+            }
         }
 
         #endregion
@@ -1183,12 +1201,7 @@ namespace SHJ
                 }
             }
         }
-
-        private void button9_Click(object sender, EventArgs e)//退出设置
-        {
-            this.Close();
-        }
-
+        
         private void button13_Click(object sender, EventArgs e)
         {
             listBox1.Items.Clear();
@@ -1518,7 +1531,266 @@ namespace SHJ
 
         private void button12_Click(object sender, EventArgs e)
         {
-            tihuoma.ErrorToken = false;
+            tihuoma.ErrorToken=false;//清除故障提示
         }
+
+        #region CameraSet
+
+        private void button9_Click(object sender, EventArgs e)//摄像头设置
+        {
+            pel_CameraSet.Visible = true;
+            bool result = CameraHelper.IniCamera();
+            if (result)
+            {
+                try
+                {
+                    tempDevice = CameraHelper.VideoDevice;
+                    video2.VideoSource = tempDevice;
+                    video2.Start();
+
+                    //获取分辨率
+                    foreach (var rp in tempDevice.VideoCapabilities)
+                    {
+                        cbx_Rp.Items.Add(rp.FrameSize.Width + "x" + rp.FrameSize.Height);
+                    }
+                    try
+                    {
+                        cbx_Rp.SelectedIndex = CameraHelper.videoCapabilitieItem;
+                    }
+                    catch { }
+                }
+                catch { }
+            }
+            else
+            {
+                tempDevice = new VideoCaptureDevice(CameraHelper._VideoDevices[0].MonikerString);
+                tempDevice.Start();
+                video2.VideoSource = tempDevice;
+                video2.Start();
+            }
+
+            //获取摄像列表
+            foreach (FilterInfo item in CameraHelper._VideoDevices)
+            {
+                cbx_PicFrom.Items.Add(item.Name);
+                if (item.Name == CameraHelper._CameraName)
+                    cbx_PicFrom.Text = CameraHelper._CameraName;
+                else
+                {
+                    cbx_PicFrom.SelectedIndex = 0;
+                }
+            }
+            //添加图片类型
+            cbx_PicType.Items.AddRange(CameraHelper.PicType);
+            cbx_PicType.Text = CameraHelper.imageExt.ToString();
+
+            //添加水印类型
+            cbx_PicWatermark.Items.AddRange(CameraHelper.watermarkTypes);
+            cbx_PicWatermark.Text = CameraHelper.watermarkType;
+
+            //字体大小
+            nud_fonSize.Value = CameraHelper.fontSize;
+        }
+
+        private void button14_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                tempDevice.DisplayPropertyPage(IntPtr.Zero);//打开摄像头属性设置
+            }
+            catch { }
+        }
+
+        private void cbx_PicFrom_SelectedIndexChanged(object sender, EventArgs e)//切换摄像头
+        {
+            try
+            {
+                video2.SignalToStop();
+                video2.WaitForStop();
+                tempDevice.SignalToStop();
+                tempDevice.WaitForStop();
+                video2.Stop();
+                video2.VideoSource = null;
+                tempDevice.Stop();
+            }
+            catch { }
+            //获取分辨率
+           
+            try
+            {
+                tempDevice = new VideoCaptureDevice(CameraHelper._VideoDevices[cbx_PicFrom.SelectedIndex].MonikerString);
+                video2.VideoSource = tempDevice;
+                video2.SignalToStop();
+                video2.WaitForStop();
+                video2.Start();
+                cbx_Rp.Items.Clear();
+                foreach (var rp in tempDevice.VideoCapabilities)
+                {
+                    cbx_Rp.Items.Add(rp.FrameSize.Width + "x" + rp.FrameSize.Height);
+                }
+                cbx_Rp.SelectedIndex = CameraHelper.videoCapabilitieItem;
+            }
+            catch { }
+        }
+
+        private void video2_NewFrame(object sender, ref Bitmap image)//水印
+        {
+            if (cbx_PicWatermark.SelectedItem.ToString() != "None")
+            {
+                Graphics grap = Graphics.FromImage(image);
+                SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.Red);
+                Font drawFont = new Font("Arial", (int)nud_fonSize.Value, System.Drawing.FontStyle.Bold, GraphicsUnit.Millimeter);
+                int xPos = image.Width - (image.Width - 15);
+                int yPos = 10;
+                string drawString;
+                if (cbx_PicWatermark.SelectedItem.ToString() == "DateTime")//提货码样式
+                {
+                    drawString = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+                else
+                {
+                    drawString = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  PickingCode : 1234567";
+                }
+                grap.DrawString(drawString, drawFont, drawBrush, xPos, yPos);
+            }
+        }
+
+        private void button16_Click(object sender, EventArgs e)//退出设置
+        {
+            try
+            {
+                video2.SignalToStop();
+                video2.WaitForStop();
+                video2.Stop();
+                tempDevice.SignalToStop();
+                tempDevice.WaitForStop();
+                tempDevice.Stop();
+            }
+            catch { }
+            cbx_PicFrom.Items.Clear();
+            cbx_PicType.Items.Clear();
+            cbx_Rp.Items.Clear();
+            cbx_PicWatermark.Items.Clear();
+            this.pel_CameraSet.Visible = false;
+
+        }
+
+        private void cbx_Rp_SelectedIndexChanged(object sender, EventArgs e)//切换分辨率
+        {
+            video2.SignalToStop();
+            video2.WaitForStop();
+            tempDevice.SignalToStop();
+            tempDevice.WaitForStop();
+            tempDevice.VideoResolution = tempDevice.VideoCapabilities[cbx_Rp.SelectedIndex];
+            tempDevice.Start();
+            video2.VideoSource = tempDevice;
+            video2.Start();
+        }
+
+        private void button15_Click(object sender, EventArgs e)//保存摄像头配置
+        {
+            try
+            {
+                video2.SignalToStop();
+                video2.WaitForStop();
+                video2.Stop();
+                tempDevice.SignalToStop();
+                tempDevice.WaitForStop();
+                tempDevice.Stop();
+            }
+            catch { }
+            
+            switch (cbx_PicType.SelectedItem.ToString())//图片格式
+            {
+                case "Jpeg":
+                    CameraHelper.imageExt = ImageFormat.Jpeg;
+                    break;
+                case "Bmp":
+                    CameraHelper.imageExt = ImageFormat.Bmp;
+                    break;
+                case "Png":
+                    CameraHelper.imageExt = ImageFormat.Png;
+                    break;
+                case "Gif":
+                    CameraHelper.imageExt = ImageFormat.Gif;
+                    break;
+                default:
+                    CameraHelper.imageExt = ImageFormat.Jpeg;
+                    break;
+            }
+            CameraHelper.watermarkType = cbx_PicWatermark.SelectedItem.ToString();//水印类型
+            CameraHelper._CameraName = cbx_PicFrom.SelectedItem.ToString();//摄像头名称
+            CameraHelper.videoCapabilitieItem = cbx_Rp.SelectedIndex;//分辨率
+            CameraHelper.fontSize = (int)nud_fonSize.Value;
+            CameraHelper.VideoDevice = tempDevice;
+
+            Form1.IniWriteValue("Camera", "watermarkType", cbx_PicWatermark.SelectedItem.ToString(), Form1.cameraParaFile);
+            Form1.IniWriteValue("Camera", "cameraName", cbx_PicFrom.SelectedItem.ToString(), Form1.cameraParaFile);
+            Form1.IniWriteValue("Camera", "capabilitieItem", cbx_Rp.SelectedIndex.ToString(), Form1.cameraParaFile);
+            Form1.IniWriteValue("Camera", "fontSize", nud_fonSize.Value.ToString(), Form1.cameraParaFile);
+            Form1.IniWriteValue("Camera", "picType", cbx_PicType.SelectedItem.ToString(), Form1.cameraParaFile);
+
+            tempDevice = null;
+            video2.VideoSource = null;
+            this.pel_CameraSet.Visible = false;
+
+            cbx_PicFrom.Items.Clear();
+            cbx_PicType.Items.Clear();
+            cbx_Rp.Items.Clear();
+            cbx_PicWatermark.Items.Clear();
+        }
+
+        private void button18_Click(object sender, EventArgs e)//打开图片
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(photoTestPath);
+            }
+            catch { }
+        }
+
+        private void button17_Click(object sender, EventArgs e)//拍照
+        {
+            try
+            {
+                Bitmap bmp = video2.GetCurrentVideoFrame();
+                string picName = photoTestPath+"\\"  +"PhotoTest"+ DateTime.Now.ToString("yyyy-MM-dd HH：mm：ss") + "." + cbx_PicType.SelectedItem.ToString();
+                ImageFormat format;
+                switch (cbx_PicType.SelectedItem.ToString())//图片格式
+                {
+                    case "Jpeg":
+                        format = ImageFormat.Jpeg;
+                        break;
+                    case "Bmp":
+                        format = ImageFormat.Bmp;
+                        break;
+                    case "Png":
+                        format = ImageFormat.Png;
+                        break;
+                    case "Gif":
+                        format = ImageFormat.Gif;
+                        break;
+                    default:
+                        format = ImageFormat.Jpeg;
+                        break;
+                }
+                bmp.Save(picName, format);
+                MessageBox.Show("保存成功");
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("保存失败"+ex.Message);
+            }
+        }
+
+        private void nud_fonSize_ValueChanged(object sender, EventArgs e)//字体大小限制
+        {
+            if(nud_fonSize.Value <= 0)
+            {
+                nud_fonSize.Value = 1;
+            }
+        }
+
+        #endregion
     }
 }

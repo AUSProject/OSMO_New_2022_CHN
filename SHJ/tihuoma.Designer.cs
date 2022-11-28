@@ -60,9 +60,10 @@
             this.btnPicChoice = new System.Windows.Forms.Button();
             this.pic_Erweima = new System.Windows.Forms.PictureBox();
             this.panel_Error = new System.Windows.Forms.Panel();
+            this.lbl_Msg2 = new System.Windows.Forms.Label();
             this.lbl_Msg = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.lbl_Msg2 = new System.Windows.Forms.Label();
+            this.button2 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panelTest.SuspendLayout();
@@ -460,13 +461,26 @@
             this.panel_Error.Size = new System.Drawing.Size(841, 647);
             this.panel_Error.TabIndex = 49;
             // 
+            // lbl_Msg2
+            // 
+            this.lbl_Msg2.AutoSize = true;
+            this.lbl_Msg2.Font = new System.Drawing.Font("宋体", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_Msg2.ForeColor = System.Drawing.Color.SkyBlue;
+            this.lbl_Msg2.Location = new System.Drawing.Point(106, 390);
+            this.lbl_Msg2.Name = "lbl_Msg2";
+            this.lbl_Msg2.Size = new System.Drawing.Size(610, 35);
+            this.lbl_Msg2.TabIndex = 0;
+            this.lbl_Msg2.Text = "您可以小程序或公众号中处理当前订单";
+            this.lbl_Msg2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lbl_Msg2.Visible = false;
+            // 
             // lbl_Msg
             // 
             this.lbl_Msg.Font = new System.Drawing.Font("宋体", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lbl_Msg.ForeColor = System.Drawing.Color.SkyBlue;
-            this.lbl_Msg.Location = new System.Drawing.Point(233, 308);
+            this.lbl_Msg.Location = new System.Drawing.Point(162, 305);
             this.lbl_Msg.Name = "lbl_Msg";
-            this.lbl_Msg.Size = new System.Drawing.Size(330, 35);
+            this.lbl_Msg.Size = new System.Drawing.Size(498, 35);
             this.lbl_Msg.TabIndex = 0;
             this.lbl_Msg.Text = "设备故障，暂停使用";
             this.lbl_Msg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -482,18 +496,15 @@
             this.label4.TabIndex = 0;
             this.label4.Text = "抱歉";
             // 
-            // lbl_Msg2
+            // button2
             // 
-            this.lbl_Msg2.AutoSize = true;
-            this.lbl_Msg2.Font = new System.Drawing.Font("宋体", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lbl_Msg2.ForeColor = System.Drawing.Color.SkyBlue;
-            this.lbl_Msg2.Location = new System.Drawing.Point(118, 393);
-            this.lbl_Msg2.Name = "lbl_Msg2";
-            this.lbl_Msg2.Size = new System.Drawing.Size(610, 35);
-            this.lbl_Msg2.TabIndex = 0;
-            this.lbl_Msg2.Text = "您可以小程序或公众号中处理当前订单";
-            this.lbl_Msg2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lbl_Msg2.Visible = false;
+            this.button2.Location = new System.Drawing.Point(633, 246);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 50;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click_1);
             // 
             // tihuoma
             // 
@@ -504,8 +515,9 @@
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(1918, 1078);
             this.ControlBox = false;
-            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.panel_Error);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.pic_Erweima);
             this.Controls.Add(this.panelTest);
             this.Controls.Add(this.btnTry);
@@ -562,5 +574,6 @@
         private System.Windows.Forms.Label lbl_Msg;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label lbl_Msg2;
+        private System.Windows.Forms.Button button2;
     }
 }

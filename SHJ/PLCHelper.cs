@@ -38,6 +38,7 @@ namespace SHJ
         public short mainCode;//主控程序
         public int runTiming = 150;
         public static bool isRigPrint;//是否装配印面 false:未安装  true:已安装 
+        public static bool rigPrinting;//正在安装印面
         
         #endregion
 
@@ -531,6 +532,7 @@ namespace SHJ
         {
             if (_MachineRunPlan == "02")
             {
+                rigPrinting = true;
                 Form1.HMIstep = 1;//退出页面
                 X6 = new PCHMI.VAR().GET_BIT(0, "X6");
                 X13 = new PCHMI.VAR().GET_BIT(0, "X13");
@@ -552,6 +554,7 @@ namespace SHJ
                         InPrintPos = true;//托盘在打印位置
                         new PCHMI.VAR().SEND_CTRL(0, "M36", "反转","");//机器复位
                         PrintFaceRecord(true);//印面已经装配完成，不用再装
+                        rigPrinting = false;
                         checkD11 = false;
                         ResetProgram();
                     }
