@@ -36,9 +36,14 @@ namespace SHJ
         public short runCode;//运行代码
         public static short faultCode;//错误代码
         public short mainCode;//主控程序
-        public int runTiming = 150;
+        public int runTiming = 150;//运行总时长
         public static bool isRigPrint;//是否装配印面 false:未安装  true:已安装 
         public static bool rigPrinting;//正在安装印面
+        /// <summary>
+        /// 运行故障标志
+        /// </summary>
+        public static bool errorToken;
+        public static string errorMsg=null;//故障信息
         
         #endregion
 
@@ -146,12 +151,22 @@ namespace SHJ
         /// </summary>
         public void MachineRun(int number)
         {
+            if (runTiming <= 0)
+            {
+                errorToken = true;
+                errorMsg += "未知故障";
+            }
+            if (print.PrintFaultInspect() != null)
+            {
+                errorToken = true;
+                errorMsg += "打印机故障";
+            }
             if (isAutoRun)
             {
                 if (isRigPrint)
                 {
-                    _RunEnd = true;
-                    nowStep = 0x71;
+                    errorToken = true;
+                    errorMsg += "印章机内有印面";
                 }
                 else
                 {
@@ -169,6 +184,11 @@ namespace SHJ
             {
                 MachineControlAndMonitoring(number);
             }
+
+            if (errorToken)//故障则复位程序
+            {
+                ResetProgram();
+            }
         }
 
         #region PLC自动控制
@@ -181,11 +201,15 @@ namespace SHJ
             GetCode();
             if (print.PrintFaultInspect() != null)//打印机报错
             {
-                mainCode = 98;
+                mainCode = 99;
+                errorToken = true;
+                errorMsg += "打印机报错";
             }
             if (faultCode != 0)//机器报错
             {
                 mainCode = 99;
+                errorToken = true;
+                errorMsg += "设备故障";
             }
             switch (mainCode)
             {
@@ -210,12 +234,10 @@ namespace SHJ
                 case 70:
                     nowStep = 0x70;
                     break;
-                case 98:
-                    nowStep = 0x98;
+                case 99://故障
+                    IniMachine();
                     break;
-                case 99:
-                    nowStep = 0x99;
-                    break;
+
             }
             if (nowStep >= 0x05 && nowStep<0x10 && runCode == 0 && faultCode == 0)//复位
             {
@@ -304,11 +326,9 @@ namespace SHJ
                         curState = 0x02;
                     else
                     {
-                        if (System.Windows.Forms.MessageBox.Show(result, "提示", System.Windows.Forms.MessageBoxButtons.OK) == System.Windows.Forms.DialogResult.OK)
-                        {
-                            ResetProgram();
-                            return;
-                        }
+                        errorToken = true;
+                        errorMsg += result;
+                        ResetProgram();
                     }
                     break;
                 case 0x91:
@@ -491,8 +511,6 @@ namespace SHJ
             X10 = new PCHMI.VAR().GET_BIT(0, "X10");
             X7 = new PCHMI.VAR().GET_BIT(0, "X7");
             X13 = new PCHMI.VAR().GET_BIT(0, "X13");
-            M34 = new PCHMI.VAR().GET_INT16(0, "M34");
-            M35 = new PCHMI.VAR().GET_INT16(0, "M35");
             if (X12 == 1)
             {
                 trubleNum[0] = 1;
@@ -511,11 +529,7 @@ namespace SHJ
 
             if (X13 == 1)
             {
-                result= "缺少印面！,请补货后再试";
-            }
-            else if (M34 == 1 || M35 == 1)//印面补货
-            {
-                result = "Z轴正在运动！,请稍后再试";
+                result= "缺少印面";
             }
             else if (X12 == 0 && X10 == 0 && X7 == 0)
             {

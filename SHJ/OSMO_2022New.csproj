@@ -225,6 +225,7 @@
     <None Include="pic\waitting2 %282%29.gif" />
     <None Include="Resources\waits.gif" />
     <None Include="Resources\waitnew.gif" />
+    <Content Include="Properties\Resources.Resx千万不要动！！！！.txt" />
     <Content Include="ThoughtWorks.QRCode.dll" />
   </ItemGroup>
   <ItemGroup>

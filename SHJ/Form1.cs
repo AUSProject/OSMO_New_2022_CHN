@@ -938,7 +938,7 @@ namespace SHJ
                 pic_Erweima.Visible = false;
             }
             
-            if ((Aisleoutcount > 0) && (Aisleoutcount < 1000))//最长1000*300 = 300s
+            if ((Aisleoutcount > 0) && (Aisleoutcount < 1000))//最长1000*300 = 300s 
             {
                 Aisleoutcount++;
             }
@@ -1004,23 +1004,25 @@ namespace SHJ
             RunningDisplay();
             if (PLCHelper._RunEnd)
             {
-                tihuoma.ErrorToken=true;//显示故障
+                HMIstep = 1;
                 timer3.Enabled = false;
                 pel_SellTips.Visible = false;
                 try
                 {
-                    CloseCamera();//关闭摄像头
+                    //CloseCamera();//关闭摄像头
                 }
                 catch { }
             }
-            if (PLC.runTiming == 0)
+            if (PLCHelper.errorToken)
             {
                 HMIstep = 1;
                 timer3.Enabled = false;
                 pel_SellTips.Visible = false;
                 try
                 {
-                    CloseCamera();//关闭摄像头
+                    log.WriteStepLog(StepType.运行故障, PLCHelper.errorMsg);
+                    log.SaveRunningLog();
+                    //CloseCamera();//关闭摄像头
                 }
                 catch { }
             }
@@ -2452,14 +2454,14 @@ namespace SHJ
         /// <param name="PicPath">印章图案路径</param>
         public void WorkingTest(int huodaoNum,string PicPath)
         {
-            ConnectCamera();//打开摄像头
+            //ConnectCamera();//打开摄像头
             nowLogPath = logPath + "\\" + "模拟测试" + DateTime.Now.ToString("MM-dd HH：mm：ss");
             if (!Directory.Exists(nowLogPath))
             {
                 Directory.CreateDirectory(nowLogPath);
             }//添加日志文件夹
 
-            log.CreateRunningLog("A1234", "白色印章", "90", "00", huodaoNum.ToString(), "模拟运行" + DateTime.Now.ToShortTimeString());
+            log.CreateRunningLog("A1234", "白色印章", "90", "00", huodaoNum.ToString(), nowLogPath+"\\模拟运行" + DateTime.Now.ToShortTimeString());
             int result = CargoStockAndStateCheck(huodaoNum.ToString());
             if(result < 90 && PLCHelper.nowStep == 0x00)//无报错
             {
@@ -2491,6 +2493,10 @@ namespace SHJ
                 catch(Exception ex)
                 {
                 }
+            }
+            else
+            {
+                log.SaveRunningLog();
             }
         }
 
@@ -2525,7 +2531,7 @@ namespace SHJ
                     break;
                 case 0x06:
                     showprintstate = "印章制作中:正在出货,请稍等";
-                    pel_SellTips.Visible = true;
+                    pel_SellTips.Visible = true;//出货提示
                     break;
                 case 0x07:
                     showprintstate = "印章制作完成:等待取货,请稍等";
@@ -2596,6 +2602,8 @@ namespace SHJ
         {
             video1.SignalToStop();
             video1.WaitForStop();
+            CameraHelper.VideoDevice.SignalToStop();
+            CameraHelper.VideoDevice.WaitForStop();
             video1.VideoSource = null;
         }
 
@@ -2608,8 +2616,8 @@ namespace SHJ
             try
             {
                 Bitmap photo = video1.GetCurrentVideoFrame();
-                string path = logPath + "//" + picName + ".jpg";
-                photo.Save(path, System.Drawing.Imaging.ImageFormat.Jpeg);
+                string path = logPath + "//" + picName + "." + CameraHelper.imageExt.ToString() ;
+                photo.Save(path, CameraHelper.imageExt);
             }
             catch(Exception e)
             { }

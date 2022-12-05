@@ -50,7 +50,7 @@ namespace SHJ
             _ShipCord = doc.CreateElement("出货记录");
             _ShipCord.SetAttribute("出货时间", DateTime.Now.ToString());
             _ShipCord.SetAttribute("货道号", largoNum);
-            filePath = System.IO.Path.Combine(Form1.myTihuomastr,logName) + ".xml";
+            filePath = logName + ".xml";
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace SHJ
         取盖子,
         安装印面,
         装配盒子,
-        运行中断,
+        运行故障,
         运行结束
     }
 }

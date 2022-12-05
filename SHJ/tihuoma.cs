@@ -14,9 +14,7 @@ namespace SHJ
 
         public static string tihuomaresult = "请输入提货码";//验证结果提示语
         private PrintHelper print = null;
-
-        public static bool ErrorToken = false;//设置故障标志
-
+        
         private void label11_Click(object sender, EventArgs e)
         {
             Form1.checktihuoma = false;//取消验证
@@ -58,16 +56,22 @@ namespace SHJ
         private void timer1_Tick(object sender, EventArgs e)
         {
             updateshow();
-            if (ErrorToken)//运行时出现故障
+            if (PLCHelper.errorToken)//运行时出现故障
             {
                 panel_Error.Visible = true;
                 lbl_Msg.Text = "设备故障，暂停使用";
                 lbl_Msg2.Visible = true;
             }
+            else if (!PLCHelper.CheckPortConnect())//设备连接检查
+            {
+                lbl_Msg.Text = "设备未连接，暂停使用";
+                panel_Error.Visible = true;
+                lbl_Msg2.Visible = false;
+            }
             else if (Form1.ReturnStock() == 0)//库存检测
             {
                 panel_Error.Visible = true;
-                lbl_Msg.Text = "设备无库存，暂停使用";
+                lbl_Msg.Text = "印章盒无库存，暂停使用";
                 lbl_Msg2.Visible = false;
             }
             else if (print.PrintFaultInspect() != null)//打印机检查 
@@ -76,15 +80,9 @@ namespace SHJ
                 lbl_Msg.Text = "打印机故障，暂停使用";
                 lbl_Msg2.Visible = false;
             }
-            else if (!PLCHelper.CheckPortConnect())//设备连接检查
-            {
-                lbl_Msg.Text = "设备未连接，暂停使用";
-                panel_Error.Visible = true;
-                lbl_Msg2.Visible = false;
-            }
             else if (!PLCHelper.GoodsInspect())//印面数量检查
             {
-                lbl_Msg.Text = "设备无库存，暂停使用";
+                lbl_Msg.Text = "印面无库存，暂停使用";
                 panel_Error.Visible = true;
                 lbl_Msg2.Visible = false;
             }

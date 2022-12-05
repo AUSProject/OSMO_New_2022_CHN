@@ -228,10 +228,12 @@ namespace SHJ
             if(PLCHelper._MachineRunPlan=="01")
             {
                 rb_RunType1.Checked = true;
+                button1.Visible = true;
             }
             else if(PLCHelper._MachineRunPlan=="02")
             {
                 rb_RunType2.Checked = true;
+                button1.Visible = false;
             }
 
             textBox5.Text = Form1.mypayconfignode.Attributes.GetNamedItem("zhekou").Value;
@@ -874,7 +876,17 @@ namespace SHJ
         private void timer1_Tick(object sender, EventArgs e)//500ms
         {
             updatemenu();
-            
+            if (PLCHelper.errorToken)
+            {
+                lbl_ErrorMsg.Text = PLCHelper.errorMsg;
+                label171.Visible = true;
+                lbl_ErrorMsg.Visible = true;
+            }
+            else
+            {
+                label171.Visible = false;
+                lbl_ErrorMsg.Visible = false;
+            }
         }
 
         #endregion
@@ -1440,7 +1452,7 @@ namespace SHJ
         private void rb_PLC_CheckedChanged(object sender, EventArgs e)
         {
             needsave = true;
-            if (rb_PLC.Checked && PLCHelper.isRigPrint)
+            if (rb_PLC.Checked)
             {
                 if (MessageBox.Show("要切换到当前模式需要先前打印机托盘内的印面拿出!!!\r\n(确认拿出后单击\"确认\"按钮)", "重要提示", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
@@ -1531,13 +1543,16 @@ namespace SHJ
 
         private void button12_Click(object sender, EventArgs e)
         {
-            tihuoma.ErrorToken=false;//清除故障提示
+            PLCHelper.errorToken=false;//清除故障提示
+            PLCHelper.errorMsg = null;
+            MessageBox.Show("清零成功");
         }
 
         #region CameraSet
 
         private void button9_Click(object sender, EventArgs e)//摄像头设置
         {
+            pel_CameraSet.Location = new Point(450, 300);
             pel_CameraSet.Visible = true;
             bool result = CameraHelper.IniCamera();
             if (result)

@@ -8,11 +8,7 @@ namespace SHJ
 {
     public class PrintHelper
     {
-        /// <summary>
-        /// 打印机错误检测
-        /// <para>无错误返回null</para>
-        /// </summary>
-        /// <returns></returns>
+       
         private PrintHelper()
         {
         }
