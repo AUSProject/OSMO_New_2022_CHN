@@ -165,13 +165,15 @@ namespace SHJ
             }
             if (checkBox8.Checked)
             {
-                Form1.myfunctionnode.Attributes.GetNamedItem("netlog").Value = "1";
+                Form1.myMachineNode.Attributes.GetNamedItem("photoTest").Value = "True";
+                Form1.photoPointTest = true;
             }
             else
             {
-                Form1.myfunctionnode.Attributes.GetNamedItem("netlog").Value = "0";
+                Form1.myMachineNode.Attributes.GetNamedItem("photoTest").Value = "False";
+                Form1.photoPointTest = false;
             }
-            
+
             if (checkBox5.Checked)
             {
                 Form1.myfunctionnode.Attributes.GetNamedItem("adupdate").Value = "0";
@@ -247,7 +249,7 @@ namespace SHJ
             }
             textBox3.Text = Form1.mynetcofignode.Attributes.GetNamedItem("port").Value;
             textBox4.Text = Form1.mynetcofignode.Attributes.GetNamedItem("netdelay").Value;
-            if (Form1.myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
+            if (Form1.myMachineNode.Attributes.GetNamedItem("photoTest").Value == "True")
             {
                 checkBox8.Checked = true;
             }

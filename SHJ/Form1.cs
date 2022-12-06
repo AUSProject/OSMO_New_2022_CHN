@@ -147,7 +147,6 @@ namespace SHJ
         public static string bcmimagesaddress;//商品图片路径
         public static string usedbcmimagesaddress;//已经提货的打印图片
         public static string dataaddress;
-        public static FileStream netdatastream;
         public static string[] adimagefiles;//广告图片名
         public static bool needupdatePlaylist;//是否需要更新播放列表
         public static string[] cmimagefiles;//商品图片名
@@ -457,12 +456,6 @@ namespace SHJ
                             cmimagefiles[j - 1] = str1;
                         }
                     }
-                }
-                
-                if (myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
-                {
-                    dataaddress += "\\" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".txt";
-                    netdatastream = System.IO.File.Create(dataaddress);
                 }
             }
             catch (Exception ex)
@@ -924,7 +917,6 @@ namespace SHJ
                 ReturnInputPage();//返回提货码页面
             }
             
-            
             if (needopensettingform)
             {
                 needopensettingform = false;
@@ -939,13 +931,7 @@ namespace SHJ
                     InitFormsize();
                 }
                 axWindowsMediaPlayer1.Ctlcontrols.play();
-
-                if ((myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
-                    && (!dataaddress.Contains(".txt")))
-                {
-                    dataaddress += "\\" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".txt";
-                    netdatastream = System.IO.File.Create(dataaddress);
-                }
+                
                 ShowCursor(0);//关闭鼠标
                 guanggaoreturntime = 0;
             }
@@ -1139,8 +1125,7 @@ namespace SHJ
                 }
             }
         }
-
-        private string revstringnet = "";
+        
         /// <summary>
         /// 网络收到数据事件方法
         /// </summary>
@@ -1149,18 +1134,6 @@ namespace SHJ
             netreturncount = 0;//超时计时停止
 
             GSMRxBuffer = new Coder(Coder.EncodingMothord.Unicode).GetEncodingBytes(e.Client.Datagram);
-            if (myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
-            {
-                revstringnet = DateTime.Now.ToString() + "get:";
-                for (int revcount = 0; revcount < GSMRxBuffer.Length; revcount++)
-                {
-                    revstringnet += " " + Convert.ToString(GSMRxBuffer[revcount], 16);
-                }
-                netdatastream.Write(Encoding.ASCII.GetBytes(revstringnet), 0, revstringnet.Length);
-                netdatastream.WriteByte(0x0d);
-                netdatastream.WriteByte(0x0a);
-                netdatastream.Flush();
-            }
             int lenrxbuf = (((int)GSMRxBuffer[2]) << 8) + GSMRxBuffer[3];//数据长度
             int i = 0;
             if ((GSMRxBuffer[0] == 0x01) && (GSMRxBuffer[1] == 0x70) && (GSMRxBuffer[5] == 0x01))
@@ -1588,27 +1561,11 @@ namespace SHJ
         private void myTcpCli_DisConnectedServer(object sender, NetEventArgs e)
         {
             isICYOK = false;
-            if (myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
-            {
-                revstringnet = DateTime.Now.ToString() + "DisConnected.";
-                netdatastream.Write(Encoding.ASCII.GetBytes(revstringnet), 0, revstringnet.Length);
-                netdatastream.WriteByte(0x0d);
-                netdatastream.WriteByte(0x0a);
-                netdatastream.Flush();
-            }
         }
 
         private void myTcpCli_ConnectedServer(object sender, NetEventArgs e)
         {
             isICYOK = true;
-            if (myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
-            {
-                revstringnet = DateTime.Now.ToString() + "Connected.";
-                netdatastream.Write(Encoding.ASCII.GetBytes(revstringnet), 0, revstringnet.Length);
-                netdatastream.WriteByte(0x0d);
-                netdatastream.WriteByte(0x0a);
-                netdatastream.Flush();
-            }
         }
 
         /// <summary>
@@ -2018,6 +1975,16 @@ namespace SHJ
             this.pel_SellTips.Location = new Point(1550, 750);
             
             needupdatePlaylist = true;
+
+            if (photoPointTest)//需要记录位置则显示功能
+            {
+                //拍照的位置测试功能
+                sw1 = new StreamWriter(Path.Combine(logPath, "拍照定位" + ".txt"));
+                panel2.Visible = true;
+                panel2.Location = new Point(454, 759);
+                video1.Visible = true;
+                video1.Location = new Point(300, 100);
+            }
         }
 
         #endregion
@@ -2062,20 +2029,7 @@ namespace SHJ
                     GSMTxBuffer[i] = netsendrecord[netsendindex, i];
                 }
                 myTcpCli.Sendbytes(GSMTxBuffer, 34);
-                if (myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
-                {
-                    revstringnet = DateTime.Now.ToString() + "Send:";
-                    for (int revcount = 0; revcount < 34; revcount++)
-                    {
-                        revstringnet += " " + Convert.ToString(GSMTxBuffer[revcount], 16);
-                    }
-                    netdatastream.Write(Encoding.ASCII.GetBytes(revstringnet), 0, revstringnet.Length);
-                    netdatastream.WriteByte(0x0d);
-                    netdatastream.WriteByte(0x0a);
-                    netdatastream.Flush();
-                }
-
-                //netreturncount = 1;//超时计时开始
+                
                 netcount = 0;//状态数据发送间隔重新开始
 
                 //如果是出货失败的不需要返回确认
@@ -2149,19 +2103,6 @@ namespace SHJ
             GSMTxBuffer[32] = 0x0d;
             GSMTxBuffer[33] = 0x0a;
             myTcpCli.Sendbytes(GSMTxBuffer, 34);
-            if (myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
-            {
-                revstringnet = DateTime.Now.ToString() + "Send:";
-                for (int revcount = 0; revcount < 34; revcount++)
-                {
-                    revstringnet += " " + Convert.ToString(GSMTxBuffer[revcount], 16);
-                }
-                netdatastream.Write(Encoding.ASCII.GetBytes(revstringnet), 0, revstringnet.Length);
-                netdatastream.WriteByte(0x0d);
-                netdatastream.WriteByte(0x0a);
-                netdatastream.Flush();
-            }
-            //netreturncount = 1;//超时计时开始
             netcount = 0;//状态数据发送间隔重新开始
         }
 
@@ -2200,19 +2141,6 @@ namespace SHJ
             GSMTxBuffer[43] = 0x0d;
             GSMTxBuffer[44] = 0x0a;
             myTcpCli.Sendbytes(GSMTxBuffer, 45);
-            if (myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
-            {
-                revstringnet = DateTime.Now.ToString() + "Send:";
-                for (int revcount = 0; revcount < 45; revcount++)
-                {
-                    revstringnet += " " + Convert.ToString(GSMTxBuffer[revcount], 16);
-                }
-                netdatastream.Write(Encoding.ASCII.GetBytes(revstringnet), 0, revstringnet.Length);
-                netdatastream.WriteByte(0x0d);
-                netdatastream.WriteByte(0x0a);
-                netdatastream.Flush();
-            }
-            //netreturncount = 1;//超时计时开始
             netcount = 0;//状态数据发送间隔重新开始
         }
 
@@ -2378,19 +2306,6 @@ namespace SHJ
             GSMTxBuffer[54 + 4 * totalshangpinnum] = 0x0d;
             GSMTxBuffer[55 + 4 * totalshangpinnum] = 0x0a;
             myTcpCli.Sendbytes(GSMTxBuffer, 56 + 4 * totalshangpinnum);
-            if (myfunctionnode.Attributes.GetNamedItem("netlog").Value == "1")
-            {
-                revstringnet = DateTime.Now.ToString() + "Send:";
-                for (int revcount = 0; revcount < 56 + 4 * totalshangpinnum; revcount++)
-                {
-                    revstringnet += " " + Convert.ToString(GSMTxBuffer[revcount], 16);
-                }
-                netdatastream.Write(Encoding.ASCII.GetBytes(revstringnet), 0, revstringnet.Length);
-                netdatastream.WriteByte(0x0d);
-                netdatastream.WriteByte(0x0a);
-                netdatastream.Flush();
-            }
-            //netreturncount = 1;//超时计时开始
             netcount = 0;//状态数据发送间隔重新开始
         }
 
