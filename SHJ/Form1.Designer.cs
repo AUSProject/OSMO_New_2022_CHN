@@ -42,6 +42,10 @@
             this.imageList3 = new System.Windows.Forms.ImageList(this.components);
             this.imageList4 = new System.Windows.Forms.ImageList(this.components);
             this.imageList5 = new System.Windows.Forms.ImageList(this.components);
+            this.config1 = new PCHMI.CONFIG();
+            this.timer3 = new System.Windows.Forms.Timer(this.components);
+            this.video1 = new AForge.Controls.VideoSourcePlayer();
+            this.pic_Erweima = new System.Windows.Forms.PictureBox();
             this.panel4 = new System.Windows.Forms.Panel();
             this.pel_SellTips = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
@@ -53,20 +57,30 @@
             this.pictureBox7 = new System.Windows.Forms.PictureBox();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.pic_Erweima = new System.Windows.Forms.PictureBox();
-            this.config1 = new PCHMI.CONFIG();
-            this.timer3 = new System.Windows.Forms.Timer(this.components);
-            this.video1 = new AForge.Controls.VideoSourcePlayer();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.button6 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
+            this.button4 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
+            this.lbl_D8 = new System.Windows.Forms.Label();
+            this.lbl_D7 = new System.Windows.Forms.Label();
+            this.lbl_D10 = new System.Windows.Forms.Label();
+            this.lbl_D6 = new System.Windows.Forms.Label();
+            this.lbl_D9 = new System.Windows.Forms.Label();
+            this.lbl_D11 = new System.Windows.Forms.Label();
+            this.lbl_D0 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pic_Erweima)).BeginInit();
             this.panel4.SuspendLayout();
             this.pel_SellTips.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox8)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pic_Erweima)).BeginInit();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -173,146 +187,6 @@
             this.imageList5.Images.SetKeyName(0, "NFC大.jpg");
             this.imageList5.Images.SetKeyName(1, "会员卡大.jpg");
             // 
-            // panel4
-            // 
-            this.panel4.BackgroundImage = global::SHJ.Properties.Resources.tihuo;
-            this.panel4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.panel4.Controls.Add(this.pel_SellTips);
-            this.panel4.Controls.Add(this.label16);
-            this.panel4.Controls.Add(this.label15);
-            this.panel4.Controls.Add(this.label5);
-            this.panel4.Controls.Add(this.pictureBox8);
-            this.panel4.Controls.Add(this.pictureBox7);
-            this.panel4.Controls.Add(this.pictureBox6);
-            this.panel4.Controls.Add(this.label2);
-            this.panel4.Location = new System.Drawing.Point(672, 174);
-            this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(784, 612);
-            this.panel4.TabIndex = 14;
-            this.panel4.Visible = false;
-            // 
-            // pel_SellTips
-            // 
-            this.pel_SellTips.BackColor = System.Drawing.Color.Transparent;
-            this.pel_SellTips.Controls.Add(this.label1);
-            this.pel_SellTips.Controls.Add(this.pictureBox2);
-            this.pel_SellTips.Location = new System.Drawing.Point(1600, 750);
-            this.pel_SellTips.Name = "pel_SellTips";
-            this.pel_SellTips.Size = new System.Drawing.Size(329, 347);
-            this.pel_SellTips.TabIndex = 54;
-            this.pel_SellTips.Visible = false;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("宋体", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label1.ForeColor = System.Drawing.Color.Red;
-            this.label1.Location = new System.Drawing.Point(7, 21);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(295, 35);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "请于下方拿取印章";
-            // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
-            this.pictureBox2.Location = new System.Drawing.Point(46, 59);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(228, 265);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox2.TabIndex = 0;
-            this.pictureBox2.TabStop = false;
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.BackColor = System.Drawing.Color.Transparent;
-            this.label16.Font = new System.Drawing.Font("幼圆", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label16.ForeColor = System.Drawing.Color.DarkGreen;
-            this.label16.Location = new System.Drawing.Point(270, 426);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(110, 24);
-            this.label16.TabIndex = 53;
-            this.label16.Text = "印章外观";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.BackColor = System.Drawing.Color.Transparent;
-            this.label15.Font = new System.Drawing.Font("幼圆", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label15.ForeColor = System.Drawing.Color.DarkGreen;
-            this.label15.Location = new System.Drawing.Point(138, 426);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(110, 24);
-            this.label15.TabIndex = 52;
-            this.label15.Text = "印章图案";
-            // 
-            // label5
-            // 
-            this.label5.BackColor = System.Drawing.Color.Transparent;
-            this.label5.Font = new System.Drawing.Font("幼圆", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label5.ForeColor = System.Drawing.Color.DarkGreen;
-            this.label5.Location = new System.Drawing.Point(6, 450);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(1500, 50);
-            this.label5.TabIndex = 50;
-            this.label5.Text = "正在制作印章,请稍等..";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // pictureBox8
-            // 
-            this.pictureBox8.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox8.Image = global::SHJ.Properties.Resources.shangpin;
-            this.pictureBox8.Location = new System.Drawing.Point(481, 165);
-            this.pictureBox8.Name = "pictureBox8";
-            this.pictureBox8.Size = new System.Drawing.Size(350, 290);
-            this.pictureBox8.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox8.TabIndex = 49;
-            this.pictureBox8.TabStop = false;
-            // 
-            // pictureBox7
-            // 
-            this.pictureBox7.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox7.Image = global::SHJ.Properties.Resources.shangpin;
-            this.pictureBox7.Location = new System.Drawing.Point(274, 165);
-            this.pictureBox7.Name = "pictureBox7";
-            this.pictureBox7.Size = new System.Drawing.Size(350, 290);
-            this.pictureBox7.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox7.TabIndex = 48;
-            this.pictureBox7.TabStop = false;
-            // 
-            // pictureBox6
-            // 
-            this.pictureBox6.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox6.Image = global::SHJ.Properties.Resources.waitnew;
-            this.pictureBox6.Location = new System.Drawing.Point(18, 165);
-            this.pictureBox6.Name = "pictureBox6";
-            this.pictureBox6.Size = new System.Drawing.Size(316, 248);
-            this.pictureBox6.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox6.TabIndex = 47;
-            this.pictureBox6.TabStop = false;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.BackColor = System.Drawing.Color.Transparent;
-            this.label2.Font = new System.Drawing.Font("宋体", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label2.ForeColor = System.Drawing.SystemColors.HighlightText;
-            this.label2.Location = new System.Drawing.Point(543, 9);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(238, 24);
-            this.label2.TabIndex = 46;
-            this.label2.Text = "2016-03-07 12:00:00";
-            // 
-            // pic_Erweima
-            // 
-            this.pic_Erweima.Location = new System.Drawing.Point(40, 40);
-            this.pic_Erweima.Name = "pic_Erweima";
-            this.pic_Erweima.Size = new System.Drawing.Size(200, 200);
-            this.pic_Erweima.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pic_Erweima.TabIndex = 16;
-            this.pic_Erweima.TabStop = false;
-            // 
             // config1
             // 
             this.config1.MAIN_HMI_IP = "";
@@ -346,13 +220,293 @@
             this.video1.TabIndex = 17;
             this.video1.Text = "videoSourcePlayer1";
             this.video1.VideoSource = null;
-            this.video1.Visible = false;
+            this.video1.NewFrame += new AForge.Controls.VideoSourcePlayer.NewFrameHandler(this.video1_NewFrame);
+            // 
+            // pic_Erweima
+            // 
+            this.pic_Erweima.Location = new System.Drawing.Point(40, 40);
+            this.pic_Erweima.Name = "pic_Erweima";
+            this.pic_Erweima.Size = new System.Drawing.Size(200, 200);
+            this.pic_Erweima.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pic_Erweima.TabIndex = 16;
+            this.pic_Erweima.TabStop = false;
+            // 
+            // panel4
+            // 
+            this.panel4.BackgroundImage = global::SHJ.Properties.Resources.tihuo;
+            this.panel4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.panel4.Controls.Add(this.pel_SellTips);
+            this.panel4.Controls.Add(this.label16);
+            this.panel4.Controls.Add(this.label15);
+            this.panel4.Controls.Add(this.label5);
+            this.panel4.Controls.Add(this.pictureBox8);
+            this.panel4.Controls.Add(this.pictureBox7);
+            this.panel4.Controls.Add(this.pictureBox6);
+            this.panel4.Controls.Add(this.label2);
+            this.panel4.Location = new System.Drawing.Point(672, 174);
+            this.panel4.Name = "panel4";
+            this.panel4.Size = new System.Drawing.Size(784, 841);
+            this.panel4.TabIndex = 14;
+            this.panel4.Visible = false;
+            // 
+            // pel_SellTips
+            // 
+            this.pel_SellTips.BackColor = System.Drawing.Color.Transparent;
+            this.pel_SellTips.Controls.Add(this.label1);
+            this.pel_SellTips.Controls.Add(this.pictureBox2);
+            this.pel_SellTips.Location = new System.Drawing.Point(268, 421);
+            this.pel_SellTips.Name = "pel_SellTips";
+            this.pel_SellTips.Size = new System.Drawing.Size(329, 347);
+            this.pel_SellTips.TabIndex = 54;
+            this.pel_SellTips.Visible = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("幼圆", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label1.ForeColor = System.Drawing.Color.DarkGreen;
+            this.label1.Location = new System.Drawing.Point(9, 9);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(311, 35);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "请于下方拿取印章";
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = global::SHJ.Properties.Resources.arrow_down_green;
+            this.pictureBox2.Location = new System.Drawing.Point(46, 59);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(228, 265);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox2.TabIndex = 0;
+            this.pictureBox2.TabStop = false;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.BackColor = System.Drawing.Color.Transparent;
+            this.label16.Font = new System.Drawing.Font("幼圆", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label16.ForeColor = System.Drawing.Color.DarkGreen;
+            this.label16.Location = new System.Drawing.Point(284, 344);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(110, 24);
+            this.label16.TabIndex = 53;
+            this.label16.Text = "印章外观";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.BackColor = System.Drawing.Color.Transparent;
+            this.label15.Font = new System.Drawing.Font("幼圆", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label15.ForeColor = System.Drawing.Color.DarkGreen;
+            this.label15.Location = new System.Drawing.Point(152, 344);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(110, 24);
+            this.label15.TabIndex = 52;
+            this.label15.Text = "印章图案";
+            // 
+            // label5
+            // 
+            this.label5.BackColor = System.Drawing.Color.Transparent;
+            this.label5.Font = new System.Drawing.Font("幼圆", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label5.ForeColor = System.Drawing.Color.DarkGreen;
+            this.label5.Location = new System.Drawing.Point(20, 368);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(1500, 50);
+            this.label5.TabIndex = 50;
+            this.label5.Text = "正在制作印章,请稍等..";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // pictureBox8
+            // 
+            this.pictureBox8.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox8.Image = global::SHJ.Properties.Resources.shangpin;
+            this.pictureBox8.Location = new System.Drawing.Point(475, 51);
+            this.pictureBox8.Name = "pictureBox8";
+            this.pictureBox8.Size = new System.Drawing.Size(350, 290);
+            this.pictureBox8.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox8.TabIndex = 49;
+            this.pictureBox8.TabStop = false;
+            // 
+            // pictureBox7
+            // 
+            this.pictureBox7.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox7.Image = global::SHJ.Properties.Resources.shangpin;
+            this.pictureBox7.Location = new System.Drawing.Point(268, 51);
+            this.pictureBox7.Name = "pictureBox7";
+            this.pictureBox7.Size = new System.Drawing.Size(350, 290);
+            this.pictureBox7.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox7.TabIndex = 48;
+            this.pictureBox7.TabStop = false;
+            // 
+            // pictureBox6
+            // 
+            this.pictureBox6.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox6.Image = global::SHJ.Properties.Resources.waitnew_unscreen;
+            this.pictureBox6.Location = new System.Drawing.Point(12, 51);
+            this.pictureBox6.Name = "pictureBox6";
+            this.pictureBox6.Size = new System.Drawing.Size(316, 248);
+            this.pictureBox6.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox6.TabIndex = 47;
+            this.pictureBox6.TabStop = false;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.BackColor = System.Drawing.Color.Transparent;
+            this.label2.Font = new System.Drawing.Font("宋体", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label2.ForeColor = System.Drawing.SystemColors.HighlightText;
+            this.label2.Location = new System.Drawing.Point(543, 9);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(238, 24);
+            this.label2.TabIndex = 46;
+            this.label2.Text = "2016-03-07 12:00:00";
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.button6);
+            this.panel2.Controls.Add(this.button5);
+            this.panel2.Controls.Add(this.button4);
+            this.panel2.Controls.Add(this.button3);
+            this.panel2.Controls.Add(this.button1);
+            this.panel2.Controls.Add(this.lbl_D8);
+            this.panel2.Controls.Add(this.lbl_D7);
+            this.panel2.Controls.Add(this.lbl_D10);
+            this.panel2.Controls.Add(this.lbl_D6);
+            this.panel2.Controls.Add(this.lbl_D9);
+            this.panel2.Controls.Add(this.lbl_D11);
+            this.panel2.Controls.Add(this.lbl_D0);
+            this.panel2.Location = new System.Drawing.Point(0, 604);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(471, 253);
+            this.panel2.TabIndex = 18;
+            // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(374, 14);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(82, 31);
+            this.button6.TabIndex = 1;
+            this.button6.Text = "出货位置";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(278, 129);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(82, 31);
+            this.button5.TabIndex = 1;
+            this.button5.Text = "装载印章";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(278, 90);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(82, 31);
+            this.button4.TabIndex = 1;
+            this.button4.Text = "印面拍照";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(278, 14);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(82, 31);
+            this.button3.TabIndex = 1;
+            this.button3.Text = "放印面";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(278, 51);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(82, 31);
+            this.button1.TabIndex = 1;
+            this.button1.Text = "装配盖子";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
+            // 
+            // lbl_D8
+            // 
+            this.lbl_D8.AutoSize = true;
+            this.lbl_D8.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_D8.Location = new System.Drawing.Point(25, 193);
+            this.lbl_D8.Name = "lbl_D8";
+            this.lbl_D8.Size = new System.Drawing.Size(40, 16);
+            this.lbl_D8.TabIndex = 0;
+            this.lbl_D8.Text = "D8：";
+            // 
+            // lbl_D7
+            // 
+            this.lbl_D7.AutoSize = true;
+            this.lbl_D7.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_D7.Location = new System.Drawing.Point(124, 110);
+            this.lbl_D7.Name = "lbl_D7";
+            this.lbl_D7.Size = new System.Drawing.Size(40, 16);
+            this.lbl_D7.TabIndex = 0;
+            this.lbl_D7.Text = "D7：";
+            // 
+            // lbl_D10
+            // 
+            this.lbl_D10.AutoSize = true;
+            this.lbl_D10.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_D10.Location = new System.Drawing.Point(254, 193);
+            this.lbl_D10.Name = "lbl_D10";
+            this.lbl_D10.Size = new System.Drawing.Size(48, 16);
+            this.lbl_D10.TabIndex = 0;
+            this.lbl_D10.Text = "D10：";
+            // 
+            // lbl_D6
+            // 
+            this.lbl_D6.AutoSize = true;
+            this.lbl_D6.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_D6.Location = new System.Drawing.Point(25, 110);
+            this.lbl_D6.Name = "lbl_D6";
+            this.lbl_D6.Size = new System.Drawing.Size(40, 16);
+            this.lbl_D6.TabIndex = 0;
+            this.lbl_D6.Text = "D6：";
+            // 
+            // lbl_D9
+            // 
+            this.lbl_D9.AutoSize = true;
+            this.lbl_D9.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_D9.Location = new System.Drawing.Point(124, 193);
+            this.lbl_D9.Name = "lbl_D9";
+            this.lbl_D9.Size = new System.Drawing.Size(40, 16);
+            this.lbl_D9.TabIndex = 0;
+            this.lbl_D9.Text = "D9：";
+            // 
+            // lbl_D11
+            // 
+            this.lbl_D11.AutoSize = true;
+            this.lbl_D11.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_D11.Location = new System.Drawing.Point(123, 19);
+            this.lbl_D11.Name = "lbl_D11";
+            this.lbl_D11.Size = new System.Drawing.Size(48, 16);
+            this.lbl_D11.TabIndex = 0;
+            this.lbl_D11.Text = "D11：";
+            // 
+            // lbl_D0
+            // 
+            this.lbl_D0.AutoSize = true;
+            this.lbl_D0.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_D0.Location = new System.Drawing.Point(24, 19);
+            this.lbl_D0.Name = "lbl_D0";
+            this.lbl_D0.Size = new System.Drawing.Size(40, 16);
+            this.lbl_D0.TabIndex = 0;
+            this.lbl_D0.Text = "D0：";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1490, 1080);
+            this.Controls.Add(this.panel2);
             this.Controls.Add(this.pic_Erweima);
             this.Controls.Add(this.video1);
             this.Controls.Add(this.panel4);
@@ -369,6 +523,7 @@
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pic_Erweima)).EndInit();
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
             this.pel_SellTips.ResumeLayout(false);
@@ -377,7 +532,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox8)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pic_Erweima)).EndInit();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -411,6 +567,19 @@
         private System.Windows.Forms.Panel pel_SellTips;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Label lbl_D8;
+        private System.Windows.Forms.Label lbl_D7;
+        private System.Windows.Forms.Label lbl_D10;
+        private System.Windows.Forms.Label lbl_D6;
+        private System.Windows.Forms.Label lbl_D9;
+        private System.Windows.Forms.Label lbl_D11;
+        private System.Windows.Forms.Label lbl_D0;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button button3;
     }
 }
 

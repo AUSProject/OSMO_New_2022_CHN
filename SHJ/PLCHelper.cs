@@ -53,42 +53,42 @@ namespace SHJ
         /// 系统复位
         /// <para>1开始,4结束</para>
         /// </summary>
-        private short D5 = 0;
+        public short D5 = 0;
         /// <summary>
         /// 装配印面
         /// <para>1开始,10结束</para>
         /// </summary>
-        private short D11 = 0;
+        public short D11 = 0;
         /// <summary>
         /// 货道控制
         /// 1开始,5结束
         /// </summary>
-        private short D0 = 0;
+        public short D0 = 0;
         /// <summary>
         /// 取盖子
         /// <para>1开始,10结束</para>
         /// </summary>
-        private short D6 = 0;
+        public short D6 = 0;
         /// <summary>
         /// 从打印机位置取料装配
         /// <para>1开始,10结束</para>
         /// </summary>
-        private short D7 = 0;
+        public short D7 = 0;
         /// <summary>
         /// 装配盖子
         /// <para>1开始,11结束</para>
         /// </summary>
-        private short D8 = 0;
+        public short D8 = 0;
         /// <summary>
         /// 装配位置出料
         /// <para>1开始,13结束</para>
         /// </summary>
-        private short D9 = 0;
+        public short D9 = 0;
         /// <summary>
         /// 出成品和回零
         /// <para>1开始,2结束</para>
         /// </summary>
-        private short D10 = 0;
+        public short D10 = 0;
         /// <summary>
         /// 出料位置检测
         /// 置1故障
@@ -156,11 +156,11 @@ namespace SHJ
                 errorToken = true;
                 errorMsg += "未知故障";
             }
-            if (print.PrintFaultInspect() != null)
-            {
-                errorToken = true;
-                errorMsg += "打印机故障";
-            }
+            //if (print.PrintFaultInspect() != null)
+            //{
+            //    errorToken = true;
+            //    errorMsg += "打印机故障";
+            //}
             if (isAutoRun)
             {
                 if (isRigPrint)
@@ -485,7 +485,7 @@ namespace SHJ
             try
             {
                 isRigPrint = Is;
-                Form1.myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value = Is.ToString();
+                Form1.myMachineNode.Attributes.GetNamedItem("isRigPrint").Value = Is.ToString();
                 Form1.myxmldoc.Save(Form1.configxmlfile);
                 Form1.myxmldoc.Save(Form1.configxmlfilecopy);
             }
@@ -691,7 +691,7 @@ namespace SHJ
                 rigPrintMsg.Add("等待打印完成");
             }
             D7 = new PCHMI.VAR().GET_INT16(0, "D7");
-            if (D7 > 1 && D7 < 3)
+            if (D7 ==3)
             {
                 printMsg.Add("打印完成,托盘出货成功");
                 rigPrintMsg.Add("开始装配印面");

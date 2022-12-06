@@ -24,6 +24,18 @@ namespace SHJ
         public static string[] watermarkTypes = new string[] { "None", "DateTime", "TimeAndNum" };
 
         /// <summary>
+        /// 初始化相机参数
+        /// </summary>
+        public static void IniCameraPara()
+        {
+            Form1.IniWriteValue("Camera", "watermarkType", watermarkType, Form1.cameraParaFile);
+            Form1.IniWriteValue("Camera", "cameraName", _CameraName, Form1.cameraParaFile);
+            Form1.IniWriteValue("Camera", "capabilitieItem", videoCapabilitieItem.ToString(), Form1.cameraParaFile);
+            Form1.IniWriteValue("Camera", "fontSize", fontSize.ToString(), Form1.cameraParaFile);
+            Form1.IniWriteValue("Camera", "picType", "Jpeg", Form1.cameraParaFile);
+        }
+
+        /// <summary>
         /// 打开摄像头
         /// </summary>
         /// <returns>是否打开成功</returns>
@@ -49,6 +61,7 @@ namespace SHJ
                         try
                         {
                             VideoDevice = new VideoCaptureDevice(_VideoDevices[i].MonikerString);
+                            VideoDevice.VideoResolution = VideoDevice.VideoCapabilities[videoCapabilitieItem];
                             result = true;
                             break;
                         }

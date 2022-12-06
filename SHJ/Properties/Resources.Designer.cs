@@ -83,6 +83,16 @@ namespace SHJ.Properties {
         /// <summary>
         ///   查找 System.Drawing.Bitmap 类型的本地化资源。
         /// </summary>
+        internal static System.Drawing.Bitmap arrow_down_green {
+            get {
+                object obj = ResourceManager.GetObject("arrow-down_green", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
         internal static System.Drawing.Bitmap button {
             get {
                 object obj = ResourceManager.GetObject("button", resourceCulture);
@@ -246,6 +256,16 @@ namespace SHJ.Properties {
         internal static System.Drawing.Bitmap waitnew {
             get {
                 object obj = ResourceManager.GetObject("waitnew", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap waitnew_unscreen {
+            get {
+                object obj = ResourceManager.GetObject("waitnew-unscreen", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

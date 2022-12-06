@@ -145,22 +145,22 @@ namespace SHJ
             Form1.mynetcofignode.Attributes.GetNamedItem("netdelay").Value = textBox4.Text;
             if (rb_PC.Checked)
             {
-                Form1.myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value = "false";
+                Form1.myMachineNode.Attributes.GetNamedItem("isAutoRun").Value = "False";
                 PLCHelper.isAutoRun = false;
             }
             else
             {
-                Form1.myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value = "true";
+                Form1.myMachineNode.Attributes.GetNamedItem("isAutoRun").Value = "True";
                 PLCHelper.isAutoRun = true;
             }
             if (rb_RunType1.Checked)
             {
-                Form1.myfunctionnode.Attributes.GetNamedItem("runType").Value = "01";
+                Form1.myMachineNode.Attributes.GetNamedItem("runType").Value = "01";
                 PLCHelper._MachineRunPlan = "01";
             }
             else
             {
-                Form1.myfunctionnode.Attributes.GetNamedItem("runType").Value = "02";
+                Form1.myMachineNode.Attributes.GetNamedItem("runType").Value = "02";
                 PLCHelper._MachineRunPlan = "02";
             }
             if (checkBox8.Checked)
@@ -1301,7 +1301,7 @@ namespace SHJ
         {
             PEPrinter.needPutImage = true;
             PLCHelper.isRigPrint = false;//打印机里已无印面
-            Form1.myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value = "false";
+            Form1.myMachineNode.Attributes.GetNamedItem("isRigPrint").Value = "False";
         }
 
         /// <summary>

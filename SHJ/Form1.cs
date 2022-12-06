@@ -131,12 +131,12 @@ namespace SHJ
         private string ErweimaUrl = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";//二维码地址
         PLCHelper PLC;//机器控制
         LogHelper log;//运行日志
-
+        
         public static string cameraParaFile;//摄像机参数文件
+        public static bool photoPointTest;//拍照位置记录功能
 
         public static bool needcloseform = false;//是否需要关闭窗体
         public static int HMIstep;//界面页面：0广告 1触摸选择商品 2支付页面
-        //private const int RXTXBUFLEN = 512;
         private const int GSMRXTXBUFLEN = 1500;
         private setting mysetting;//设置窗口
 
@@ -165,6 +165,8 @@ namespace SHJ
         public static XmlNode mypayconfignode;//支付配置
         public static XmlDocument mysalexmldoc = new XmlDocument();//销售记录配置文件XML
         public static XmlNodeList mynodelistpay;//支付记录
+        public static XmlNode mySystemNode;//系统信息
+        public static XmlNode myMachineNode;//设备参数
 
         public static string localsalerID = "";//本机商家号
         public static string vendortype = "0";//机器类型
@@ -196,7 +198,6 @@ namespace SHJ
         public static string myTihuomastr = "";//输入的7位提货码
         public static bool checktihuoma;//需要验证提货码
         public static string showprintstate;//制作过程状态显示
-        public static int OSMOtype;
         
         public static int wulihuodao;//物理货道号
         private double shangpinjiage;
@@ -208,64 +209,7 @@ namespace SHJ
         public static bool istestmode;//测试出货模式
 
         #endregion
-
-        #region Crc
-
-        //private UInt16[] CrcTbl =
-        //{
-        //    0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
-        //    0xC601, 0x06C0, 0x0780, 0xC741, 0x0500, 0xC5C1, 0xC481, 0x0440,
-        //    0xCC01, 0x0CC0, 0x0D80, 0xCD41, 0x0F00, 0xCFC1, 0xCE81, 0x0E40,
-        //    0x0A00, 0xCAC1, 0xCB81, 0x0B40, 0xC901, 0x09C0, 0x0880, 0xC841,
-        //    0xD801, 0x18C0, 0x1980, 0xD941, 0x1B00, 0xDBC1, 0xDA81, 0x1A40,
-        //    0x1E00, 0xDEC1, 0xDF81, 0x1F40, 0xDD01, 0x1DC0, 0x1C80, 0xDC41,
-        //    0x1400, 0xD4C1, 0xD581, 0x1540, 0xD701, 0x17C0, 0x1680, 0xD641,
-        //    0xD201, 0x12C0, 0x1380, 0xD341, 0x1100, 0xD1C1, 0xD081, 0x1040,
-        //    0xF001, 0x30C0, 0x3180, 0xF141, 0x3300, 0xF3C1, 0xF281, 0x3240,
-        //    0x3600, 0xF6C1, 0xF781, 0x3740, 0xF501, 0x35C0, 0x3480, 0xF441,
-        //    0x3C00, 0xFCC1, 0xFD81, 0x3D40, 0xFF01, 0x3FC0, 0x3E80, 0xFE41,
-        //    0xFA01, 0x3AC0, 0x3B80, 0xFB41, 0x3900, 0xF9C1, 0xF881, 0x3840,
-        //    0x2800, 0xE8C1, 0xE981, 0x2940, 0xEB01, 0x2BC0, 0x2A80, 0xEA41,
-        //    0xEE01, 0x2EC0, 0x2F80, 0xEF41, 0x2D00, 0xEDC1, 0xEC81, 0x2C40,
-        //    0xE401, 0x24C0, 0x2580, 0xE541, 0x2700, 0xE7C1, 0xE681, 0x2640,
-        //    0x2200, 0xE2C1, 0xE381, 0x2340, 0xE101, 0x21C0, 0x2080, 0xE041,
-        //    0xA001, 0x60C0, 0x6180, 0xA141, 0x6300, 0xA3C1, 0xA281, 0x6240,
-        //    0x6600, 0xA6C1, 0xA781, 0x6740, 0xA501, 0x65C0, 0x6480, 0xA441,
-        //    0x6C00, 0xACC1, 0xAD81, 0x6D40, 0xAF01, 0x6FC0, 0x6E80, 0xAE41,
-        //    0xAA01, 0x6AC0, 0x6B80, 0xAB41, 0x6900, 0xA9C1, 0xA881, 0x6840,
-        //    0x7800, 0xB8C1, 0xB981, 0x7940, 0xBB01, 0x7BC0, 0x7A80, 0xBA41,
-        //    0xBE01, 0x7EC0, 0x7F80, 0xBF41, 0x7D00, 0xBDC1, 0xBC81, 0x7C40,
-        //    0xB401, 0x74C0, 0x7580, 0xB541, 0x7700, 0xB7C1, 0xB681, 0x7640,
-        //    0x7200, 0xB2C1, 0xB381, 0x7340, 0xB101, 0x71C0, 0x7080, 0xB041,
-        //    0x5000, 0x90C1, 0x9181, 0x5140, 0x9301, 0x53C0, 0x5280, 0x9241,
-        //    0x9601, 0x56C0, 0x5780, 0x9741, 0x5500, 0x95C1, 0x9481, 0x5440,
-        //    0x9C01, 0x5CC0, 0x5D80, 0x9D41, 0x5F00, 0x9FC1, 0x9E81, 0x5E40,
-        //    0x5A00, 0x9AC1, 0x9B81, 0x5B40, 0x9901, 0x59C0, 0x5880, 0x9841,
-        //    0x8801, 0x48C0, 0x4980, 0x8941, 0x4B00, 0x8BC1, 0x8A81, 0x4A40,
-        //    0x4E00, 0x8EC1, 0x8F81, 0x4F40, 0x8D01, 0x4DC0, 0x4C80, 0x8C41,
-        //    0x4400, 0x84C1, 0x8581, 0x4540, 0x8701, 0x47C0, 0x4680, 0x8641,
-        //    0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040
-        //};
-
-        ////查表算法CRC-16
-        //UInt16 crcVal(byte[] pcMess, UInt16 wLen)
-        //{
-        //    int i = 0;
-        //    UInt16 nCRCData, Index = 0;
-        //    nCRCData = 0xffff;
-        //    while (wLen > 0)
-        //    {
-        //        wLen--;
-        //        Index = (UInt16)(nCRCData >> 8);
-        //        Index = (UInt16)(Index ^ (pcMess[i++] & 0x00ff));
-        //        nCRCData = (UInt16)((nCRCData ^ CrcTbl[Index]) & 0x00ff);
-        //        nCRCData = (UInt16)((nCRCData << 8) | (CrcTbl[Index] >> 8));
-        //    }
-        //    return (UInt16)(nCRCData >> 8 | nCRCData << 8);
-        //}
-
-        #endregion
-
+        
         #region  Load
 
         private void Form1_Load(object sender, EventArgs e)
@@ -337,6 +281,7 @@ namespace SHJ
                 try
                 {
                     File.Create(cameraParaFile);
+                    CameraHelper.IniCamera();
                 }
                 catch { }
             }
@@ -459,7 +404,6 @@ namespace SHJ
                 mysalexmldoc.Save(salexmlfilecopy);
             }
             
-
             if (System.IO.File.Exists(regxmlfile))//加载注册文件
             {
                 myregxmldoc.Load(regxmlfile);
@@ -585,18 +529,32 @@ namespace SHJ
             qrCodeEncoder.QRCodeVersion = 8;
             qrCodeEncoder.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.L;
 
-            pic_Erweima.Image = Image.FromFile(Path.Combine(adimagesaddress, "erweima.jpg"));
+            pic_Erweima.Image = Image.FromFile(Path.Combine(adimagesaddress, "erweima.jpg"));//购物二维码
           
-            PLCHelper.isAutoRun = myfunctionnode.Attributes.GetNamedItem("isAutoRun").Value == "true" ? true : false;
-            PLCHelper._MachineRunPlan = myfunctionnode.Attributes.GetNamedItem("runType").Value;
-            PLCHelper.isRigPrint = myfunctionnode.Attributes.GetNamedItem("isRigPrint").Value == "True" ? true : false;
+            //设备运行模式
+            PLCHelper.isAutoRun = myMachineNode.Attributes.GetNamedItem("isAutoRun").Value == "True" ? true : false;
+            PLCHelper._MachineRunPlan = myMachineNode.Attributes.GetNamedItem("runType").Value;
+            PLCHelper.isRigPrint = myMachineNode.Attributes.GetNamedItem("isRigPrint").Value == "True" ? true : false;
+            photoPointTest = myMachineNode.Attributes.GetNamedItem("photoTest").Value == "True" ? true : false;//拍照位置记录功能
 
-            setting.CPFRPass = myfunctionnode.Attributes.GetNamedItem("CPFRPass").Value;
-            setting.debugPass = myfunctionnode.Attributes.GetNamedItem("debugPass").Value;
-            setting.setupPass = myfunctionnode.Attributes.GetNamedItem("setupPass").Value;
-            
+            //进入后台设置页面的密码
+            setting.CPFRPass = mySystemNode.Attributes.GetNamedItem("CPFRPass").Value;
+            setting.debugPass = mySystemNode.Attributes.GetNamedItem("debugPass").Value;
+            setting.setupPass = mySystemNode.Attributes.GetNamedItem("setupPass").Value;
+
+            versionstring = mySystemNode.Attributes.GetNamedItem("Version").Value;//版本号
+
+            if (photoPointTest)//需要记录位置则显示功能
+            {
+                //拍照的位置测试功能
+                sw1 = new StreamWriter(Path.Combine(logPath, "拍照定位" + ".txt"));
+                panel2.Visible = true;
+                panel2.Location = new Point(454, 759);
+                video1.Visible = true;
+                video1.Location = new Point(300, 100);
+            }
+
             nowform1 = this;
-            
         }
 
         #endregion
@@ -1009,7 +967,7 @@ namespace SHJ
                 pel_SellTips.Visible = false;
                 try
                 {
-                    //CloseCamera();//关闭摄像头
+                    CloseCamera();//关闭摄像头
                 }
                 catch { }
             }
@@ -1022,9 +980,41 @@ namespace SHJ
                 {
                     log.WriteStepLog(StepType.运行故障, PLCHelper.errorMsg);
                     log.SaveRunningLog();
-                    //CloseCamera();//关闭摄像头
+                    CloseCamera();//关闭摄像头
                 }
                 catch { }
+            }
+
+            if (PLC.D11 == 8)
+            {
+                TakePhoto("放印面");
+            }
+            else if (PLC.D6 == 2)
+            {
+                TakePhoto("装配盖子");
+            }
+            else if (PLC.D7 == 2)
+            {
+                TakePhoto("印面拍照");
+            }
+            else if (PLC.D7 == 8)
+            {
+                TakePhoto("装配印面");
+            }
+            else if (PLC.D9 == 13)
+            {
+                TakePhoto("出货位置");
+            }
+
+            if (photoPointTest)
+            {
+                lbl_D0.Text = "D0：" + PLC.D0;
+                lbl_D11.Text = "D11：" + PLC.D11;
+                lbl_D6.Text = "D6：" + PLC.D6;
+                lbl_D7.Text = "D7：" + PLC.D7;
+                lbl_D8.Text = "D8：" + PLC.D8;
+                lbl_D9.Text = "D9：" + PLC.D9;
+                lbl_D10.Text = "D10：" + PLC.D10;
             }
         }
 
@@ -1704,30 +1694,9 @@ namespace SHJ
             rootNode.AppendChild(NetNode);
             
             XmlNode functionNode = myxmldoc.CreateElement("function");//功能定义
-            XmlAttribute machineAutoRun = myxmldoc.CreateAttribute("isAutoRun");//机器运行模式
-            machineAutoRun.Value = "false";
-            functionNode.Attributes.Append(machineAutoRun);
-            XmlAttribute runType = myxmldoc.CreateAttribute("runType");//PC运行模式选择
-            runType.Value = "01";
-            functionNode.Attributes.Append(runType);
-            XmlAttribute isRigPrnit = myxmldoc.CreateAttribute("isRigPrint");//是否安装了印面
-            isRigPrnit.Value = "false";
-            functionNode.Attributes.Append(isRigPrnit);
-            XmlAttribute dataShow = myxmldoc.CreateAttribute("runDataShow");//运行时显示数据
-            dataShow.Value = "0";
-            functionNode.Attributes.Append(dataShow);
             XmlAttribute netlogAttribute = myxmldoc.CreateAttribute("netlog");//网络日志
             netlogAttribute.Value = "0";
             functionNode.Attributes.Append(netlogAttribute);//xml节点附件属性
-            XmlAttribute CPFRPassAttribute = myxmldoc.CreateAttribute("CPFRPass");//补货密码
-            CPFRPassAttribute.Value = "2022";
-            functionNode.Attributes.Append(CPFRPassAttribute);//xml节点附件属性
-            XmlAttribute setupPassAttribute = myxmldoc.CreateAttribute("setupPass");//系统设置密码
-            setupPassAttribute.Value = "2023";
-            functionNode.Attributes.Append(setupPassAttribute);//xml节点附件属性
-            XmlAttribute debugPassAttribute = myxmldoc.CreateAttribute("debugPass");//调试密码
-            debugPassAttribute.Value = "2024";
-            functionNode.Attributes.Append(debugPassAttribute);//xml节点附件属性
             XmlAttribute touchAttribute = myxmldoc.CreateAttribute("touch");//是否支持?
             touchAttribute.Value = "1";
             functionNode.Attributes.Append(touchAttribute);//xml节点附件属性
@@ -1755,9 +1724,40 @@ namespace SHJ
             functionNode.Attributes.Append(vendortypeAttribute);//xml节点附件属性
 
             rootNode.AppendChild(functionNode);
+            
+            //设备信息
+            XmlNode machineNode = myxmldoc.CreateElement("MachineInfo");
+            XmlAttribute machineAutoRun = myxmldoc.CreateAttribute("isAutoRun");//机器运行模式
+            machineAutoRun.Value = "False";
+            machineNode.Attributes.Append(machineAutoRun);
+            XmlAttribute runType = myxmldoc.CreateAttribute("runType");//PC运行模式选择
+            runType.Value = "01";
+            machineNode.Attributes.Append(runType);
+            XmlAttribute isRigPrnit = myxmldoc.CreateAttribute("isRigPrint");//是否安装了印面
+            isRigPrnit.Value = "False";
+            machineNode.Attributes.Append(isRigPrnit);
+            XmlAttribute photoTest = myxmldoc.CreateAttribute("photoTest");//照片定位测试功能
+            photoTest.Value = "False";
+            machineNode.Attributes.Append(photoTest);
+            rootNode.AppendChild(machineNode);
 
+            //系统信息
+            XmlNode systemNode = myxmldoc.CreateElement("System");
+            XmlAttribute version = myxmldoc.CreateAttribute("Version");
+            version.Value = "ADH816AZV4.1.01";
+            systemNode.Attributes.Append(version);
+            XmlAttribute CPFRPassAttribute = myxmldoc.CreateAttribute("CPFRPass");//补货密码
+            CPFRPassAttribute.Value = "2022";
+            systemNode.Attributes.Append(CPFRPassAttribute);
+            XmlAttribute setupPassAttribute = myxmldoc.CreateAttribute("setupPass");//系统设置密码
+            setupPassAttribute.Value = "2023";
+            systemNode.Attributes.Append(setupPassAttribute);
+            XmlAttribute debugPassAttribute = myxmldoc.CreateAttribute("debugPass");//调试密码
+            debugPassAttribute.Value = "2024";
+            systemNode.Attributes.Append(debugPassAttribute);
+            rootNode.AppendChild(systemNode);
+            
             XmlNode config1Node = myxmldoc.CreateElement("payconfig");//支付定义
-
             XmlAttribute allpayAttribute = myxmldoc.CreateAttribute("allpay");//第一位为支付宝、第二位为微信、第三位为一码付、第四位为银联闪付、第五位为提货码、第六位为微信刷脸、第七位为支付宝刷脸
             allpayAttribute.Value = "0";
             config1Node.Attributes.Append(allpayAttribute);//xml节点附件属性
@@ -1916,6 +1916,8 @@ namespace SHJ
         /// </summary>
         private void updatenodeaddress()
         {
+            mySystemNode= myxmldoc.SelectSingleNode("config").SelectSingleNode("System");
+            myMachineNode= myxmldoc.SelectSingleNode("config").SelectSingleNode("MachineInfo");
             mynetcofignode = myxmldoc.SelectSingleNode("config").SelectSingleNode("netconfig");
             myfunctionnode = myxmldoc.SelectSingleNode("config").SelectSingleNode("function");
             mypayconfignode = myxmldoc.SelectSingleNode("config").SelectSingleNode("payconfig");
@@ -2013,6 +2015,7 @@ namespace SHJ
             this.pictureBox6.Location = new Point(800, 800);
             this.pictureBox7.Location = new Point(550, 400);
             this.pictureBox8.Location = new Point(1020, 400);
+            this.pel_SellTips.Location = new Point(1550, 750);
             
             needupdatePlaylist = true;
         }
@@ -2454,14 +2457,14 @@ namespace SHJ
         /// <param name="PicPath">印章图案路径</param>
         public void WorkingTest(int huodaoNum,string PicPath)
         {
-            //ConnectCamera();//打开摄像头
+            ConnectCamera();//打开摄像头
             nowLogPath = logPath + "\\" + "模拟测试" + DateTime.Now.ToString("MM-dd HH：mm：ss");
             if (!Directory.Exists(nowLogPath))
             {
                 Directory.CreateDirectory(nowLogPath);
             }//添加日志文件夹
 
-            log.CreateRunningLog("A1234", "白色印章", "90", "00", huodaoNum.ToString(), nowLogPath+"\\模拟运行" + DateTime.Now.ToShortTimeString());
+            log.CreateRunningLog("A1234", "白色印章", "90", "00", huodaoNum.ToString(), nowLogPath+"\\模拟运行" + DateTime.Now.ToString("HH：mm：ss"));
             int result = CargoStockAndStateCheck(huodaoNum.ToString());
             if(result < 90 && PLCHelper.nowStep == 0x00)//无报错
             {
@@ -2594,6 +2597,28 @@ namespace SHJ
             video1.VideoSource = CameraHelper.VideoDevice;
             video1.Start();
         }
+
+        private void video1_NewFrame(object sender, ref Bitmap image)//水印
+        {
+            if (CameraHelper.watermarkType != "None")
+            {
+                Graphics grap = Graphics.FromImage(image);
+                SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.Red);
+                Font drawFont = new Font("Arial", CameraHelper.fontSize, System.Drawing.FontStyle.Bold, GraphicsUnit.Millimeter);
+                int xPos = image.Width - (image.Width - 15);
+                int yPos = 10;
+                string drawString;
+                if (CameraHelper.watermarkType == "DateTime")//提货码样式
+                {
+                    drawString = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+                else
+                {
+                    drawString = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  PickingCode : "+myTihuomastr==null?"模拟运行":myTihuomastr;
+                }
+                grap.DrawString(drawString, drawFont, drawBrush, xPos, yPos);
+            }
+        }
         
         /// <summary>
         /// 关闭摄像头
@@ -2616,12 +2641,83 @@ namespace SHJ
             try
             {
                 Bitmap photo = video1.GetCurrentVideoFrame();
-                string path = logPath + "//" + picName + "." + CameraHelper.imageExt.ToString() ;
+                string path = nowLogPath +"//" + picName + "." + CameraHelper.imageExt.ToString() ;
                 photo.Save(path, CameraHelper.imageExt);
             }
             catch(Exception e)
             { }
         }
+
+        #region 照片定位
+
+        StreamWriter sw1;
+        private void button1_Click(object sender, EventArgs e)
+        {
+            sw1.WriteLine("放印面");
+            sw1.WriteLine(lbl_D0.Text);
+            sw1.WriteLine(lbl_D6.Text);
+            sw1.WriteLine(lbl_D7.Text);
+            sw1.WriteLine(lbl_D8.Text);
+            sw1.WriteLine(lbl_D9.Text);
+            sw1.WriteLine( lbl_D10.Text);
+            sw1.WriteLine( lbl_D11.Text);
+            sw1.WriteLine();
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            sw1.WriteLine("装配盖子");
+            sw1.WriteLine(lbl_D0.Text);
+            sw1.WriteLine(lbl_D6.Text);
+            sw1.WriteLine(lbl_D7.Text);
+            sw1.WriteLine(lbl_D8.Text);
+            sw1.WriteLine(lbl_D9.Text);
+            sw1.WriteLine( lbl_D10.Text);
+            sw1.WriteLine( lbl_D11.Text);
+            sw1.WriteLine();
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            sw1.WriteLine("印面拍照");
+            sw1.WriteLine(lbl_D0.Text);
+            sw1.WriteLine(lbl_D6.Text);
+            sw1.WriteLine(lbl_D7.Text);
+            sw1.WriteLine(lbl_D8.Text);
+            sw1.WriteLine(lbl_D9.Text);
+            sw1.WriteLine( lbl_D10.Text);
+            sw1.WriteLine( lbl_D11.Text);
+            sw1.WriteLine();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            sw1.WriteLine("装载印面");
+            sw1.WriteLine(lbl_D0.Text);
+            sw1.WriteLine(lbl_D6.Text);
+            sw1.WriteLine(lbl_D7.Text);
+            sw1.WriteLine(lbl_D8.Text);
+            sw1.WriteLine(lbl_D9.Text);
+            sw1.WriteLine( lbl_D10.Text);
+            sw1.WriteLine( lbl_D11.Text);
+            sw1.WriteLine();
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            sw1.WriteLine("出货位置");
+            sw1.WriteLine(lbl_D0.Text);
+            sw1.WriteLine(lbl_D6.Text);
+            sw1.WriteLine(lbl_D7.Text);
+            sw1.WriteLine(lbl_D8.Text);
+            sw1.WriteLine(lbl_D9.Text);
+            sw1.WriteLine( lbl_D10.Text);
+            sw1.WriteLine( lbl_D11.Text);
+            sw1.WriteLine();
+            sw1.Close();
+        }
+
+        #endregion
 
         #endregion
 
