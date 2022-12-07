@@ -37,15 +37,10 @@ namespace SHJ
         /// <summary>
         /// 创建运行日志
         /// </summary>
-        /// <param name="oderId">订单号</param>
-        /// <param name="tradeName">商品名称</param>
-        /// <param name="price">价格</param>
-        /// <param name="paid">实付金额</param>
         /// <param name="largoNum">货道号</param>
-        /// <param name="logName">日志保存名称,无后缀</param>
-        public void CreateRunningLog(string oderId, string tradeName, string price, string paid, string largoNum, string logName)
+        /// <param name="logName">日志名称</param>
+        public void CreateRunningLog(string largoNum,string logName)
         {
-            WriteOderInfo(oderId, tradeName, price, paid);
             _ShipCord = doc.CreateElement("出货记录");
             _ShipCord.SetAttribute("出货时间", DateTime.Now.ToString());
             _ShipCord.SetAttribute("货道号", largoNum);
@@ -129,33 +124,7 @@ namespace SHJ
             WriteMsgLog(ref msgs);
             _ShipCord.AppendChild(_taskStep);
         }
-
-        /// <summary>
-        /// 写入订单信息
-        /// </summary>
-        /// <param name="oderId">订单号</param>
-        /// <param name="tradeName">商品名称</param>
-        /// <param name="price">商品价格</param>
-        /// <param name="paid">实付金额</param>
-        private void WriteOderInfo(string oderId, string tradeName, string price, string paid)
-        {
-            XmlElement oderInfo = doc.CreateElement("订单信息");
-            oderInfo.SetAttribute("订单号", oderId);
-
-            XmlElement nameElement = doc.CreateElement("商品名称");
-            nameElement.InnerText = tradeName;
-
-            XmlElement priceElement = doc.CreateElement("商品价格");
-            priceElement.InnerText = price;
-
-            XmlElement paidElement = doc.CreateElement("实付金额");
-            paidElement.InnerText = paid;
-
-            oderInfo.AppendChild(nameElement);
-            oderInfo.AppendChild(priceElement);
-            oderInfo.AppendChild(paidElement);
-            Osmo.AppendChild(oderInfo);
-        }
+        
     }
     /// <summary>
     /// 任务步骤类型

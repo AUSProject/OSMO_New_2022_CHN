@@ -114,9 +114,9 @@ namespace SHJ
         private PrintHelper print = null;
 
         private string logPath = null;//日志文件夹
-        private string nowLogPath = null;//当前日志
+        private string nowLogPath = null;//当前日志文件夹
         private string imageUrlPath;//印章图片URL文件夹
-        private string ErweimaUrl = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";//二维码地址
+        private string ErweimaUrl = "http://osmo.epscada.com/mobile/goodsList.html?machineId=";//二维码地址
         PLCHelper PLC;//机器控制
         LogHelper log;//运行日志
         
@@ -384,16 +384,10 @@ namespace SHJ
                 mysalexmldoc.Save(salexmlfile);
                 mysalexmldoc.Save(salexmlfilecopy);
             }
-            
             if (System.IO.File.Exists(regxmlfile))//加载注册文件
             {
                 myregxmldoc.Load(regxmlfile);
                 string adress = myregxmldoc.SelectSingleNode("reg").Attributes.GetNamedItem("regid").Value;
-                ErweimaUrl = String.Concat(ErweimaUrl, adress);
-                if (!File.Exists(Path.Combine(adimagesaddress, "erweima.jpg")))
-                {
-                    QRCode(ErweimaUrl);
-                }
             }
             else
             {
@@ -477,6 +471,13 @@ namespace SHJ
                 IMEI[13] = mbyteadddata[1];
                 IMEI[14] = mbyteadddata[2];
             }
+            
+            if (!File.Exists(Path.Combine(adimagesaddress, "erweima.jpg")))//加载二维码
+            {
+                ErweimaUrl = String.Concat(ErweimaUrl, Encoding.ASCII.GetString(Form1.IMEI));
+                QRCode(ErweimaUrl);
+            }
+            
             //判断是否注册
             UInt64 mregdata = UInt64.Parse(myregxmldoc.SelectSingleNode("reg").Attributes.GetNamedItem("regid").Value);
             UInt64 mimeidata = 0;
@@ -535,6 +536,12 @@ namespace SHJ
         #endregion
 
         #region Timer1
+
+        //private void ReloadPic(string url,string fileName)
+        //{
+        //    FileInfo  
+
+        //}
 
         private int netcount;//网络状态循环计时
         private int netreturncount;//网络等待计时
@@ -1242,10 +1249,13 @@ namespace SHJ
                             string gettihuomastring = Encoding.Default.GetString(GSMRxBuffer, 6, 7);
                             if (myTihuomastr == gettihuomastring)
                             {
+                                liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
+                                item = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
+                                log.CreateRunningLog(item.ToString(), myTihuomastr);//创建日志
+
                                 try//检查印章图案是否为空
                                 {
-                                    bcmimagefiles = System.IO.Directory.GetFiles(bcmimagesaddress);//选择印章图片文件路径列表
-                                    
+                                    bcmimagefiles = Directory.GetFiles(bcmimagesaddress);//选择印章图片文件路径列表
                                     foreach (var picFile in bcmimagefiles)
                                     {
                                         if (picFile.Contains(myTihuomastr))
@@ -1257,8 +1267,11 @@ namespace SHJ
                                                 string urlstr = IniReadValue(picFile.Replace(bcmimagesaddress+"\\",""), "url", imageUrlPath);//读取图片Url
                                                 if (urlstr == "error")
                                                 {
-                                                    tihuoma.tihuomaresult = "印章图案无法下载";
+                                                    tihuoma.errorMsg = "印章图案无法下载";
+                                                    log.WriteStepLog(StepType.印章图案检查, "印章图案无法下载");
+                                                    log.SaveRunningLog();
                                                     HMIstep = 1;
+                                                    checktihuoma = false;
                                                     return;
                                                 }
                                                 else
@@ -1274,7 +1287,10 @@ namespace SHJ
                                                 file.Refresh();
                                                 if (file.Length == 0)
                                                 {
-                                                    tihuoma.tihuomaresult = "印章图案下载失败";
+                                                    tihuoma.errorMsg = "印章图案下载失败";
+                                                    log.WriteStepLog(StepType.印章图案检查, "印章图案下载失败");
+                                                    log.SaveRunningLog();
+                                                    checktihuoma = false;
                                                     HMIstep = 1;
                                                     return;
                                                 }
@@ -1295,20 +1311,23 @@ namespace SHJ
                                                 {
                                                     PEPrinter.PicPath = picFile;
                                                     pictureBox7.Load(picFile);
+                                                    log.WriteStepLog(StepType.印章图案检查, "状态正常");
+                                                    AddCoverPicture(item);//加载盒体图片
                                                 }
                                                 catch { }
                                             }
-                                            liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
-                                            item = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
+                                            
                                             int result = CargoStockAndStateCheck(item.ToString());
                                             if (result < 90)
                                             {
+                                                ConnectCamera("模拟测试");//打开摄像头
                                                 shangpinjiage = double.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("jiage").Value);//实际出货商品价格
                                                 istestmode = false;
                                                 zhifutype = 4;//支付方式为提货码
-
+                                                
                                                 HMIstep = 3;//出货
                                                 guanggaoreturntime = 0;
+                                                PLCHelper.nowStep = 0x01;
                                                 timer3.Enabled = true;
                                                 wulihuodao = result;
                                                 setchuhuo();
@@ -1326,16 +1345,19 @@ namespace SHJ
                                 }
                                 catch
                                 {
-                                    tihuoma.tihuomaresult = "印章图案下载失败";
+                                    tihuoma.errorMsg = "印章图案下载失败";
+                                    checktihuoma = false;
                                     return;
                                 }
                             }
                             break;
                         case 0x02://验证失败
                             tihuoma.tihuomaresult = "验证失败";
+                            checktihuoma = false;
                             break;
                         case 0x04://提货码锁定，无法使用，10分钟后自动解锁，可继续使用
                             tihuoma.tihuomaresult = "提货码锁定";
+                            checktihuoma = false;
                             break;
                     }
                 }
@@ -1499,6 +1521,7 @@ namespace SHJ
                 }
                 catch (Exception ex)
                 {
+                    
                 }
             }
         }
@@ -2368,14 +2391,8 @@ namespace SHJ
         /// <param name="PicPath">印章图案路径</param>
         public void WorkingTest(int huodaoNum,string PicPath)
         {
-            ConnectCamera();//打开摄像头
-            nowLogPath = logPath + "\\" + "模拟测试" + DateTime.Now.ToString("MM-dd HH：mm：ss");
-            if (!Directory.Exists(nowLogPath))
-            {
-                Directory.CreateDirectory(nowLogPath);
-            }//添加日志文件夹
-
-            log.CreateRunningLog("A1234", "白色印章", "90", "00", huodaoNum.ToString(), nowLogPath+"\\模拟运行" + DateTime.Now.ToString("HH：mm：ss"));
+            ConnectCamera("模拟测试");//打开摄像头
+            log.CreateRunningLog(huodaoNum.ToString(),nowLogPath);
             int result = CargoStockAndStateCheck(huodaoNum.ToString());
             if(result < 90 && PLCHelper.nowStep == 0x00)//无报错
             {
@@ -2502,8 +2519,13 @@ namespace SHJ
         /// <summary>
         /// 打开摄像头
         /// </summary>
-        private void ConnectCamera()
+        private void ConnectCamera(string logName)
         {
+            nowLogPath = logPath + "\\" + logName + DateTime.Now.ToString("MM-dd HH：mm：ss");
+            if (!Directory.Exists(nowLogPath))
+            {
+                Directory.CreateDirectory(nowLogPath);
+            }//添加日志文件夹
             CameraHelper.IniCamera();
             video1.VideoSource = CameraHelper.VideoDevice;
             video1.Start();
