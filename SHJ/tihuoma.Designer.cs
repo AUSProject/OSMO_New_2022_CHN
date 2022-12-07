@@ -454,7 +454,7 @@
             // 
             this.panel_Error.Controls.Add(this.lbl_Msg2);
             this.panel_Error.Controls.Add(this.lbl_Msg);
-            this.panel_Error.Location = new System.Drawing.Point(520, 393);
+            this.panel_Error.Location = new System.Drawing.Point(12, 10);
             this.panel_Error.Name = "panel_Error";
             this.panel_Error.Size = new System.Drawing.Size(841, 647);
             this.panel_Error.TabIndex = 49;

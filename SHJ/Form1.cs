@@ -560,7 +560,7 @@ namespace SHJ
                             len = file.Length;
                             while (len < 5)
                             {
-                                DownLoadPicture(url, name);
+                                DownLoadPicture(url, Path.Combine(bcmimagesaddress, name));
                                 file.Refresh();
                                 len = len + file.Length + 1;
                             }
@@ -797,8 +797,8 @@ namespace SHJ
                                 else
                                 {
                                     int[] ipnum = new int[4];
-                                    ipnum[0] = 58; ipnum[1] = 210; ipnum[2] = 26; ipnum[3] = 42;
-                                    myTcpCli.Connect(ipnum[0].ToString() + "." + ipnum[1].ToString() + "." + ipnum[2].ToString() + "." + ipnum[3].ToString(), 6006);
+                                    ipnum[0] = 222; ipnum[1] = 184; ipnum[2] = 244; ipnum[3] = 228;
+                                    myTcpCli.Connect(ipnum[0].ToString() + "." + ipnum[1].ToString() + "." + ipnum[2].ToString() + "." + ipnum[3].ToString(), 6206);
                                 }
                                 break;
                         }
@@ -1076,7 +1076,7 @@ namespace SHJ
                                     result = 91;//货道故障
                                     HMIstep = 1;//返回提货码页
                                     log.WriteStepLog(StepType.货道检测, "货道故障");
-                                }
+                                } 
                                 else if (int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("kucun").Value) <= 0)//无库存
                                 {
                                     result = 92;//无库存
@@ -1245,6 +1245,7 @@ namespace SHJ
                                 try//检查印章图案是否为空
                                 {
                                     bcmimagefiles = System.IO.Directory.GetFiles(bcmimagesaddress);//选择印章图片文件路径列表
+                                    
                                     foreach (var picFile in bcmimagefiles)
                                     {
                                         if (picFile.Contains(myTihuomastr))
@@ -1253,7 +1254,7 @@ namespace SHJ
                                             if (file.Length == 0)//如果为空包，则重新下载图片
                                             {
                                                 tihuoma.tihuomaresult = "正在下载印章图案，请稍等";
-                                                string urlstr = IniReadValue(picFile, "url", imageUrlPath);//读取图片Url
+                                                string urlstr = IniReadValue(picFile.Replace(bcmimagesaddress+"\\",""), "url", imageUrlPath);//读取图片Url
                                                 if (urlstr == "error")
                                                 {
                                                     tihuoma.tihuomaresult = "印章图案无法下载";
@@ -1265,7 +1266,7 @@ namespace SHJ
                                                     long len = file.Length;
                                                     while (len < 5)
                                                     {
-                                                        DownLoadPicture(urlstr, picFile);
+                                                        DownLoadPicture(urlstr, Path.Combine(bcmimagesaddress,picFile));
                                                         file.Refresh();
                                                         len += file.Length + 1;
                                                     }
@@ -1452,12 +1453,12 @@ namespace SHJ
                         timerecord[3, m] = GSMRxBuffer[lenrxbuf - 8 + m];//记录时间戳
                     }
                     imageName = bcmimagesaddress + "\\" + updatetimestring + ".jpg";
-                    IniWriteValue(imageName, "url", imageUrl, imageUrlPath);//将url写入文件
+                    IniWriteValue(updatetimestring + ".jpg", "url", imageUrl, imageUrlPath);//将url写入文件
                     DownLoadPicture(imageUrl, imageName);//下载印章图片
                     FileInfo picInfo = new FileInfo(imageName);
                     if (picInfo.Length > 0)//检查图片是否为空包
                     {
-                        DeleteSection(imageName, imageUrlPath);//不为空则删除url
+                        DeleteSection(updatetimestring + ".jpg", imageUrlPath);//不为空则删除url
                     }
                 }
                 catch
@@ -1496,7 +1497,7 @@ namespace SHJ
                     await client.DownloadFileTaskAsync(uri, saveFileName);
                     client.DownloadFileCompleted += new AsyncCompletedEventHandler(tihuopicture_DownloadFileCompleted);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                 }
             }

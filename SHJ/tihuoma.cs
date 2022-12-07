@@ -56,14 +56,7 @@ namespace SHJ
         private void timer1_Tick(object sender, EventArgs e)
         {
             updateshow();
-
-            if (PLCHelper.rigPrinting)
-            {
-                lbl_Msg.Text = "机器正在复位，请稍等";
-                lbl_Msg2.Visible = false;
-                panel_Error.Visible = true;
-            }
-            else if (PLCHelper.errorToken)//运行时出现故障
+            if (PLCHelper.errorToken)//运行时出现故障
             {
                 panel_Error.Visible = true;
                 lbl_Msg.Text = "设备故障，暂停使用";
@@ -228,7 +221,7 @@ namespace SHJ
             tihuomaresult = "请输入提货码";
             Form1.guanggaoreturntime = 0;
         }
-
+        
         private void button9_Click(object sender, EventArgs e)//确认提货
         {
             if (PLCHelper.nowStep != 0x00)
@@ -258,6 +251,7 @@ namespace SHJ
             tihuoma.tihuomaresult = "请输入提货码";
             print = PrintHelper.GetExample();
             pic_Erweima.Image = Image.FromFile(System.IO.Path.Combine(Form1.adimagesaddress, "erweima.jpg"));
+            panel_Error.Location = new Point(520, 393);
         }
 
         private void label10_DoubleClick(object sender, EventArgs e)
