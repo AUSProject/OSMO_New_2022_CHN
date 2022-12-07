@@ -56,7 +56,14 @@ namespace SHJ
         private void timer1_Tick(object sender, EventArgs e)
         {
             updateshow();
-            if (PLCHelper.errorToken)//运行时出现故障
+
+            if (PLCHelper.rigPrinting)
+            {
+                lbl_Msg.Text = "机器正在复位，请稍等";
+                lbl_Msg2.Visible = false;
+                panel_Error.Visible = true;
+            }
+            else if (PLCHelper.errorToken)//运行时出现故障
             {
                 panel_Error.Visible = true;
                 lbl_Msg.Text = "设备故障，暂停使用";
@@ -91,6 +98,7 @@ namespace SHJ
                 panel_Error.Visible = false;
                 lbl_Msg2.Visible = false;
             }
+           
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)

@@ -70,6 +70,7 @@
             this.lbl_D9 = new System.Windows.Forms.Label();
             this.lbl_D11 = new System.Windows.Forms.Label();
             this.lbl_D0 = new System.Windows.Forms.Label();
+            this.lbl_Photoing = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -220,6 +221,7 @@
             this.video1.TabIndex = 17;
             this.video1.Text = "videoSourcePlayer1";
             this.video1.VideoSource = null;
+            this.video1.Visible = false;
             this.video1.NewFrame += new AForge.Controls.VideoSourcePlayer.NewFrameHandler(this.video1_NewFrame);
             // 
             // pic_Erweima
@@ -371,15 +373,17 @@
             this.panel2.Controls.Add(this.button1);
             this.panel2.Controls.Add(this.lbl_D8);
             this.panel2.Controls.Add(this.lbl_D7);
+            this.panel2.Controls.Add(this.lbl_Photoing);
             this.panel2.Controls.Add(this.lbl_D10);
             this.panel2.Controls.Add(this.lbl_D6);
             this.panel2.Controls.Add(this.lbl_D9);
             this.panel2.Controls.Add(this.lbl_D11);
             this.panel2.Controls.Add(this.lbl_D0);
-            this.panel2.Location = new System.Drawing.Point(0, 604);
+            this.panel2.Location = new System.Drawing.Point(0, 603);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(471, 253);
             this.panel2.TabIndex = 18;
+            this.panel2.Visible = false;
             // 
             // button6
             // 
@@ -501,6 +505,17 @@
             this.lbl_D0.TabIndex = 0;
             this.lbl_D0.Text = "D0：";
             // 
+            // lbl_Photoing
+            // 
+            this.lbl_Photoing.AutoSize = true;
+            this.lbl_Photoing.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_Photoing.Location = new System.Drawing.Point(350, 193);
+            this.lbl_Photoing.Name = "lbl_Photoing";
+            this.lbl_Photoing.Size = new System.Drawing.Size(120, 16);
+            this.lbl_Photoing.TabIndex = 0;
+            this.lbl_Photoing.Text = "正在拍照！！！";
+            this.lbl_Photoing.Visible = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -580,6 +595,7 @@
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Label lbl_Photoing;
     }
 }
 

@@ -22,7 +22,6 @@ namespace SHJ
         private XmlElement _ShipCord = null;//出货记录节点
         private XmlElement _taskStep = null;//任务步骤节点
         private string filePath = null;//日志保存路径
-        public List<string> logMsgs = new List<string>();
 
         /// <summary>
         /// 获取实例
@@ -81,16 +80,16 @@ namespace SHJ
         /// 写入步骤信息
         /// </summary>
         /// <param name="msgs"></param>
-        private void WriteMsgLog(List<string> msgs)
+        private void WriteMsgLog(ref HashSet<string> msgs)
         {
             XmlElement msgElement = null;
-            for (int i = 0; i < msgs.Count; i++)
+            foreach (var item in msgs)
             {
-                msgElement = doc.CreateElement("过程" + (i + 1).ToString());
-                msgElement.InnerText = msgs[i];
+                msgElement = doc.CreateElement("过程");
+                msgElement.InnerText = item;
                 _taskStep.AppendChild(msgElement);
             }
-            logMsgs.Clear();
+            msgs.Clear();
         }
 
         /// <summary>
@@ -100,24 +99,11 @@ namespace SHJ
         private void WriteMsgLog(string msg)
         {
             XmlElement msgElement = null;
-            msgElement = doc.CreateElement("过程1");
+            msgElement = doc.CreateElement("过程");
             msgElement.InnerText = msg;
             _taskStep.AppendChild(msgElement);
         }
         
-
-        /// <summary>
-        /// 写入任务步骤
-        /// </summary>
-        /// <param name="stepName">步骤名称</param>
-        public void WriteStepLog(StepType setpType)
-        {
-            _taskStep = doc.CreateElement("运行步骤");
-            _taskStep.SetAttribute("步骤名称", setpType.ToString());
-            WriteMsgLog(logMsgs);
-            _ShipCord.AppendChild(_taskStep);
-        }
-
         /// <summary>
         /// 写入任务步骤
         /// </summary>
@@ -136,11 +122,11 @@ namespace SHJ
         /// </summary>
         /// <param name="stepName">步骤名称</param>
         /// <param name="msgs">日志信息</param>
-        public void WriteStepLog(StepType setpType,List<string> msgs)
+        public void WriteStepLog(StepType setpType,ref HashSet<string> msgs)
         {
             _taskStep = doc.CreateElement("运行步骤");
             _taskStep.SetAttribute("步骤名称", setpType.ToString());
-            WriteMsgLog(msgs);
+            WriteMsgLog(ref msgs);
             _ShipCord.AppendChild(_taskStep);
         }
 

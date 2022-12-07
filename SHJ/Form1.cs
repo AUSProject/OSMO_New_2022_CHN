@@ -107,18 +107,6 @@ namespace SHJ
                 nowform1.WorkingTest(num, path);
             }
         }
-        /// <summary>
-        /// 拍照
-        /// </summary>
-        /// <param name="picName"></param>
-        public static void CallTakePhoto(string picName)
-        {
-            if (nowform1 != null)
-            {
-                nowform1.TakePhoto(picName);
-            }
-        }
-        
         #endregion
 
         #region Feild
@@ -146,7 +134,6 @@ namespace SHJ
         public static string cmimagesaddress;//商品图片路径
         public static string bcmimagesaddress;//商品图片路径
         public static string usedbcmimagesaddress;//已经提货的打印图片
-        public static string dataaddress;
         public static string[] adimagefiles;//广告图片名
         public static bool needupdatePlaylist;//是否需要更新播放列表
         public static string[] cmimagefiles;//商品图片名
@@ -237,7 +224,6 @@ namespace SHJ
             salexmlfile = System.IO.Directory.GetCurrentDirectory() + "\\sale.dat";
             configxmlfilecopy = System.IO.Directory.GetCurrentDirectory() + "\\app.xml";
             salexmlfilecopy = System.IO.Directory.GetCurrentDirectory() + "\\sale.xml";
-            dataaddress = System.IO.Directory.GetCurrentDirectory() + "\\netdata";
             regxmlfile = "C:\\flexlm\\regEPTON.dll";
             if (System.IO.Directory.Exists(adimagesaddress) == false)//广告文件夹不存在
             {
@@ -262,10 +248,6 @@ namespace SHJ
             if (System.IO.Directory.Exists("C:\\flexlm") == false)//注册文件夹不存在
             {
                 System.IO.Directory.CreateDirectory("C:\\flexlm");
-            }
-            if (System.IO.Directory.Exists(dataaddress) == false)//netdata文件夹不存在
-            {
-                System.IO.Directory.CreateDirectory(dataaddress);
             }
             if (!File.Exists(imageUrlPath))//二维码图片路径文件
             {
@@ -946,17 +928,6 @@ namespace SHJ
             PLC.MachineRun(item);
             myprint.PEloop();
             RunningDisplay();
-            if (PLCHelper._RunEnd)
-            {
-                HMIstep = 1;
-                timer3.Enabled = false;
-                pel_SellTips.Visible = false;
-                try
-                {
-                    CloseCamera();//关闭摄像头
-                }
-                catch { }
-            }
             if (PLCHelper.errorToken)
             {
                 HMIstep = 1;
@@ -970,26 +941,46 @@ namespace SHJ
                 }
                 catch { }
             }
+            else if (PLCHelper._RunEnd)
+            {
+                HMIstep = 1;
+                timer3.Enabled = false;
+                pel_SellTips.Visible = false;
+                try
+                {
+                    CloseCamera();//关闭摄像头
+                }
+                catch { }
+            }
 
             if (PLC.D11 == 8)
             {
+                lbl_Photoing.Visible = true;
                 TakePhoto("放印面");
             }
             else if (PLC.D6 == 2)
             {
+                lbl_Photoing.Visible = true;
                 TakePhoto("装配盖子");
             }
             else if (PLC.D7 == 2)
             {
+                lbl_Photoing.Visible = true;
                 TakePhoto("印面拍照");
             }
             else if (PLC.D7 == 8)
             {
+                lbl_Photoing.Visible = true;
                 TakePhoto("装配印面");
             }
             else if (PLC.D9 == 13)
             {
+                lbl_Photoing.Visible = true;
                 TakePhoto("出货位置");
+            }
+            else
+            {
+                lbl_Photoing.Visible = false;
             }
 
             if (photoPointTest)
@@ -1266,6 +1257,7 @@ namespace SHJ
                                                 if (urlstr == "error")
                                                 {
                                                     tihuoma.tihuomaresult = "印章图案无法下载";
+                                                    HMIstep = 1;
                                                     return;
                                                 }
                                                 else
@@ -1282,6 +1274,7 @@ namespace SHJ
                                                 if (file.Length == 0)
                                                 {
                                                     tihuoma.tihuomaresult = "印章图案下载失败";
+                                                    HMIstep = 1;
                                                     return;
                                                 }
                                                 else
@@ -1651,9 +1644,6 @@ namespace SHJ
             rootNode.AppendChild(NetNode);
             
             XmlNode functionNode = myxmldoc.CreateElement("function");//功能定义
-            XmlAttribute netlogAttribute = myxmldoc.CreateAttribute("netlog");//网络日志
-            netlogAttribute.Value = "0";
-            functionNode.Attributes.Append(netlogAttribute);//xml节点附件属性
             XmlAttribute touchAttribute = myxmldoc.CreateAttribute("touch");//是否支持?
             touchAttribute.Value = "1";
             functionNode.Attributes.Append(touchAttribute);//xml节点附件属性
@@ -1984,6 +1974,11 @@ namespace SHJ
                 panel2.Location = new Point(454, 759);
                 video1.Visible = true;
                 video1.Location = new Point(300, 100);
+            }
+            else
+            {
+                panel2.Visible = false;
+                video1.Visible = false;
             }
         }
 
