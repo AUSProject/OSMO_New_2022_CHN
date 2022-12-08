@@ -65,6 +65,8 @@ namespace SHJ
                 writer.Flush();
                 writer.Close();
                 doc.RemoveAll();
+                _ShipCord.RemoveAll();
+                _taskStep.RemoveAll();
             }
             catch
             {

@@ -554,12 +554,10 @@ namespace SHJ
             {
                 string name = imageNames[i];
                 string url = IniReadValue(name, "url", imageUrlPath);
-                bool alikeName = false;
                 for (int m = 0; m < bcmimagefiles.Length; m++)//文件名称排序
                 {
                     if (bcmimagefiles[m].Contains(name))
                     {
-                        alikeName = true;
                         FileInfo file = new FileInfo(bcmimagefiles[m]);
                         long len = 0;
                         if (file.Length == 0)
@@ -574,13 +572,11 @@ namespace SHJ
                             file.Refresh();
                             if (file.Length > 0)
                             {
-                                DeleteSection(name, imageUrlPath);
+                                //DeleteSection(name, imageUrlPath);
                             }
                         }
                     }
                 }
-                if (!alikeName)
-                    DeleteSection(name, imageUrlPath);
             }
 
             if (myminute < 59)//最长1分钟，循环时间
@@ -980,7 +976,7 @@ namespace SHJ
                 lbl_Photoing.Visible = true;
                 TakePhoto("装配印面");
             }
-            else if (PLC.D9 == 13)
+            else if (PLC.D9 == 12)
             {
                 lbl_Photoing.Visible = true;
                 TakePhoto("出货位置");
@@ -1480,7 +1476,7 @@ namespace SHJ
                     FileInfo picInfo = new FileInfo(imageName);
                     if (picInfo.Length > 0)//检查图片是否为空包
                     {
-                        DeleteSection(updatetimestring + ".jpg", imageUrlPath);//不为空则删除url
+                        //DeleteSection(updatetimestring + ".jpg", imageUrlPath);//不为空则删除url
                     }
                 }
                 catch
@@ -1993,7 +1989,11 @@ namespace SHJ
             if (photoPointTest)//需要记录位置则显示功能
             {
                 //拍照的位置测试功能
-                sw1 = new StreamWriter(Path.Combine(logPath, "拍照定位" + ".txt"));
+                try
+                {
+                    sw1 = new StreamWriter(Path.Combine(logPath, "拍照定位" + ".txt"));
+                }
+                catch { }
                 panel2.Visible = true;
                 panel2.Location = new Point(454, 759);
                 video1.Visible = true;
@@ -2392,7 +2392,7 @@ namespace SHJ
         public void WorkingTest(int huodaoNum,string PicPath)
         {
             ConnectCamera("模拟测试");//打开摄像头
-            log.CreateRunningLog(huodaoNum.ToString(),nowLogPath);
+            log.CreateRunningLog(huodaoNum.ToString(),nowLogPath+"\\"+"模拟测试");
             int result = CargoStockAndStateCheck(huodaoNum.ToString());
             if(result < 90 && PLCHelper.nowStep == 0x00)//无报错
             {
@@ -2621,6 +2621,21 @@ namespace SHJ
             sw1.WriteLine( lbl_D10.Text);
             sw1.WriteLine( lbl_D11.Text);
             sw1.WriteLine();
+        }
+        int writecount = 1;
+        private void button7_Click(object sender, EventArgs e)
+        {
+            sw1.WriteLine("第" + writecount + "次记录");
+            sw1.WriteLine(lbl_D0.Text);
+            sw1.WriteLine(lbl_D6.Text);
+            sw1.WriteLine(lbl_D7.Text);
+            sw1.WriteLine(lbl_D8.Text);
+            sw1.WriteLine(lbl_D9.Text);
+            sw1.WriteLine(lbl_D10.Text);
+            sw1.WriteLine(lbl_D11.Text);
+            sw1.WriteLine();
+            TakePhoto("第" + writecount + "次记录");
+            writecount++;
         }
 
         private void button5_Click(object sender, EventArgs e)

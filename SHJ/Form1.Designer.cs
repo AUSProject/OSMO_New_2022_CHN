@@ -65,12 +65,13 @@
             this.button1 = new System.Windows.Forms.Button();
             this.lbl_D8 = new System.Windows.Forms.Label();
             this.lbl_D7 = new System.Windows.Forms.Label();
+            this.lbl_Photoing = new System.Windows.Forms.Label();
             this.lbl_D10 = new System.Windows.Forms.Label();
             this.lbl_D6 = new System.Windows.Forms.Label();
             this.lbl_D9 = new System.Windows.Forms.Label();
             this.lbl_D11 = new System.Windows.Forms.Label();
             this.lbl_D0 = new System.Windows.Forms.Label();
-            this.lbl_Photoing = new System.Windows.Forms.Label();
+            this.button7 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -366,6 +367,7 @@
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.button7);
             this.panel2.Controls.Add(this.button6);
             this.panel2.Controls.Add(this.button5);
             this.panel2.Controls.Add(this.button4);
@@ -387,7 +389,7 @@
             // 
             // button6
             // 
-            this.button6.Location = new System.Drawing.Point(374, 14);
+            this.button6.Location = new System.Drawing.Point(376, 164);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(82, 31);
             this.button6.TabIndex = 1;
@@ -397,7 +399,7 @@
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(278, 129);
+            this.button5.Location = new System.Drawing.Point(376, 127);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(82, 31);
             this.button5.TabIndex = 1;
@@ -407,7 +409,7 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(278, 90);
+            this.button4.Location = new System.Drawing.Point(376, 88);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(82, 31);
             this.button4.TabIndex = 1;
@@ -417,7 +419,7 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(278, 14);
+            this.button3.Location = new System.Drawing.Point(376, 14);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(82, 31);
             this.button3.TabIndex = 1;
@@ -427,7 +429,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(278, 51);
+            this.button1.Location = new System.Drawing.Point(376, 51);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(82, 31);
             this.button1.TabIndex = 1;
@@ -454,6 +456,17 @@
             this.lbl_D7.Size = new System.Drawing.Size(40, 16);
             this.lbl_D7.TabIndex = 0;
             this.lbl_D7.Text = "D7：";
+            // 
+            // lbl_Photoing
+            // 
+            this.lbl_Photoing.AutoSize = true;
+            this.lbl_Photoing.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbl_Photoing.Location = new System.Drawing.Point(348, 223);
+            this.lbl_Photoing.Name = "lbl_Photoing";
+            this.lbl_Photoing.Size = new System.Drawing.Size(120, 16);
+            this.lbl_Photoing.TabIndex = 0;
+            this.lbl_Photoing.Text = "正在拍照！！！";
+            this.lbl_Photoing.Visible = false;
             // 
             // lbl_D10
             // 
@@ -505,16 +518,15 @@
             this.lbl_D0.TabIndex = 0;
             this.lbl_D0.Text = "D0：";
             // 
-            // lbl_Photoing
+            // button7
             // 
-            this.lbl_Photoing.AutoSize = true;
-            this.lbl_Photoing.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lbl_Photoing.Location = new System.Drawing.Point(350, 193);
-            this.lbl_Photoing.Name = "lbl_Photoing";
-            this.lbl_Photoing.Size = new System.Drawing.Size(120, 16);
-            this.lbl_Photoing.TabIndex = 0;
-            this.lbl_Photoing.Text = "正在拍照！！！";
-            this.lbl_Photoing.Visible = false;
+            this.button7.Location = new System.Drawing.Point(234, 19);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(82, 31);
+            this.button7.TabIndex = 1;
+            this.button7.Text = "位置记录";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
             // Form1
             // 
@@ -596,6 +608,7 @@
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Label lbl_Photoing;
+        private System.Windows.Forms.Button button7;
     }
 }
 
