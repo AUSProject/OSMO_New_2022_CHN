@@ -264,7 +264,7 @@ namespace SHJ
             panelTest.Visible = false;
             tihuoma.tihuomaresult = "请输入提货码";
             print = PrintHelper.GetExample();
-            pic_Erweima.Image = Image.FromFile(System.IO.Path.Combine(Form1.adimagesaddress, "erweima.jpg"));
+            pic_Erweima.Image = Image.FromFile(System.IO.Path.Combine(Form1.adimagesaddress+"\\Erweima", "erweima.jpg"));
             panel_Error.Location = new Point(520, 393);
         }
 

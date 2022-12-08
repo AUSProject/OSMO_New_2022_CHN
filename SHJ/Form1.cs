@@ -249,13 +249,17 @@ namespace SHJ
             {
                 System.IO.Directory.CreateDirectory("C:\\flexlm");
             }
-            if (!File.Exists(imageUrlPath))//二维码图片路径文件
+            if (!File.Exists(imageUrlPath))//印章图案Url文件
             {
                 File.Create(imageUrlPath);
             }
             if (!Directory.Exists(logPath))//日志路径
             {
                 Directory.CreateDirectory(logPath);
+            }
+            if(!Directory.Exists(adimagesaddress + "\\Erweima"))//二维码文件夹
+            {
+                Directory.CreateDirectory(adimagesaddress + "\\Erweima");
             }
             if (!File.Exists(cameraParaFile))//摄像机参数文件
             {
@@ -505,7 +509,7 @@ namespace SHJ
             qrCodeEncoder.QRCodeVersion = 8;
             qrCodeEncoder.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.L;
 
-            pic_Erweima.Image = Image.FromFile(Path.Combine(adimagesaddress, "erweima.jpg"));//购物二维码
+            pic_Erweima.Image = Image.FromFile(Path.Combine(adimagesaddress+"\\Erweima", "erweima.jpg"));//购物二维码
           
             //设备运行模式
             PLCHelper.isAutoRun = myMachineNode.Attributes.GetNamedItem("isAutoRun").Value == "True" ? true : false;
@@ -536,13 +540,7 @@ namespace SHJ
         #endregion
 
         #region Timer1
-
-        //private void ReloadPic(string url,string fileName)
-        //{
-        //    FileInfo  
-
-        //}
-
+        
         private int netcount;//网络状态循环计时
         private int netreturncount;//网络等待计时
         private int myminute;//分钟计时
@@ -554,25 +552,19 @@ namespace SHJ
             {
                 string name = imageNames[i];
                 string url = IniReadValue(name, "url", imageUrlPath);
-                for (int m = 0; m < bcmimagefiles.Length; m++)//文件名称排序
+                foreach (var item in bcmimagefiles)
                 {
-                    if (bcmimagefiles[m].Contains(name))
+                    if (item.Contains(name))
                     {
-                        FileInfo file = new FileInfo(bcmimagefiles[m]);
-                        long len = 0;
-                        if (file.Length == 0)
+                        FileInfo file = new FileInfo(item);
+                        if(file.Exists && file.Length == 0)
                         {
-                            len = file.Length;
-                            while (len < 5)
-                            {
-                                DownLoadPicture(url, Path.Combine(bcmimagesaddress, name));
-                                file.Refresh();
-                                len = len + file.Length + 1;
-                            }
+                            DownLoadPicture(url, Path.Combine(bcmimagesaddress, name));
                             file.Refresh();
                             if (file.Length > 0)
                             {
-                                //DeleteSection(name, imageUrlPath);
+                                DeleteSection(name, imageUrlPath);
+                                break;
                             }
                         }
                     }
@@ -598,59 +590,27 @@ namespace SHJ
                     if (needupdatePlaylist)
                     {
                         needupdatePlaylist = false;
-                        axWindowsMediaPlayer1.currentPlaylist.clear();
-                        //检测播放列表是否更新
-                        for (int i = 0; i < adimagefiles.Length; i++)//广告文件名列表
+                        this.axWindowsMediaPlayer1.currentPlaylist.clear();
+                        DirectoryInfo file = new DirectoryInfo(adimagesaddress);
+                        if (file.Exists)
                         {
-
-                            int mystartindex = adimagefiles[i].LastIndexOf('\\');
-                            int myendindex = adimagefiles[i].LastIndexOf('.');
-                            bool myisvideo = adimagefiles[i].EndsWith(".wav") || adimagefiles[i].EndsWith(".mid")
-                                || adimagefiles[i].EndsWith(".mp4") || adimagefiles[i].EndsWith(".mp3")
-                                || adimagefiles[i].EndsWith(".mpg") || adimagefiles[i].EndsWith(".avi")
-                                || adimagefiles[i].EndsWith(".asf") || adimagefiles[i].EndsWith(".wmv")
-                                || adimagefiles[i].EndsWith(".rm") || adimagefiles[i].EndsWith(".rmvb");
-                            if ((mystartindex >= 0) && (myendindex >= 0) && (myisvideo == true))//文件名正确
+                            foreach (var item in file.GetFiles())
                             {
-                                axWindowsMediaPlayer1.currentPlaylist.appendItem(axWindowsMediaPlayer1.newMedia(adimagefiles[i]));
+                                try
+                                {
+                                    this.axWindowsMediaPlayer1.currentPlaylist.appendItem(this.axWindowsMediaPlayer1.newMedia(item.FullName));
+                                }
+                                catch { }
                             }
-                        }
-                        if (axWindowsMediaPlayer1.currentPlaylist.count > 0)//有播放文件
-                        {
-                            axWindowsMediaPlayer1.Visible = true;
+                            axWindowsMediaPlayer1.settings.setMode("loop", true);
                             axWindowsMediaPlayer1.Ctlcontrols.play();
+                            System.Media.SystemSounds.Beep.Play();
+                            axWindowsMediaPlayer1.Visible = true;
                         }
                         else
                         {
                             axWindowsMediaPlayer1.Visible = false;
                             axWindowsMediaPlayer1.Ctlcontrols.stop();
-                        }
-                    }
-                    if (guanggaoreturntime >= 3)
-                    {
-                        guanggaoreturntime = 0;
-
-                        try
-                        {
-                            //播放图片
-                            if (adimagefiles != null)
-                            {
-                                if (guanggaoindex >= adimagefiles.Length)
-                                {
-                                    guanggaoindex = 0;
-                                }
-                                bool ispicture = adimagefiles[guanggaoindex].EndsWith(".bmp") || adimagefiles[guanggaoindex].EndsWith(".jpg")
-                                    || adimagefiles[guanggaoindex].EndsWith(".png") || adimagefiles[guanggaoindex].EndsWith(".gif")
-                                    || adimagefiles[guanggaoindex].EndsWith(".tif") || adimagefiles[guanggaoindex].EndsWith(".jpeg");//是否是图片
-                                if (ispicture)//是图片
-                                {
-                                    this.pictureBox1.Load(adimagefiles[guanggaoindex]);
-                                }
-                                guanggaoindex++;
-                            }
-                        }
-                        catch
-                        {
                         }
                     }
                     break;
@@ -1043,7 +1003,7 @@ namespace SHJ
             qrCode.QRCodeForegroundColor = Color.Black;
             bt = qrCodeEncoder.Encode(url, Encoding.UTF8);
             string erweimaImgName = "erweima.jpg";
-            bt.Save(Path.Combine(adimagesaddress, erweimaImgName));
+            bt.Save(Path.Combine(adimagesaddress+"\\Erweima", erweimaImgName));
         }
 
         /// <summary>
@@ -1119,7 +1079,32 @@ namespace SHJ
                 }
             }
         }
-        
+
+        /// <summary>
+        /// 图片下载
+        /// </summary>
+        /// <param name="Url">URL</param>
+        /// <param name="savePath">路径</param>
+        /// <returns></returns>
+        public bool DownloadImage(string Url, string savePath)
+        {
+            try
+            {
+                WebClient client = new WebClient();
+                Stream stream = client.OpenRead(Url);
+                Bitmap bitmap = new Bitmap(stream);
+                if (bitmap != null)
+                    bitmap.Save(savePath);
+                stream.Flush();
+                stream.Close();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+        }
+
         /// <summary>
         /// 网络收到数据事件方法
         /// </summary>
@@ -2017,23 +2002,26 @@ namespace SHJ
         /// <param name="path">保存地址</param>
         public void DownLoadPicture(string url, string path)
         {
-            List<string> folders = new List<string>()
-            {
-                url
-            };
-            List<DownloadFile> downloadFiles = new List<DownloadFile>();
-            Parallel.ForEach(folders, folder =>
-            {
-                downloadFiles.AddRange(ReadFileUrl(url, path));
-            });
-            List<Task> tList = new List<Task>();
-            downloadFiles.ForEach(p =>
-            {
-                tList.Add(
-                    DownloadingDataFromServerAsync(p)
-                );
-            });
-            Task.WaitAll(tList.ToArray());
+            //List<string> folders = new List<string>()
+            //{
+            //    url
+            //};
+            //List<DownloadFile> downloadFiles = new List<DownloadFile>();
+            //Parallel.ForEach(folders, folder =>
+            //{
+            //    downloadFiles.AddRange(ReadFileUrl(url, path));
+            //});
+            //List<Task> tList = new List<Task>();
+            //downloadFiles.ForEach(p =>
+            //{
+            //    tList.Add(
+            //        DownloadingDataFromServerAsync(p)
+            //    );
+            //});
+            //Task.WaitAll(tList.ToArray());
+            List<Task> taskList = new List<Task>();
+            taskList.Add(Task.Run(() => this.DownloadImage(url, path)));
+            Task.WaitAny(taskList.ToArray(),2000);
         }
 
         /// <summary>
