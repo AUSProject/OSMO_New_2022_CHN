@@ -27,7 +27,7 @@ namespace SHJ
         [DllImport("user32.dll", EntryPoint = "ShowCursor", CharSet = CharSet.Auto)]
         public extern static void ShowCursor(int status);
 
-        #region Ini
+        #region IniFileTools
 
         [System.Runtime.InteropServices.DllImport("kernel32")]
         private static extern bool WritePrivateProfileString(string section, string key, string val, string filePath);
@@ -127,6 +127,7 @@ namespace SHJ
         public static int HMIstep;//界面页面：0广告 1触摸选择商品 2支付页面
         private const int GSMRXTXBUFLEN = 1500;
         private setting mysetting;//设置窗口
+        private tihuoma mytihuoma;//提货码页面
 
         private int guanggaoindex = 0;//广告文件夹中图片索引号 
         public static string adimagesaddress;//广告图片路径
@@ -149,7 +150,7 @@ namespace SHJ
         public static XmlNode mynetcofignode;//网络配置
         public static XmlNode myfunctionnode;//功能配置
         public static XmlNode mypayconfignode;//支付配置
-        public static XmlDocument mysalexmldoc = new XmlDocument();//销售记录配置文件XML
+        public static XmlDocument shipmentDoc = new XmlDocument();//销售记录配置文件XML
         public static XmlNodeList mynodelistpay;//支付记录
         public static XmlNode mySystemNode;//系统信息
         public static XmlNode myMachineNode;//设备参数
@@ -347,8 +348,8 @@ namespace SHJ
             {
                 try
                 {
-                    mysalexmldoc.Load(salexmlfile);
-                    mysalexmldoc.Save(salexmlfilecopy);
+                    shipmentDoc.Load(salexmlfile);
+                    shipmentDoc.Save(salexmlfilecopy);
                 }
                 catch
                 {
@@ -356,14 +357,14 @@ namespace SHJ
                     {
                         try
                         {
-                            mysalexmldoc.Load(salexmlfilecopy);
-                            mysalexmldoc.Save(salexmlfile);
+                            shipmentDoc.Load(salexmlfilecopy);
+                            shipmentDoc.Save(salexmlfile);
                         }
                         catch
                         {
                             initsalexml();
-                            mysalexmldoc.Save(salexmlfile);
-                            mysalexmldoc.Save(salexmlfilecopy);
+                            shipmentDoc.Save(salexmlfile);
+                            shipmentDoc.Save(salexmlfilecopy);
                         }
                     }
                 }
@@ -372,21 +373,21 @@ namespace SHJ
             {
                 try
                 {
-                    mysalexmldoc.Load(salexmlfilecopy);
-                    mysalexmldoc.Save(salexmlfile);
+                    shipmentDoc.Load(salexmlfilecopy);
+                    shipmentDoc.Save(salexmlfile);
                 }
                 catch
                 {
                     initsalexml();
-                    mysalexmldoc.Save(salexmlfile);
-                    mysalexmldoc.Save(salexmlfilecopy);
+                    shipmentDoc.Save(salexmlfile);
+                    shipmentDoc.Save(salexmlfilecopy);
                 }
             }
             else
             {
                 initsalexml();
-                mysalexmldoc.Save(salexmlfile);
-                mysalexmldoc.Save(salexmlfilecopy);
+                shipmentDoc.Save(salexmlfile);
+                shipmentDoc.Save(salexmlfilecopy);
             }
             if (System.IO.File.Exists(regxmlfile))//加载注册文件
             {
@@ -570,6 +571,7 @@ namespace SHJ
                     }
                 }
             }
+            imageNames.Clear();
 
             if (myminute < 59)//最长1分钟，循环时间
             {
@@ -619,7 +621,7 @@ namespace SHJ
                     if (guanggaoreturntime >= MAXreturntime)//3分钟
                     {
                         guanggaoreturntime = 0;
-                        item = 0;
+                        ReCargoNum = 0;
                         HMIstep = 0;//广告页面
 
                         needupdatePlaylist = true;//需要更新播放列表
@@ -888,7 +890,7 @@ namespace SHJ
         //运行控制和显示
         private void timer3_Tick(object sender, EventArgs e)
         {
-            PLC.MachineRun(item);
+            PLC.MachineRun(ReCargoNum);
             myprint.PEloop();
             RunningDisplay();
             if (PLCHelper.errorToken)
@@ -960,151 +962,8 @@ namespace SHJ
 
         #endregion
 
-        #region 网络，初始化，更新
-
-        /// <summary>
-        /// 返回机器剩余总库存
-        /// </summary>
-        /// <returns>库存数</returns>
-        public static int ReturnStock()
-        {
-            int total = 0;
-            for (int i = 0; i < mynodelisthuodao.Count; i++)
-            {
-                total += int.Parse(mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value);
-            }
-            return total;
-        }
-
-        /// <summary>
-        /// 返回到提货码页面
-        /// </summary>
-        private void ReturnInputPage()
-        {
-            item = 0;
-            shangpinjiage = 0;
-            guanggaoreturntime = 0;
-            HMIstep = 1;
-        }
-
-        /// <summary>
-        /// 生成二维码
-        /// </summary>
-        /// <param name="url"></param>
-        private void QRCode(string url)
-        {
-            Bitmap bt;
-            QRCodeEncoder qrCode = new QRCodeEncoder();
-            qrCode.QRCodeEncodeMode = QRCodeEncoder.ENCODE_MODE.BYTE;
-            qrCode.QRCodeScale = 4;
-            qrCode.QRCodeVersion = 0;
-            qrCode.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.M;
-            qrCode.QRCodeBackgroundColor = Color.Wheat;
-            qrCode.QRCodeForegroundColor = Color.Black;
-            bt = qrCodeEncoder.Encode(url, Encoding.UTF8);
-            string erweimaImgName = "erweima.jpg";
-            bt.Save(Path.Combine(adimagesaddress+"\\Erweima", erweimaImgName));
-        }
-
-        /// <summary>
-        /// 货道状态和库存检测
-        /// <para>return 90:商品号出错 91:货道故障 92:货道无库存</para>
-        /// </summary>
-        /// <param name="aisleNum">商品号</param>
-        /// <returns></returns>
-        private int CargoStockAndStateCheck(string aisleNum)
-        {
-            int result = 90;//商品号出错
-
-            if (int.Parse(aisleNum) > mynodelistshangpin.Count || int.Parse(aisleNum) <= 0)
-            {
-                log.WriteStepLog(StepType.货道检测, "商品号出错");
-                result = 90;
-                HMIstep = 1;
-            }
-            else
-            {
-                for (int i = 0; i < mynodelistshangpin.Count; i++)
-                {
-                    if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == int.Parse(aisleNum))
-                    {
-
-                        for (int k = 0; k < mynodelisthuodao.Count; k++)
-                        {
-                            if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("huodao").Value)
-                                == int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value))
-                            {
-                                if ((int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("state").Value) != 0))//货道反馈异常（状态）
-                                {
-                                    result = 91;//货道故障
-                                    HMIstep = 1;//返回提货码页
-                                    log.WriteStepLog(StepType.货道检测, "货道故障");
-                                } 
-                                else if (int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("kucun").Value) <= 0)//无库存
-                                {
-                                    result = 92;//无库存
-                                    HMIstep = 1;
-                                    log.WriteStepLog(StepType.货道检测, "货道无库存");
-                                }
-                                else
-                                {
-                                    result = int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value);
-                                    log.WriteStepLog(StepType.货道检测, "状态正常");
-                                    break;
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// 库存减一
-        /// </summary>
-        /// <param name="cargoNum"> 货道号</param>
-        public static void ReduceStock(string cargoNum)
-        {
-            for(int i = 0; i < mynodelisthuodao.Count; i++)
-            {
-                if (cargoNum == mynodelisthuodao[i].Attributes.GetNamedItem("huodaonum").Value)
-                {
-                    int newKucun = int.Parse(mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value) - 1;
-                    mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value = newKucun.ToString();
-                    myxmldoc.Save(configxmlfile);
-                    myxmldoc.Save(configxmlfilecopy);
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 图片下载
-        /// </summary>
-        /// <param name="Url">URL</param>
-        /// <param name="savePath">路径</param>
-        /// <returns></returns>
-        public bool DownloadImage(string Url, string savePath)
-        {
-            try
-            {
-                WebClient client = new WebClient();
-                Stream stream = client.OpenRead(Url);
-                Bitmap bitmap = new Bitmap(stream);
-                if (bitmap != null)
-                    bitmap.Save(savePath);
-                stream.Flush();
-                stream.Close();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.ToString());
-            }
-        }
-
+        #region 数据接收
+        
         /// <summary>
         /// 网络收到数据事件方法
         /// </summary>
@@ -1231,105 +1090,82 @@ namespace SHJ
                             if (myTihuomastr == gettihuomastring)
                             {
                                 liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
-                                item = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
-                                log.CreateRunningLog(item.ToString(), myTihuomastr);//创建日志
-
-                                try//检查印章图案是否为空
+                                ReCargoNum = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
+                                log.CreateRunningLog(ReCargoNum.ToString(), myTihuomastr);//创建日志
+                                //检查是否下载成功印章图案
+                                try
                                 {
-                                    bcmimagefiles = Directory.GetFiles(bcmimagesaddress);//选择印章图片文件路径列表
-                                    foreach (var picFile in bcmimagefiles)
+                                    imageNames = ReadSections(imageUrlPath);
+                                    foreach (var item in imageNames)
                                     {
-                                        if (picFile.Contains(myTihuomastr))
+                                        if (item.Contains(myTihuomastr))
                                         {
-                                            FileInfo file = new FileInfo(picFile);
-                                            if (file.Length == 0)//如果为空包，则重新下载图片
+                                            string urlstr = IniReadValue(item, "url", imageUrlPath);//读取图片Url
+                                            if (urlstr == "error")
                                             {
-                                                tihuoma.tihuomaresult = "正在下载印章图案，请稍等";
-                                                string urlstr = IniReadValue(picFile.Replace(bcmimagesaddress+"\\",""), "url", imageUrlPath);//读取图片Url
-                                                if (urlstr == "error")
-                                                {
-                                                    tihuoma.errorMsg = "印章图案无法下载";
-                                                    log.WriteStepLog(StepType.印章图案检查, "印章图案无法下载");
-                                                    log.SaveRunningLog();
-                                                    HMIstep = 1;
-                                                    checktihuoma = false;
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    long len = file.Length;
-                                                    while (len < 5)
-                                                    {
-                                                        DownLoadPicture(urlstr, Path.Combine(bcmimagesaddress,picFile));
-                                                        file.Refresh();
-                                                        len += file.Length + 1;
-                                                    }
-                                                }
-                                                file.Refresh();
-                                                if (file.Length == 0)
-                                                {
-                                                    tihuoma.errorMsg = "印章图案下载失败";
-                                                    log.WriteStepLog(StepType.印章图案检查, "印章图案下载失败");
-                                                    log.SaveRunningLog();
-                                                    checktihuoma = false;
-                                                    HMIstep = 1;
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    DeleteSection(picFile, imageUrlPath);
-                                                    try
-                                                    {
-                                                        PEPrinter.PicPath = picFile;
-                                                        pictureBox7.Load(picFile);
-                                                    }
-                                                    catch { }
-                                                }
+                                                throw new Exception("印章图案无法下载");
                                             }
                                             else
                                             {
-                                                try
+                                                DownLoadPicture(urlstr, Path.Combine(bcmimagesaddress, item));
+                                                FileInfo file = new FileInfo(Path.Combine(bcmimagesaddress, item));
+                                                if (!file.Exists || file.Length == 0)
                                                 {
-                                                    PEPrinter.PicPath = picFile;
-                                                    pictureBox7.Load(picFile);
-                                                    log.WriteStepLog(StepType.印章图案检查, "状态正常");
-                                                    AddCoverPicture(item);//加载盒体图片
+                                                    throw new Exception("印章图案下载失败，请稍后重试");
                                                 }
-                                                catch { }
-                                            }
-                                            
-                                            int result = CargoStockAndStateCheck(item.ToString());
-                                            if (result < 90)
-                                            {
-                                                ConnectCamera("模拟测试");//打开摄像头
-                                                shangpinjiage = double.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("jiage").Value);//实际出货商品价格
-                                                istestmode = false;
-                                                zhifutype = 4;//支付方式为提货码
-                                                
-                                                HMIstep = 3;//出货
-                                                guanggaoreturntime = 0;
-                                                PLCHelper.nowStep = 0x01;
-                                                timer3.Enabled = true;
-                                                wulihuodao = result;
-                                                setchuhuo();
-                                                addpayrecord(shangpinjiage, "提货码");
-
-                                                for (int k = 0; k < 6; k++)//记录时间戳清除防止进支付页面后生成上次请求的的二维码
+                                                else
                                                 {
-                                                    timerecord[0, k] = 0;
-                                                    timerecord[1, k] = 0;
-                                                    timerecord[2, k] = 0;
+                                                    DeleteSection(item, imageUrlPath);
+                                                    try
+                                                    {
+                                                        //加载印章图案
+                                                        PEPrinter.PicPath = Path.Combine(bcmimagesaddress, item);
+                                                        pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
+                                                        log.WriteStepLog(StepType.印章图案检查, "状态正常");
+                                                        AddCoverPicture(ReCargoNum);//加载盒体图片
+                                                    }
+                                                    catch
+                                                    {
+                                                        throw new Exception("印章图案加载失败");
+                                                    }
                                                 }
+                                                break;
                                             }
                                         }
                                     }
                                 }
-                                catch
+                                catch(Exception ex)//返回提货码页面并提示错误信息
                                 {
-                                    tihuoma.errorMsg = "印章图案下载失败";
-                                    checktihuoma = false;
+                                    ReturnInputPage();//返回提货码页面
+                                    tihuoma.errorMsg = ex.Message;
+                                    log.WriteStepLog(StepType.印章图案检查, ex.Message);
+                                    log.SaveRunningLog();
                                     return;
                                 }
+                                int result = CargoStockAndStateCheck(ReCargoNum.ToString());
+                                if (result < 90)
+                                {
+                                    ConnectCamera(myTihuomastr);//打开摄像头
+                                    shangpinjiage = double.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("jiage").Value);//实际出货商品价格
+                                    istestmode = false;
+                                    zhifutype = 4;//支付方式为提货码
+
+                                    HMIstep = 3;//出货
+                                    guanggaoreturntime = 0;
+                                    PLCHelper.nowStep = 0x01;
+                                    timer3.Enabled = true;
+                                    wulihuodao = result;
+                                    setchuhuo();
+                                    addpayrecord(shangpinjiage, "提货码");
+
+                                    for (int k = 0; k < 6; k++)//记录时间戳清除防止进支付页面后生成上次请求的的二维码
+                                    {
+                                        timerecord[0, k] = 0;
+                                        timerecord[1, k] = 0;
+                                        timerecord[2, k] = 0;
+                                    }
+                                }
+
                             }
                             break;
                         case 0x02://验证失败
@@ -1450,70 +1286,24 @@ namespace SHJ
                 try
                 {
                     string updatetimestring = Encoding.Default.GetString(GSMRxBuffer, 6, 21);
-                    imageUrl = Encoding.Default.GetString(GSMRxBuffer, 27, lenrxbuf - 27 - 8);
+                    string imageUrl = Encoding.Default.GetString(GSMRxBuffer, 27, lenrxbuf - 27 - 8);
                     for (int m = 0; m < 6; m++)
                     {
                         timerecord[3, m] = GSMRxBuffer[lenrxbuf - 8 + m];//记录时间戳
                     }
-                    imageName = bcmimagesaddress + "\\" + updatetimestring + ".jpg";
+                    string imageName = bcmimagesaddress + "\\" + updatetimestring + ".jpg";
                     IniWriteValue(updatetimestring + ".jpg", "url", imageUrl, imageUrlPath);//将url写入文件
                     DownLoadPicture(imageUrl, imageName);//下载印章图片
                     FileInfo picInfo = new FileInfo(imageName);
                     if (picInfo.Length > 0)//检查图片是否为空包
                     {
-                        //DeleteSection(updatetimestring + ".jpg", imageUrlPath);//不为空则删除url
+                        DeleteSection(updatetimestring + ".jpg", imageUrlPath);//不为空则删除url
                     }
                 }
                 catch
                 {
                 }
             }
-        }
-
-        private string imageName;//下载失败的图片名称
-        private string imageUrl;//下载失败的图片url
-
-        private static void CreateFile(string fileName)
-        {
-            if (!File.Exists(fileName))
-            {
-                FileStream fileStream = File.Create(fileName);
-                fileStream.Close();
-                fileStream.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// 下载用方法
-        /// </summary>
-        /// <param name="downloadFile"></param>
-        /// <returns></returns>
-        public async Task DownloadingDataFromServerAsync(DownloadFile downloadFile)
-        {
-            Uri uri = new Uri(downloadFile.FileName);
-            string saveFileName = downloadFile.SaveFileName;
-            CreateFile(saveFileName);
-            using (WebClient client = new WebClient())
-            {
-                try
-                {
-                    await client.DownloadFileTaskAsync(uri, saveFileName);
-                    client.DownloadFileCompleted += new AsyncCompletedEventHandler(tihuopicture_DownloadFileCompleted);
-                }
-                catch (Exception ex)
-                {
-                    
-                }
-            }
-        }
-        static List<DownloadFile> ReadFileUrl(string fileName, string saveFileName)
-        {
-            string fileName1 = fileName;
-            string saveFileName1 = saveFileName;
-            List<DownloadFile> list = new List<DownloadFile>();
-            var model = new DownloadFile(fileName1,saveFileName1);
-            list.Add(model);
-            return list;
         }
 
         /// <summary>
@@ -1567,463 +1357,80 @@ namespace SHJ
         }
 
         /// <summary>
-        /// 加载盒体图片
-        /// </summary>
-        private void AddCoverPicture(int tempshangpinnum)
-        {
-            for (int i = 0; i < mynodelistshangpin.Count; i++)
-            {
-                string coverNum = mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value;
-                if (tempshangpinnum == int.Parse(coverNum))
-                {
-                    for (int j = 0; j < cmimagefiles.Length; j++)
-                    {
-                        string mycmname = Path.GetFileNameWithoutExtension(cmimagefiles[j]);
-                        if (coverNum == mycmname)//文件名正确
-                        {
-                            try
-                            {
-                                pictureBox8.Load(cmimagefiles[j]);
-                            }
-                            catch
-                            {
-                                pictureBox8.Image = global::SHJ.Properties.Resources.shangpin;
-                            }
-                            break;
-                        }
-                        else if (j == cmimagefiles.Length)
-                        {
-                            try
-                            {
-                                pictureBox8.Image = global::SHJ.Properties.Resources.shangpin;
-                            }
-                            catch
-                            {
-                            }
-                        }
-                    }  
-                    break;
-                }
-            }
-        }
-        
-        /// <summary> 
-        /// 读取机器类型 
-        private void Getvendortype()
-        {
-            XmlDocument xDoc = new XmlDocument();
-            XmlNode xNode;
-            try
-            {
-                xDoc.Load("conf.config");
-
-                xNode = xDoc.SelectSingleNode("//appSettings");
-                vendortype = xNode.SelectSingleNode("setting3").Attributes.GetNamedItem("value").Value;
-                localsalerID = xNode.SelectSingleNode("setting4").Attributes.GetNamedItem("value").Value;
-            }
-            catch
-            {
-            }
-        }
-
-        /// <summary>
-        /// 初始化配置文件
-        /// </summary>
-        private void initconfigxml()
-        {
-            myxmldoc.RemoveAll();//去除所有节点
-            myxmldoc.CreateXmlDeclaration("1.0", "utf-8","yes");
-            //创建根节点1
-            XmlNode rootNode = myxmldoc.CreateElement("config");//配置定义
-
-            XmlNode NetNode = myxmldoc.CreateElement("netconfig");//网络定义
-            XmlAttribute ipconfigAttribute = myxmldoc.CreateAttribute("ipconfig");//IP地址
-            ipconfigAttribute.Value = "120.77.110.254";
-            NetNode.Attributes.Append(ipconfigAttribute);//xml节点附件属性
-            XmlAttribute portAttribute = myxmldoc.CreateAttribute("port");//端口号
-            portAttribute.Value = "5006";
-            NetNode.Attributes.Append(portAttribute);//xml节点附件属性
-            XmlAttribute netdelayAttribute = myxmldoc.CreateAttribute("netdelay");//网络发送延时（间隔）
-            netdelayAttribute.Value = "60";
-            NetNode.Attributes.Append(netdelayAttribute);//xml节点附件属性
-            rootNode.AppendChild(NetNode);
-            
-            XmlNode functionNode = myxmldoc.CreateElement("function");//功能定义
-            XmlAttribute touchAttribute = myxmldoc.CreateAttribute("touch");//是否支持?
-            touchAttribute.Value = "1";
-            functionNode.Attributes.Append(touchAttribute);//xml节点附件属性
-            XmlAttribute temp1Attribute = myxmldoc.CreateAttribute("temperature1");//温区1温度
-            temp1Attribute.Value = "25";
-            functionNode.Attributes.Append(temp1Attribute);//xml节点附件属性
-            XmlAttribute temp2Attribute = myxmldoc.CreateAttribute("temperature2");//温区2温度
-            temp2Attribute.Value = "25";
-            functionNode.Attributes.Append(temp2Attribute);//xml节点附件属性
-            XmlAttribute fenbianlvAttribute = myxmldoc.CreateAttribute("fenbianlv");//分辨率
-            fenbianlvAttribute.Value = "0";
-            functionNode.Attributes.Append(fenbianlvAttribute);//xml节点附件属性
-            XmlAttribute addateAttribute = myxmldoc.CreateAttribute("addate");//广告更新时间
-            addateAttribute.Value = "20160101010101";
-            functionNode.Attributes.Append(addateAttribute);//xml节点附件属性
-            XmlAttribute adurlAttribute = myxmldoc.CreateAttribute("adurl");//广告地址
-            adurlAttribute.Value = "";
-            functionNode.Attributes.Append(adurlAttribute);//xml节点附件属性
-            XmlAttribute adupdateAttribute = myxmldoc.CreateAttribute("adupdate");//广告推送是否打开
-            adupdateAttribute.Value = "0";
-            functionNode.Attributes.Append(adupdateAttribute);//xml节点附件属性
-
-            XmlAttribute vendortypeAttribute = myxmldoc.CreateAttribute("vendortype");//机器类型0印章机
-            vendortypeAttribute.Value = "0";
-            functionNode.Attributes.Append(vendortypeAttribute);//xml节点附件属性
-
-            rootNode.AppendChild(functionNode);
-            
-            //设备信息
-            XmlNode machineNode = myxmldoc.CreateElement("MachineInfo");
-            XmlAttribute machineAutoRun = myxmldoc.CreateAttribute("isAutoRun");//机器运行模式
-            machineAutoRun.Value = "False";
-            machineNode.Attributes.Append(machineAutoRun);
-            XmlAttribute runType = myxmldoc.CreateAttribute("runType");//PC运行模式选择
-            runType.Value = "01";
-            machineNode.Attributes.Append(runType);
-            XmlAttribute isRigPrnit = myxmldoc.CreateAttribute("isRigPrint");//是否安装了印面
-            isRigPrnit.Value = "False";
-            machineNode.Attributes.Append(isRigPrnit);
-            XmlAttribute photoTest = myxmldoc.CreateAttribute("photoTest");//照片定位测试功能
-            photoTest.Value = "False";
-            machineNode.Attributes.Append(photoTest);
-            rootNode.AppendChild(machineNode);
-
-            //系统信息
-            XmlNode systemNode = myxmldoc.CreateElement("System");
-            XmlAttribute version = myxmldoc.CreateAttribute("Version");
-            version.Value = "ADH816AZV4.1.01";
-            systemNode.Attributes.Append(version);
-            XmlAttribute CPFRPassAttribute = myxmldoc.CreateAttribute("CPFRPass");//补货密码
-            CPFRPassAttribute.Value = "2022";
-            systemNode.Attributes.Append(CPFRPassAttribute);
-            XmlAttribute setupPassAttribute = myxmldoc.CreateAttribute("setupPass");//系统设置密码
-            setupPassAttribute.Value = "2023";
-            systemNode.Attributes.Append(setupPassAttribute);
-            XmlAttribute debugPassAttribute = myxmldoc.CreateAttribute("debugPass");//调试密码
-            debugPassAttribute.Value = "2024";
-            systemNode.Attributes.Append(debugPassAttribute);
-            rootNode.AppendChild(systemNode);
-            
-            XmlNode config1Node = myxmldoc.CreateElement("payconfig");//支付定义
-            XmlAttribute allpayAttribute = myxmldoc.CreateAttribute("allpay");//第一位为支付宝、第二位为微信、第三位为一码付、第四位为银联闪付、第五位为提货码、第六位为微信刷脸、第七位为支付宝刷脸
-            allpayAttribute.Value = "0";
-            config1Node.Attributes.Append(allpayAttribute);//xml节点附件属性
-            XmlAttribute zhekouAttribute = myxmldoc.CreateAttribute("zhekou");//折扣
-            zhekouAttribute.Value = "100";
-            config1Node.Attributes.Append(zhekouAttribute);//xml节点附件属性
-            rootNode.AppendChild(config1Node);
-
-            //创建根节点2
-            XmlNode config2Node = myxmldoc.CreateElement("shangpin");//商品定义
-            for (int i = 1; i <= totalshangpinnum; i++)
-            {
-                //创建货道节点
-                XmlNode shangpinNode = myxmldoc.CreateElement("shangpin"+(i-1).ToString());//商品定义
-                XmlAttribute shangpinnumAttribute = myxmldoc.CreateAttribute("shangpinnum");//商品编号
-                shangpinnumAttribute.Value = i.ToString("000");
-                shangpinNode.Attributes.Append(shangpinnumAttribute);//xml节点附件属性
-                XmlAttribute shangpinnameAttribute = myxmldoc.CreateAttribute("shangpinname");//对应商品名称
-                shangpinnameAttribute.Value = "";
-                shangpinNode.Attributes.Append(shangpinnameAttribute);//xml节点附件属性
-                XmlAttribute jiageAttribute = myxmldoc.CreateAttribute("jiage");//商品价格
-                jiageAttribute.Value = "0.1";
-                shangpinNode.Attributes.Append(jiageAttribute);//xml节点附件属性
-                XmlAttribute huodaoAttribute = myxmldoc.CreateAttribute("huodao");//货道定义
-                huodaoAttribute.Value = i.ToString();
-                shangpinNode.Attributes.Append(huodaoAttribute);//xml节点附件属性
-
-                XmlAttribute stateAttribute = myxmldoc.CreateAttribute("state");//商品状态
-                stateAttribute.Value = "0";//默认正常
-                shangpinNode.Attributes.Append(stateAttribute);//xml节点附件属性
-                XmlAttribute salesumAttribute = myxmldoc.CreateAttribute("salesum");//商品销售统计
-                salesumAttribute.Value = "0";//默认正常
-                shangpinNode.Attributes.Append(salesumAttribute);//xml节点附件属性
-                config2Node.AppendChild(shangpinNode);
-            }
-            rootNode.AppendChild(config2Node);
-
-
-            //创建根节点3
-            XmlNode config3Node = myxmldoc.CreateElement("huodao");//商品定义
-            for (int i = 1; i <= totalhuodaonum; i++)
-            {
-                //创建货道节点
-                XmlNode huodaoNode = myxmldoc.CreateElement("huodao" + (i - 1).ToString());//货道定义
-                XmlAttribute huodaonumAttribute = myxmldoc.CreateAttribute("huodaonum");//货道编号
-                huodaonumAttribute.Value = i.ToString();
-                huodaoNode.Attributes.Append(huodaonumAttribute);//xml节点附件属性
-                XmlAttribute fenzuAttribute = myxmldoc.CreateAttribute("fenzu");//货道分组定义默认不分组
-                fenzuAttribute.Value = i.ToString();
-                huodaoNode.Attributes.Append(fenzuAttribute);//xml节点附件属性
-                XmlAttribute kucunAttribute = myxmldoc.CreateAttribute("kucun");//货道库存
-                kucunAttribute.Value = "255";
-                huodaoNode.Attributes.Append(kucunAttribute);//xml节点附件属性
-                XmlAttribute stateAttribute = myxmldoc.CreateAttribute("state");//货道状态
-                stateAttribute.Value = "0";//默认正常
-                huodaoNode.Attributes.Append(stateAttribute);//xml节点附件属性
-                XmlAttribute typeAttribute = myxmldoc.CreateAttribute("volume");//货道容量
-                typeAttribute.Value = "8";//默认正常
-                huodaoNode.Attributes.Append(typeAttribute);//xml节点附件属性
-                XmlAttribute positionAttribute = myxmldoc.CreateAttribute("position");//印章类型1：1010，2：2020，3：2530，其他2530
-                positionAttribute.Value = "3";//默认2530
-                huodaoNode.Attributes.Append(positionAttribute);//xml节点附件属性
-                XmlAttribute fangxiangAttribute = myxmldoc.CreateAttribute("fangxiang");//货道坐标
-                fangxiangAttribute.Value = ((i - 1) / 10 + 1).ToString();
-                huodaoNode.Attributes.Append(fangxiangAttribute);//xml节点附件属性
-
-                config3Node.AppendChild(huodaoNode);
-            }
-            rootNode.AppendChild(config3Node);
-
-            myxmldoc.AppendChild(rootNode);
-        }
-
-        /// <summary>
-        /// 初始化销售记录文件
-        /// </summary>
-        public static void initsalexml()
-        {
-            mysalexmldoc.RemoveAll();//去除所有节点
-            mysalexmldoc.CreateXmlDeclaration("1.0", "utf-8", "yes");
-            //创建根节点
-            XmlNode rootNode = mysalexmldoc.CreateElement("sale");//配置定义
-
-            //创建销售数据节点1
-            XmlNode sale1Node = mysalexmldoc.CreateElement("chuhuo");//出货定义
-            for (int i = 0; i < 500; i++)
-            {
-                //创建货道节点
-                XmlNode chuhuoNode = mysalexmldoc.CreateElement("chuhuo" + i.ToString());//出货定义
-                XmlAttribute timeAttribute = mysalexmldoc.CreateAttribute("time");//时间戳
-                timeAttribute.Value = "";
-                chuhuoNode.Attributes.Append(timeAttribute);//xml节点附件属性
-                XmlAttribute shangpinnumAttribute = mysalexmldoc.CreateAttribute("shangpinnum");//对应商品编号
-                shangpinnumAttribute.Value = "";
-                chuhuoNode.Attributes.Append(shangpinnumAttribute);//xml节点附件属性
-                XmlAttribute jiageAttribute = mysalexmldoc.CreateAttribute("jiage");//商品价格
-                jiageAttribute.Value = "";
-                chuhuoNode.Attributes.Append(jiageAttribute);//xml节点附件属性
-                XmlAttribute typeAttribute = mysalexmldoc.CreateAttribute("type");//支付方式
-                typeAttribute.Value = "";
-                chuhuoNode.Attributes.Append(typeAttribute);//xml节点附件属性
-
-                XmlAttribute startAttribute = mysalexmldoc.CreateAttribute("start");//是否是最新记录
-                startAttribute.Value = "";
-                chuhuoNode.Attributes.Append(startAttribute);//xml节点附件属性
-
-                sale1Node.AppendChild(chuhuoNode);
-            }
-            rootNode.AppendChild(sale1Node);
-
-            //创建销售数据节点1
-            XmlNode sale2Node = mysalexmldoc.CreateElement("pay");//支付定义
-            for (int i = 0; i < 500; i++)
-            {
-                //创建货道节点
-                XmlNode payNode = mysalexmldoc.CreateElement("pay" + i.ToString());//支付定义
-                XmlAttribute timeAttribute = mysalexmldoc.CreateAttribute("time");//时间戳
-                timeAttribute.Value = "";
-                payNode.Attributes.Append(timeAttribute);//xml节点附件属性
-                XmlAttribute moneyAttribute = mysalexmldoc.CreateAttribute("money");//支付金额
-                moneyAttribute.Value = "";
-                payNode.Attributes.Append(moneyAttribute);//xml节点附件属性
-                XmlAttribute typeAttribute = mysalexmldoc.CreateAttribute("type");//支付方式
-                typeAttribute.Value = "";
-                payNode.Attributes.Append(typeAttribute);//xml节点附件属性
-
-                XmlAttribute startAttribute = mysalexmldoc.CreateAttribute("start");//是否是最新记录
-                startAttribute.Value = "";
-                payNode.Attributes.Append(startAttribute);//xml节点附件属性
-
-                sale2Node.AppendChild(payNode);
-            }
-            rootNode.AppendChild(sale2Node);
-
-            mysalexmldoc.AppendChild(rootNode);
-        }
-
-        /// <summary>
-        /// 初始化注册文件
-        /// </summary>
-        public void initregxml()
-        {
-            myregxmldoc.RemoveAll();//去除所有节点
-            myregxmldoc.CreateXmlDeclaration("1.0", "utf-8", "yes");
-            //创建根节点
-            XmlNode rootNode = myregxmldoc.CreateElement("reg");//配置定义
-            XmlAttribute regAttribute0 = myregxmldoc.CreateAttribute("regid");//注册号
-            regAttribute0.Value = "0";
-            rootNode.Attributes.Append(regAttribute0);//xml节点附件属性
-
-            myregxmldoc.AppendChild(rootNode);
-        }
-        
-        /// <summary>
-        /// 更新各个配置节点路径
-        /// </summary>
-        private void updatenodeaddress()
-        {
-            mySystemNode= myxmldoc.SelectSingleNode("config").SelectSingleNode("System");
-            myMachineNode= myxmldoc.SelectSingleNode("config").SelectSingleNode("MachineInfo");
-            mynetcofignode = myxmldoc.SelectSingleNode("config").SelectSingleNode("netconfig");
-            myfunctionnode = myxmldoc.SelectSingleNode("config").SelectSingleNode("function");
-            mypayconfignode = myxmldoc.SelectSingleNode("config").SelectSingleNode("payconfig");
-            mynodelistshangpin = myxmldoc.SelectSingleNode("config").SelectSingleNode("shangpin").ChildNodes;
-            mynodelisthuodao = myxmldoc.SelectSingleNode("config").SelectSingleNode("huodao").ChildNodes;
-            mynodelistpay = mysalexmldoc.SelectSingleNode("sale").SelectSingleNode("pay").ChildNodes;
-            try
-            {
-                paytypes = int.Parse(mypayconfignode.Attributes.GetNamedItem("allpay").Value);
-            }
-            catch
-            {
-            }
-            try
-            {
-                Getvendortype();
-                if (vendortype != myfunctionnode.Attributes.GetNamedItem("vendortype").Value)
-                {
-                    myfunctionnode.Attributes.GetNamedItem("vendortype").Value = vendortype;
-                    mysalexmldoc.Save(salexmlfile);
-                    mysalexmldoc.Save(salexmlfilecopy);
-                }
-            }
-            catch { }
-        }
-        
-        /// <summary>
-        /// 添加支付记录
-        /// </summary>
-        /// <param name="money">支付金额</param>
-        /// <param name="type">支付方式</param>
-        private void addpayrecord(double money,string type)
-        {
-            int i;
-            for (i = 0; i < mynodelistpay.Count; i++)
-            {
-                if (mynodelistpay[i].Attributes.GetNamedItem("start").Value == "1")
-                {
-                    mynodelistpay[i].Attributes.GetNamedItem("time").Value = DateTime.Now.ToString("MM-dd HH:mm:ss");
-                    mynodelistpay[i].Attributes.GetNamedItem("money").Value = money.ToString();
-                    mynodelistpay[i].Attributes.GetNamedItem("type").Value = type;
-                    mynodelistpay[i].Attributes.GetNamedItem("start").Value = "";
-                    if (i == mynodelistpay.Count - 1)
-                    {
-                        mynodelistpay[0].Attributes.GetNamedItem("start").Value = "1";
-                    }
-                    else
-                    {
-                        mynodelistpay[i + 1].Attributes.GetNamedItem("start").Value = "1";
-                    }
-                    break;
-                }
-            }
-            if (i == mynodelistpay.Count)//未找到起始位置
-            {
-                mynodelistpay[0].Attributes.GetNamedItem("time").Value = DateTime.Now.ToString("MM-dd HH:mm:ss");
-                mynodelistpay[0].Attributes.GetNamedItem("money").Value = money.ToString();
-                mynodelistpay[0].Attributes.GetNamedItem("type").Value = type;
-                mynodelistpay[0].Attributes.GetNamedItem("start").Value = "";
-                mynodelistpay[1].Attributes.GetNamedItem("start").Value = "1";
-            }
-            mysalexmldoc.Save(salexmlfile);
-            mysalexmldoc.Save(salexmlfilecopy);
-        }
-
-        /// <summary>
-        /// 设置出货
-        /// </summary>
-        private void setchuhuo()
-        {
-            //出货设置
-            Aisleoutcount = 1;//超时计时开始
-        }
-       
-        private void InitFormsize()
-        {
-            this.Width = 1920;
-            this.Height = 1080;
-            this.pictureBox1.Dock = DockStyle.None;
-            this.pictureBox1.Width = 0;
-            this.pictureBox1.Height = 0;
-            this.axWindowsMediaPlayer1.Width = 1920;//视频1000x525
-            this.axWindowsMediaPlayer1.Height = 1080;
-            this.axWindowsMediaPlayer1.uiMode = "None";
-            this.axWindowsMediaPlayer1.stretchToFit = true;
-            this.axWindowsMediaPlayer1.Location = new Point(0, 0);
-            this.axWindowsMediaPlayer1.settings.autoStart = true;
-            this.axWindowsMediaPlayer1.settings.setMode("loop", true);
-            this.imageList1.ImageSize = new Size(215, 215);
-
-            this.label2.Location = new Point(1400, 10);
-            this.label5.Location = new Point(210, 740);
-            this.label15.Location = new Point(668, 700);
-            this.label16.Location = new Point(1133, 700);
-            this.pictureBox6.Location = new Point(800, 800);
-            this.pictureBox7.Location = new Point(550, 400);
-            this.pictureBox8.Location = new Point(1020, 400);
-            this.pel_SellTips.Location = new Point(1550, 750);
-            
-            needupdatePlaylist = true;
-
-            if (photoPointTest)//需要记录位置则显示功能
-            {
-                //拍照的位置测试功能
-                try
-                {
-                    sw1 = new StreamWriter(Path.Combine(logPath, "拍照定位" + ".txt"));
-                }
-                catch { }
-                panel2.Visible = true;
-                panel2.Location = new Point(454, 759);
-                video1.Visible = true;
-                video1.Location = new Point(300, 100);
-            }
-            else
-            {
-                panel2.Visible = false;
-                video1.Visible = false;
-            }
-        }
-
-        #endregion
-
-        #region 服务器操作
-
-        /// <summary>
         /// 下载图片
         /// </summary>
         /// <param name="url">图片Url</param>
         /// <param name="path">保存地址</param>
         public void DownLoadPicture(string url, string path)
         {
-            //List<string> folders = new List<string>()
-            //{
-            //    url
-            //};
-            //List<DownloadFile> downloadFiles = new List<DownloadFile>();
-            //Parallel.ForEach(folders, folder =>
-            //{
-            //    downloadFiles.AddRange(ReadFileUrl(url, path));
-            //});
-            //List<Task> tList = new List<Task>();
-            //downloadFiles.ForEach(p =>
-            //{
-            //    tList.Add(
-            //        DownloadingDataFromServerAsync(p)
-            //    );
-            //});
-            //Task.WaitAll(tList.ToArray());
-            List<Task> taskList = new List<Task>();
-            taskList.Add(Task.Run(() => this.DownloadImage(url, path)));
-            Task.WaitAny(taskList.ToArray(),2000);
+            try
+            {
+                List<Task> taskList = new List<Task>();
+                taskList.Add(Task.Run(() => this.DownloadImage(url, path)));
+                Task.WaitAny(taskList.ToArray(), 2000);
+            }
+            catch
+            {
+            }
         }
 
+        /// <summary>
+        /// 生成二维码
+        /// </summary>
+        /// <param name="url"></param>
+        private void QRCode(string url)
+        {
+            Bitmap bt;
+            QRCodeEncoder qrCode = new QRCodeEncoder();
+            qrCode.QRCodeEncodeMode = QRCodeEncoder.ENCODE_MODE.BYTE;
+            qrCode.QRCodeScale = 4;
+            qrCode.QRCodeVersion = 0;
+            qrCode.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.M;
+            qrCode.QRCodeBackgroundColor = Color.Wheat;
+            qrCode.QRCodeForegroundColor = Color.Black;
+            bt = qrCodeEncoder.Encode(url, Encoding.UTF8);
+            string erweimaImgName = "erweima.jpg";
+            bt.Save(Path.Combine(adimagesaddress + "\\Erweima", erweimaImgName));
+        }
+
+        /// <summary>
+        /// 图片下载
+        /// </summary>
+        /// <param name="Url">URL</param>
+        /// <param name="savePath">路径</param>
+        /// <returns></returns>
+        public bool DownloadImage(string Url, string savePath)
+        {
+            try
+            {
+                using (WebClient client = new WebClient())
+                {
+                    Stream stream = client.OpenRead(Url);
+                    Bitmap bitmap = new Bitmap(stream);
+                    if (bitmap != null)
+                    {
+                        bitmap.Save(savePath);
+                        client.DownloadFileCompleted += new AsyncCompletedEventHandler(tihuopicture_DownloadFileCompleted);
+                        stream.Flush();
+                        stream.Close();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        
+        #endregion
+
+        #region 数据发送
+        
         /// <summary>
         /// 向服务器发送交易数据
         /// </summary>
@@ -2151,7 +1558,7 @@ namespace SHJ
             netcount = 0;//状态数据发送间隔重新开始
         }
 
-        private int item;//商品号
+        private int ReCargoNum;//商品号
         private int suijinshu;
         /// <summary>
         ///  添加向服务器发送的数据
@@ -2160,7 +1567,6 @@ namespace SHJ
         /// <param name="jine">金额</param>
         /// <param name="paytype">支付方式</param>
         /// <param name="netliushui">网络流水号</param>
-        /// <param name="item">商品号</param>
         private void addnettrade(byte tradetype,double jine,byte paytype, int netliushui)
         {
             if (needsendrecordnum < 200)
@@ -2179,7 +1585,7 @@ namespace SHJ
                 if ((tradetype == 0x03)|| (tradetype == 0xE3))//出货
                 {
                     netsendrecord[netsendrecordindex, 22] = 0x00;
-                    netsendrecord[netsendrecordindex, 23] = (byte)item;
+                    netsendrecord[netsendrecordindex, 23] = (byte)ReCargoNum;
                 }
                 else
                 {
@@ -2315,13 +1721,522 @@ namespace SHJ
             myTcpCli.Sendbytes(GSMTxBuffer, 56 + 4 * totalshangpinnum);
             netcount = 0;//状态数据发送间隔重新开始
         }
+        
+        #endregion
 
-        private tihuoma mytihuoma;//提货码页面
+        #region 设备和系统工具
+
+        /// <summary>
+        /// 货道状态和库存检测
+        /// <para>return 90:商品号出错 91:货道故障 92:货道无库存</para>
+        /// </summary>
+        /// <param name="aisleNum">商品号</param>
+        /// <returns></returns>
+        private int CargoStockAndStateCheck(string aisleNum)
+        {
+            int result = 90;//商品号出错
+
+            if (int.Parse(aisleNum) > mynodelistshangpin.Count || int.Parse(aisleNum) <= 0)
+            {
+                log.WriteStepLog(StepType.货道检测, "商品号出错");
+                result = 90;
+                HMIstep = 1;
+            }
+            else
+            {
+                for (int i = 0; i < mynodelistshangpin.Count; i++)
+                {
+                    if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value) == int.Parse(aisleNum))
+                    {
+
+                        for (int k = 0; k < mynodelisthuodao.Count; k++)
+                        {
+                            if (int.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("huodao").Value)
+                                == int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value))
+                            {
+                                if ((int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("state").Value) != 0))//货道反馈异常（状态）
+                                {
+                                    result = 91;//货道故障
+                                    HMIstep = 1;//返回提货码页
+                                    log.WriteStepLog(StepType.货道检测, "货道故障");
+                                }
+                                else if (int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("kucun").Value) <= 0)//无库存
+                                {
+                                    result = 92;//无库存
+                                    HMIstep = 1;
+                                    log.WriteStepLog(StepType.货道检测, "货道无库存");
+                                }
+                                else
+                                {
+                                    result = int.Parse(mynodelisthuodao[k].Attributes.GetNamedItem("huodaonum").Value);
+                                    log.WriteStepLog(StepType.货道检测, "状态正常");
+                                    break;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 库存减一
+        /// </summary>
+        /// <param name="cargoNum"> 货道号</param>
+        public static void ReduceStock(string cargoNum)
+        {
+            for (int i = 0; i < mynodelisthuodao.Count; i++)
+            {
+                if (cargoNum == mynodelisthuodao[i].Attributes.GetNamedItem("huodaonum").Value)
+                {
+                    int newKucun = int.Parse(mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value) - 1;
+                    mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value = newKucun.ToString();
+                    myxmldoc.Save(configxmlfile);
+                    myxmldoc.Save(configxmlfilecopy);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 返回机器剩余总库存
+        /// </summary>
+        /// <returns>库存数</returns>
+        public static int ReturnStock()
+        {
+            int total = 0;
+            for (int i = 0; i < mynodelisthuodao.Count; i++)
+            {
+                total += int.Parse(mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value);
+            }
+            return total;
+        }
+
+        /// <summary>
+        /// 返回到提货码页面
+        /// </summary>
+        private void ReturnInputPage()
+        {
+            ReCargoNum = 0;
+            shangpinjiage = 0;
+            guanggaoreturntime = 0;
+            HMIstep = 1;
+            checktihuoma = false;
+        }
+
+        /// <summary>
+        /// 加载盒体图片
+        /// </summary>
+        private void AddCoverPicture(int tempshangpinnum)
+        {
+            for (int i = 0; i < mynodelistshangpin.Count; i++)
+            {
+                string coverNum = mynodelistshangpin[i].Attributes.GetNamedItem("shangpinnum").Value;
+                if (tempshangpinnum == int.Parse(coverNum))
+                {
+                    for (int j = 0; j < cmimagefiles.Length; j++)
+                    {
+                        string mycmname = Path.GetFileNameWithoutExtension(cmimagefiles[j]);
+                        if (coverNum == mycmname)//文件名正确
+                        {
+                            try
+                            {
+                                pictureBox8.Load(cmimagefiles[j]);
+                            }
+                            catch
+                            {
+                                pictureBox8.Image = global::SHJ.Properties.Resources.shangpin;
+                            }
+                            break;
+                        }
+                        else if (j == cmimagefiles.Length)
+                        {
+                            try
+                            {
+                                pictureBox8.Image = global::SHJ.Properties.Resources.shangpin;
+                            }
+                            catch
+                            {
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        /// <summary> 
+        /// 读取机器类型 
+        private void Getvendortype()
+        {
+            XmlDocument xDoc = new XmlDocument();
+            XmlNode xNode;
+            try
+            {
+                xDoc.Load("conf.config");
+
+                xNode = xDoc.SelectSingleNode("//appSettings");
+                vendortype = xNode.SelectSingleNode("setting3").Attributes.GetNamedItem("value").Value;
+                localsalerID = xNode.SelectSingleNode("setting4").Attributes.GetNamedItem("value").Value;
+            }
+            catch
+            {
+            }
+        }
+
+        /// <summary>
+        /// 添加支付记录
+        /// </summary>
+        /// <param name="money">支付金额</param>
+        /// <param name="type">支付方式</param>
+        private void addpayrecord(double money, string type)
+        {
+            int i;
+            for (i = 0; i < mynodelistpay.Count; i++)
+            {
+                if (mynodelistpay[i].Attributes.GetNamedItem("start").Value == "1")
+                {
+                    mynodelistpay[i].Attributes.GetNamedItem("time").Value = DateTime.Now.ToString("MM-dd HH:mm:ss");
+                    mynodelistpay[i].Attributes.GetNamedItem("money").Value = money.ToString();
+                    mynodelistpay[i].Attributes.GetNamedItem("type").Value = type;
+                    mynodelistpay[i].Attributes.GetNamedItem("start").Value = "";
+                    if (i == mynodelistpay.Count - 1)
+                    {
+                        mynodelistpay[0].Attributes.GetNamedItem("start").Value = "1";
+                    }
+                    else
+                    {
+                        mynodelistpay[i + 1].Attributes.GetNamedItem("start").Value = "1";
+                    }
+                    break;
+                }
+            }
+            if (i == mynodelistpay.Count)//未找到起始位置
+            {
+                mynodelistpay[0].Attributes.GetNamedItem("time").Value = DateTime.Now.ToString("MM-dd HH:mm:ss");
+                mynodelistpay[0].Attributes.GetNamedItem("money").Value = money.ToString();
+                mynodelistpay[0].Attributes.GetNamedItem("type").Value = type;
+                mynodelistpay[0].Attributes.GetNamedItem("start").Value = "";
+                mynodelistpay[1].Attributes.GetNamedItem("start").Value = "1";
+            }
+            shipmentDoc.Save(salexmlfile);
+            shipmentDoc.Save(salexmlfilecopy);
+        }
+
+        /// <summary>
+        /// 设置出货
+        /// </summary>
+        private void setchuhuo()
+        {
+            Aisleoutcount = 1;//超时计时开始
+        }
+
+        /// <summary>
+        /// 初始化窗口大小
+        /// </summary>
+        private void InitFormsize()
+        {
+            this.Width = 1920;
+            this.Height = 1080;
+            this.pictureBox1.Dock = DockStyle.None;
+            this.pictureBox1.Width = 0;
+            this.pictureBox1.Height = 0;
+            this.axWindowsMediaPlayer1.Width = 1920;//视频1000x525
+            this.axWindowsMediaPlayer1.Height = 1080;
+            this.axWindowsMediaPlayer1.uiMode = "None";
+            this.axWindowsMediaPlayer1.stretchToFit = true;
+            this.axWindowsMediaPlayer1.Location = new Point(0, 0);
+            this.axWindowsMediaPlayer1.settings.autoStart = true;
+            this.axWindowsMediaPlayer1.settings.setMode("loop", true);
+            this.imageList1.ImageSize = new Size(215, 215);
+
+            this.label2.Location = new Point(1400, 10);
+            this.label5.Location = new Point(210, 740);
+            this.label15.Location = new Point(668, 700);
+            this.label16.Location = new Point(1133, 700);
+            this.pictureBox6.Location = new Point(800, 800);
+            this.pictureBox7.Location = new Point(550, 400);
+            this.pictureBox8.Location = new Point(1020, 400);
+            this.pel_SellTips.Location = new Point(1550, 750);
+
+            needupdatePlaylist = true;
+
+            if (photoPointTest)//需要记录位置则显示功能
+            {
+                //拍照的位置测试功能
+                try
+                {
+                    sw1 = new StreamWriter(Path.Combine(logPath, "拍照定位" + ".txt"));
+                }
+                catch { }
+                panel2.Visible = true;
+                panel2.Location = new Point(454, 759);
+                video1.Visible = true;
+                video1.Location = new Point(300, 100);
+            }
+            else
+            {
+                panel2.Visible = false;
+                video1.Visible = false;
+            }
+        }
+
+        #endregion
+
+        #region 初始化
+
+        /// <summary>
+        /// 初始化配置文件
+        /// </summary>
+        private void initconfigxml()
+        {
+            myxmldoc.RemoveAll();//去除所有节点
+            myxmldoc.CreateXmlDeclaration("1.0", "utf-8", "yes");
+            //创建根节点1
+            XmlNode rootNode = myxmldoc.CreateElement("config");//配置定义
+
+            XmlNode NetNode = myxmldoc.CreateElement("netconfig");//网络定义
+            XmlAttribute ipconfigAttribute = myxmldoc.CreateAttribute("ipconfig");//IP地址
+            ipconfigAttribute.Value = "120.77.110.254";
+            NetNode.Attributes.Append(ipconfigAttribute);//xml节点附件属性
+            XmlAttribute portAttribute = myxmldoc.CreateAttribute("port");//端口号
+            portAttribute.Value = "5006";
+            NetNode.Attributes.Append(portAttribute);//xml节点附件属性
+            XmlAttribute netdelayAttribute = myxmldoc.CreateAttribute("netdelay");//网络发送延时（间隔）
+            netdelayAttribute.Value = "60";
+            NetNode.Attributes.Append(netdelayAttribute);//xml节点附件属性
+            rootNode.AppendChild(NetNode);
+
+            XmlNode functionNode = myxmldoc.CreateElement("function");//功能定义
+            XmlAttribute touchAttribute = myxmldoc.CreateAttribute("touch");//是否支持?
+            touchAttribute.Value = "1";
+            functionNode.Attributes.Append(touchAttribute);//xml节点附件属性
+            XmlAttribute temp1Attribute = myxmldoc.CreateAttribute("temperature1");//温区1温度
+            temp1Attribute.Value = "25";
+            functionNode.Attributes.Append(temp1Attribute);//xml节点附件属性
+            XmlAttribute temp2Attribute = myxmldoc.CreateAttribute("temperature2");//温区2温度
+            temp2Attribute.Value = "25";
+            functionNode.Attributes.Append(temp2Attribute);//xml节点附件属性
+            XmlAttribute fenbianlvAttribute = myxmldoc.CreateAttribute("fenbianlv");//分辨率
+            fenbianlvAttribute.Value = "0";
+            functionNode.Attributes.Append(fenbianlvAttribute);//xml节点附件属性
+            XmlAttribute addateAttribute = myxmldoc.CreateAttribute("addate");//广告更新时间
+            addateAttribute.Value = "20160101010101";
+            functionNode.Attributes.Append(addateAttribute);//xml节点附件属性
+            XmlAttribute adurlAttribute = myxmldoc.CreateAttribute("adurl");//广告地址
+            adurlAttribute.Value = "";
+            functionNode.Attributes.Append(adurlAttribute);//xml节点附件属性
+            XmlAttribute adupdateAttribute = myxmldoc.CreateAttribute("adupdate");//广告推送是否打开
+            adupdateAttribute.Value = "0";
+            functionNode.Attributes.Append(adupdateAttribute);//xml节点附件属性
+
+            XmlAttribute vendortypeAttribute = myxmldoc.CreateAttribute("vendortype");//机器类型0印章机
+            vendortypeAttribute.Value = "0";
+            functionNode.Attributes.Append(vendortypeAttribute);//xml节点附件属性
+
+            rootNode.AppendChild(functionNode);
+
+            //设备信息
+            XmlNode machineNode = myxmldoc.CreateElement("MachineInfo");
+            XmlAttribute machineAutoRun = myxmldoc.CreateAttribute("isAutoRun");//机器运行模式
+            machineAutoRun.Value = "False";
+            machineNode.Attributes.Append(machineAutoRun);
+            XmlAttribute runType = myxmldoc.CreateAttribute("runType");//PC运行模式选择
+            runType.Value = "01";
+            machineNode.Attributes.Append(runType);
+            XmlAttribute isRigPrnit = myxmldoc.CreateAttribute("isRigPrint");//是否安装了印面
+            isRigPrnit.Value = "False";
+            machineNode.Attributes.Append(isRigPrnit);
+            XmlAttribute photoTest = myxmldoc.CreateAttribute("photoTest");//照片定位测试功能
+            photoTest.Value = "False";
+            machineNode.Attributes.Append(photoTest);
+            rootNode.AppendChild(machineNode);
+
+            //系统信息
+            XmlNode systemNode = myxmldoc.CreateElement("System");
+            XmlAttribute version = myxmldoc.CreateAttribute("Version");
+            version.Value = "ADH816AZV4.1.01";
+            systemNode.Attributes.Append(version);
+            XmlAttribute CPFRPassAttribute = myxmldoc.CreateAttribute("CPFRPass");//补货密码
+            CPFRPassAttribute.Value = "2022";
+            systemNode.Attributes.Append(CPFRPassAttribute);
+            XmlAttribute setupPassAttribute = myxmldoc.CreateAttribute("setupPass");//系统设置密码
+            setupPassAttribute.Value = "2023";
+            systemNode.Attributes.Append(setupPassAttribute);
+            XmlAttribute debugPassAttribute = myxmldoc.CreateAttribute("debugPass");//调试密码
+            debugPassAttribute.Value = "2024";
+            systemNode.Attributes.Append(debugPassAttribute);
+            rootNode.AppendChild(systemNode);
+
+            XmlNode config1Node = myxmldoc.CreateElement("payconfig");//支付定义
+            XmlAttribute allpayAttribute = myxmldoc.CreateAttribute("allpay");//第一位为支付宝、第二位为微信、第三位为一码付、第四位为银联闪付、第五位为提货码、第六位为微信刷脸、第七位为支付宝刷脸
+            allpayAttribute.Value = "0";
+            config1Node.Attributes.Append(allpayAttribute);//xml节点附件属性
+            XmlAttribute zhekouAttribute = myxmldoc.CreateAttribute("zhekou");//折扣
+            zhekouAttribute.Value = "100";
+            config1Node.Attributes.Append(zhekouAttribute);//xml节点附件属性
+            rootNode.AppendChild(config1Node);
+
+            //创建根节点2
+            XmlNode config2Node = myxmldoc.CreateElement("shangpin");//商品定义
+            for (int i = 1; i <= totalshangpinnum; i++)
+            {
+                //创建货道节点
+                XmlNode shangpinNode = myxmldoc.CreateElement("shangpin" + (i - 1).ToString());//商品定义
+                XmlAttribute shangpinnumAttribute = myxmldoc.CreateAttribute("shangpinnum");//商品编号
+                shangpinnumAttribute.Value = i.ToString("000");
+                shangpinNode.Attributes.Append(shangpinnumAttribute);//xml节点附件属性
+                XmlAttribute shangpinnameAttribute = myxmldoc.CreateAttribute("shangpinname");//对应商品名称
+                shangpinnameAttribute.Value = "";
+                shangpinNode.Attributes.Append(shangpinnameAttribute);//xml节点附件属性
+                XmlAttribute jiageAttribute = myxmldoc.CreateAttribute("jiage");//商品价格
+                jiageAttribute.Value = "0.1";
+                shangpinNode.Attributes.Append(jiageAttribute);//xml节点附件属性
+                XmlAttribute huodaoAttribute = myxmldoc.CreateAttribute("huodao");//货道定义
+                huodaoAttribute.Value = i.ToString();
+                shangpinNode.Attributes.Append(huodaoAttribute);//xml节点附件属性
+
+                XmlAttribute stateAttribute = myxmldoc.CreateAttribute("state");//商品状态
+                stateAttribute.Value = "0";//默认正常
+                shangpinNode.Attributes.Append(stateAttribute);//xml节点附件属性
+                XmlAttribute salesumAttribute = myxmldoc.CreateAttribute("salesum");//商品销售统计
+                salesumAttribute.Value = "0";//默认正常
+                shangpinNode.Attributes.Append(salesumAttribute);//xml节点附件属性
+                config2Node.AppendChild(shangpinNode);
+            }
+            rootNode.AppendChild(config2Node);
+
+
+            //创建根节点3
+            XmlNode config3Node = myxmldoc.CreateElement("huodao");//商品定义
+            for (int i = 1; i <= totalhuodaonum; i++)
+            {
+                //创建货道节点
+                XmlNode huodaoNode = myxmldoc.CreateElement("huodao" + (i - 1).ToString());//货道定义
+                XmlAttribute huodaonumAttribute = myxmldoc.CreateAttribute("huodaonum");//货道编号
+                huodaonumAttribute.Value = i.ToString();
+                huodaoNode.Attributes.Append(huodaonumAttribute);//xml节点附件属性
+                XmlAttribute fenzuAttribute = myxmldoc.CreateAttribute("fenzu");//货道分组定义默认不分组
+                fenzuAttribute.Value = i.ToString();
+                huodaoNode.Attributes.Append(fenzuAttribute);//xml节点附件属性
+                XmlAttribute kucunAttribute = myxmldoc.CreateAttribute("kucun");//货道库存
+                kucunAttribute.Value = "255";
+                huodaoNode.Attributes.Append(kucunAttribute);//xml节点附件属性
+                XmlAttribute stateAttribute = myxmldoc.CreateAttribute("state");//货道状态
+                stateAttribute.Value = "0";//默认正常
+                huodaoNode.Attributes.Append(stateAttribute);//xml节点附件属性
+                XmlAttribute typeAttribute = myxmldoc.CreateAttribute("volume");//货道容量
+                typeAttribute.Value = "8";//默认正常
+                huodaoNode.Attributes.Append(typeAttribute);//xml节点附件属性
+                XmlAttribute positionAttribute = myxmldoc.CreateAttribute("position");//印章类型1：1010，2：2020，3：2530，其他2530
+                positionAttribute.Value = "3";//默认2530
+                huodaoNode.Attributes.Append(positionAttribute);//xml节点附件属性
+                XmlAttribute fangxiangAttribute = myxmldoc.CreateAttribute("fangxiang");//货道坐标
+                fangxiangAttribute.Value = ((i - 1) / 10 + 1).ToString();
+                huodaoNode.Attributes.Append(fangxiangAttribute);//xml节点附件属性
+
+                config3Node.AppendChild(huodaoNode);
+            }
+            rootNode.AppendChild(config3Node);
+
+            myxmldoc.AppendChild(rootNode);
+        }
+
+        /// <summary>
+        /// 初始化销售记录文件
+        /// </summary>
+        public static void initsalexml()
+        {
+            shipmentDoc.RemoveAll();//去除所有节点
+            shipmentDoc.CreateXmlDeclaration("1.0", "utf-8", "yes");
+            //创建根节点
+            XmlElement rootNode = shipmentDoc.CreateElement("ShipmentRecord");//配置定义
+            rootNode.SetAttribute("Count", "0");
+
+            //创建销售数据节点1
+            XmlNode sale1Node = shipmentDoc.CreateElement("chuhuo");//出货定义
+            for (int i = 0; i < 500; i++)
+            {
+                //创建货道节点
+                XmlNode chuhuoNode = shipmentDoc.CreateElement("chuhuo" + i.ToString());//出货定义
+                XmlAttribute timeAttribute = shipmentDoc.CreateAttribute("time");//时间戳
+                timeAttribute.Value = "";
+                chuhuoNode.Attributes.Append(timeAttribute);//xml节点附件属性
+                XmlAttribute shangpinnumAttribute = shipmentDoc.CreateAttribute("shangpinnum");//对应商品编号
+                shangpinnumAttribute.Value = "";
+                chuhuoNode.Attributes.Append(shangpinnumAttribute);//xml节点附件属性
+                XmlAttribute jiageAttribute = shipmentDoc.CreateAttribute("jiage");//商品价格
+                jiageAttribute.Value = "";
+                chuhuoNode.Attributes.Append(jiageAttribute);//xml节点附件属性
+                XmlAttribute typeAttribute = shipmentDoc.CreateAttribute("type");//支付方式
+                typeAttribute.Value = "";
+                chuhuoNode.Attributes.Append(typeAttribute);//xml节点附件属性
+
+                XmlAttribute startAttribute = shipmentDoc.CreateAttribute("start");//是否是最新记录
+                startAttribute.Value = "";
+                chuhuoNode.Attributes.Append(startAttribute);//xml节点附件属性
+
+                sale1Node.AppendChild(chuhuoNode);
+            }
+            rootNode.AppendChild(sale1Node);
+            shipmentDoc.AppendChild(rootNode);
+        }
+
+        /// <summary>
+        /// 初始化注册文件
+        /// </summary>
+        public void initregxml()
+        {
+            myregxmldoc.RemoveAll();//去除所有节点
+            myregxmldoc.CreateXmlDeclaration("1.0", "utf-8", "yes");
+            //创建根节点
+            XmlNode rootNode = myregxmldoc.CreateElement("reg");//配置定义
+            XmlAttribute regAttribute0 = myregxmldoc.CreateAttribute("regid");//注册号
+            regAttribute0.Value = "0";
+            rootNode.Attributes.Append(regAttribute0);//xml节点附件属性
+
+            myregxmldoc.AppendChild(rootNode);
+        }
+
+        /// <summary>
+        /// 更新各个配置节点路径
+        /// </summary>
+        private void updatenodeaddress()
+        {
+            mySystemNode = myxmldoc.SelectSingleNode("config").SelectSingleNode("System");
+            myMachineNode = myxmldoc.SelectSingleNode("config").SelectSingleNode("MachineInfo");
+            mynetcofignode = myxmldoc.SelectSingleNode("config").SelectSingleNode("netconfig");
+            myfunctionnode = myxmldoc.SelectSingleNode("config").SelectSingleNode("function");
+            mypayconfignode = myxmldoc.SelectSingleNode("config").SelectSingleNode("payconfig");
+            mynodelistshangpin = myxmldoc.SelectSingleNode("config").SelectSingleNode("shangpin").ChildNodes;
+            mynodelisthuodao = myxmldoc.SelectSingleNode("config").SelectSingleNode("huodao").ChildNodes;
+            mynodelistpay = shipmentDoc.SelectSingleNode("sale").SelectSingleNode("pay").ChildNodes;
+            try
+            {
+                paytypes = int.Parse(mypayconfignode.Attributes.GetNamedItem("allpay").Value);
+            }
+            catch
+            {
+            }
+            try
+            {
+                Getvendortype();
+                if (vendortype != myfunctionnode.Attributes.GetNamedItem("vendortype").Value)
+                {
+                    myfunctionnode.Attributes.GetNamedItem("vendortype").Value = vendortype;
+                    shipmentDoc.Save(salexmlfile);
+                    shipmentDoc.Save(salexmlfilecopy);
+                }
+            }
+            catch { }
+        }
 
         #endregion
 
         #region 控件
-        
+
         public static bool needopensettingform;
         private void button2_Click(object sender, EventArgs e)
         {
@@ -2371,7 +2286,7 @@ namespace SHJ
 
         #endregion
 
-        #region WorkingTest
+        #region 模拟运行
         /// <summary>
         /// 模拟运行
         /// </summary>
@@ -2400,7 +2315,7 @@ namespace SHJ
                 timer3.Enabled = true;
                 PLCHelper.nowStep = 0x01;
 
-                item = result;//实际出货商品号
+                ReCargoNum = result;//实际出货商品号
                 guanggaoreturntime = 0;
                 shangpinjiage = 0;//实际出货商品价格
                 zhifutype = 4;//支付方式为提货码

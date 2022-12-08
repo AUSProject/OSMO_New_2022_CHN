@@ -1220,8 +1220,8 @@ namespace SHJ
         {
             listBox1.Items.Clear();
             Form1.initsalexml();
-            Form1.mysalexmldoc.Save(Form1.salexmlfile);
-            Form1.mysalexmldoc.Save(Form1.salexmlfilecopy);
+            Form1.shipmentDoc.Save(Form1.salexmlfile);
+            Form1.shipmentDoc.Save(Form1.salexmlfilecopy);
             for (int i = 0; i < dataGridView1.Rows.Count; i++)
             {
                 dataGridView1.Rows[i].Cells[4].Value = "0";
