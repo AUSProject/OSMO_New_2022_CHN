@@ -928,7 +928,9 @@ namespace Ibms.Net.TcpCSFramework
 			} 
 			catch(Exception e)
 			{
-				if(e != null){}
+				if(e != null){
+                    System.Windows.Forms.MessageBox.Show(e.Message);
+                }
 			}
 		} 
 

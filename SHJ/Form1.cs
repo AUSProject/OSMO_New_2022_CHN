@@ -117,6 +117,7 @@ namespace SHJ
         private string nowLogPath = null;//当前日志文件夹
         private string imageUrlPath;//印章图片URL文件夹
         private string ErweimaUrl = "http://osmo.epscada.com/mobile/goodsList.html?machineId=";//二维码地址
+        private string H5url = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/E4A8DFAFC5A8244";
         PLCHelper PLC;//机器控制
         LogHelper log;//运行日志
         
@@ -201,6 +202,8 @@ namespace SHJ
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            Control.CheckForIllegalCrossThreadCalls = false;
+
             pic_Erweima.Visible = false;//隐藏二维码
             
             PLC = new PLCHelper();
@@ -267,7 +270,7 @@ namespace SHJ
                 try
                 {
                     File.Create(cameraParaFile);
-                    CameraHelper.IniCamera();
+                    CameraHelper.IniCameraPara();
                 }
                 catch { }
             }
@@ -553,22 +556,12 @@ namespace SHJ
             {
                 string name = imageNames[i];
                 string url = IniReadValue(name, "url", imageUrlPath);
-                foreach (var item in bcmimagefiles)
+                DownLoadPicture(url, Path.Combine(bcmimagesaddress, name));
+                FileInfo file = new FileInfo(Path.Combine(bcmimagesaddress,name));
+                if (file.Exists && file.Length > 0)
                 {
-                    if (item.Contains(name))
-                    {
-                        FileInfo file = new FileInfo(item);
-                        if(file.Exists && file.Length == 0)
-                        {
-                            DownLoadPicture(url, Path.Combine(bcmimagesaddress, name));
-                            file.Refresh();
-                            if (file.Length > 0)
-                            {
-                                DeleteSection(name, imageUrlPath);
-                                break;
-                            }
-                        }
-                    }
+                    DeleteSection(name, imageUrlPath);
+                    break;
                 }
             }
             imageNames.Clear();
@@ -1123,13 +1116,41 @@ namespace SHJ
                                                         pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
                                                         log.WriteStepLog(StepType.印章图案检查, "状态正常");
                                                         AddCoverPicture(ReCargoNum);//加载盒体图片
+                                                        break;
                                                     }
                                                     catch
                                                     {
                                                         throw new Exception("印章图案加载失败");
                                                     }
                                                 }
-                                                break;
+                                            }
+                                        }
+                                    }
+                                    bcmimagefiles = System.IO.Directory.GetFiles(bcmimagesaddress);//选择商品图片文件路径列表
+                                    foreach (var item in bcmimagefiles)
+                                    {
+                                        if (item.Contains(myTihuomastr))
+                                        {
+                                            FileInfo files = new FileInfo(item);
+                                            if (files.Length > 0)
+                                            {
+                                                try
+                                                {
+                                                    //加载印章图案
+                                                    PEPrinter.PicPath = Path.Combine(bcmimagesaddress, item);
+                                                    pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
+                                                    log.WriteStepLog(StepType.印章图案检查, "状态正常");
+                                                    AddCoverPicture(ReCargoNum);//加载盒体图片
+                                                    break;
+                                                }
+                                                catch
+                                                {
+                                                    throw new Exception("印章图案加载失败");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                throw new Exception("印章图案无法下载");
                                             }
                                         }
                                     }
@@ -1145,15 +1166,20 @@ namespace SHJ
                                 int result = CargoStockAndStateCheck(ReCargoNum.ToString());
                                 if (result < 90)
                                 {
-                                    ConnectCamera(myTihuomastr);//打开摄像头
+                                    try
+                                    {
+                                        ConnectCamera(myTihuomastr);//打开摄像头
+                                    }
+                                    catch { }
                                     shangpinjiage = double.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("jiage").Value);//实际出货商品价格
                                     istestmode = false;
                                     zhifutype = 4;//支付方式为提货码
-
+                                    
                                     HMIstep = 3;//出货
                                     guanggaoreturntime = 0;
+                                    //timer3.Enabled = true;
+                                    this.Invoke(new Action(delegate () { timer3.Enabled = true; }));
                                     PLCHelper.nowStep = 0x01;
-                                    timer3.Enabled = true;
                                     wulihuodao = result;
                                     setchuhuo();
                                     addpayrecord(shangpinjiage, "提货码");
@@ -1165,7 +1191,6 @@ namespace SHJ
                                         timerecord[2, k] = 0;
                                     }
                                 }
-
                             }
                             break;
                         case 0x02://验证失败
@@ -1959,7 +1984,7 @@ namespace SHJ
             this.pictureBox6.Location = new Point(800, 800);
             this.pictureBox7.Location = new Point(550, 400);
             this.pictureBox8.Location = new Point(1020, 400);
-            this.pel_SellTips.Location = new Point(1550, 750);
+            this.pel_SellTips.Location = new Point(1250, 850);
 
             needupdatePlaylist = true;
 
@@ -2152,8 +2177,7 @@ namespace SHJ
             shipmentDoc.RemoveAll();//去除所有节点
             shipmentDoc.CreateXmlDeclaration("1.0", "utf-8", "yes");
             //创建根节点
-            XmlElement rootNode = shipmentDoc.CreateElement("ShipmentRecord");//配置定义
-            rootNode.SetAttribute("Count", "0");
+            XmlNode rootNode = shipmentDoc.CreateElement("sale");//配置定义
 
             //创建销售数据节点1
             XmlNode sale1Node = shipmentDoc.CreateElement("chuhuo");//出货定义

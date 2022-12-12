@@ -30,7 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            PCHMI.limits limits1 = new PCHMI.limits();
+            PCHMI.limits limits2 = new PCHMI.limits();
             this.panel1 = new System.Windows.Forms.Panel();
             this.button2 = new System.Windows.Forms.Button();
             this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
@@ -58,6 +58,7 @@
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.button7 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
@@ -71,7 +72,6 @@
             this.lbl_D9 = new System.Windows.Forms.Label();
             this.lbl_D11 = new System.Windows.Forms.Label();
             this.lbl_D0 = new System.Windows.Forms.Label();
-            this.button7 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -200,10 +200,10 @@
             this.config1.数据路径 = "D:\\";
             this.config1.画面 = null;
             this.config1.登录方式 = PCHMI.CONFIG.LOGType.快速登录;
-            limits1.PLC = ((uint)(0u));
-            limits1.地址 = "";
-            limits1.限制类型 = PCHMI.limits.LType.无效;
-            this.config1.运行限制 = limits1;
+            limits2.PLC = ((uint)(0u));
+            limits2.地址 = "";
+            limits2.限制类型 = PCHMI.limits.LType.无效;
+            this.config1.运行限制 = limits2;
             this.config1.通讯配置 = new string[] {
         "MITSUBISHI_FX_SERIAL;COM=4,9600,2,7,1;SN=1;JumpBit="};
             this.config1.通讯配置文件名 = "PLC1";
@@ -227,7 +227,7 @@
             // 
             // pic_Erweima
             // 
-            this.pic_Erweima.Location = new System.Drawing.Point(40, 40);
+            this.pic_Erweima.Location = new System.Drawing.Point(40, 130);
             this.pic_Erweima.Name = "pic_Erweima";
             this.pic_Erweima.Size = new System.Drawing.Size(200, 200);
             this.pic_Erweima.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -259,27 +259,26 @@
             this.pel_SellTips.Controls.Add(this.pictureBox2);
             this.pel_SellTips.Location = new System.Drawing.Point(268, 421);
             this.pel_SellTips.Name = "pel_SellTips";
-            this.pel_SellTips.Size = new System.Drawing.Size(329, 347);
+            this.pel_SellTips.Size = new System.Drawing.Size(206, 217);
             this.pel_SellTips.TabIndex = 54;
-            this.pel_SellTips.Visible = false;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("幼圆", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label1.Font = new System.Drawing.Font("幼圆", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.label1.ForeColor = System.Drawing.Color.DarkGreen;
-            this.label1.Location = new System.Drawing.Point(9, 9);
+            this.label1.Location = new System.Drawing.Point(29, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(311, 35);
+            this.label1.Size = new System.Drawing.Size(137, 29);
             this.label1.TabIndex = 1;
-            this.label1.Text = "请于下方拿取印章";
+            this.label1.Text = "下方出货";
             // 
             // pictureBox2
             // 
             this.pictureBox2.Image = global::SHJ.Properties.Resources.arrow_down_green;
-            this.pictureBox2.Location = new System.Drawing.Point(46, 59);
+            this.pictureBox2.Location = new System.Drawing.Point(20, 41);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(228, 265);
+            this.pictureBox2.Size = new System.Drawing.Size(158, 162);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox2.TabIndex = 0;
             this.pictureBox2.TabStop = false;
@@ -386,6 +385,16 @@
             this.panel2.Size = new System.Drawing.Size(471, 253);
             this.panel2.TabIndex = 18;
             this.panel2.Visible = false;
+            // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(234, 19);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(82, 31);
+            this.button7.TabIndex = 1;
+            this.button7.Text = "位置记录";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
             // button6
             // 
@@ -517,16 +526,6 @@
             this.lbl_D0.Size = new System.Drawing.Size(40, 16);
             this.lbl_D0.TabIndex = 0;
             this.lbl_D0.Text = "D0：";
-            // 
-            // button7
-            // 
-            this.button7.Location = new System.Drawing.Point(234, 19);
-            this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(82, 31);
-            this.button7.TabIndex = 1;
-            this.button7.Text = "位置记录";
-            this.button7.UseVisualStyleBackColor = true;
-            this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
             // Form1
             // 

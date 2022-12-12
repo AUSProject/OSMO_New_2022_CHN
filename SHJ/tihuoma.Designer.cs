@@ -60,9 +60,10 @@
             this.btnPicChoice = new System.Windows.Forms.Button();
             this.pic_Erweima = new System.Windows.Forms.PictureBox();
             this.panel_Error = new System.Windows.Forms.Panel();
+            this.btn_Yes = new System.Windows.Forms.Button();
             this.lbl_Msg2 = new System.Windows.Forms.Label();
             this.lbl_Msg = new System.Windows.Forms.Label();
-            this.btn_Yes = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panelTest.SuspendLayout();
@@ -443,7 +444,7 @@
             // 
             // pic_Erweima
             // 
-            this.pic_Erweima.Location = new System.Drawing.Point(40, 40);
+            this.pic_Erweima.Location = new System.Drawing.Point(40, 130);
             this.pic_Erweima.Name = "pic_Erweima";
             this.pic_Erweima.Size = new System.Drawing.Size(200, 200);
             this.pic_Erweima.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -460,6 +461,18 @@
             this.panel_Error.Size = new System.Drawing.Size(841, 647);
             this.panel_Error.TabIndex = 49;
             this.panel_Error.Visible = false;
+            // 
+            // btn_Yes
+            // 
+            this.btn_Yes.Font = new System.Drawing.Font("幼圆", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btn_Yes.Location = new System.Drawing.Point(342, 465);
+            this.btn_Yes.Name = "btn_Yes";
+            this.btn_Yes.Size = new System.Drawing.Size(139, 42);
+            this.btn_Yes.TabIndex = 50;
+            this.btn_Yes.Text = "确定";
+            this.btn_Yes.UseVisualStyleBackColor = true;
+            this.btn_Yes.Visible = false;
+            this.btn_Yes.Click += new System.EventHandler(this.button2_Click_1);
             // 
             // lbl_Msg2
             // 
@@ -485,17 +498,16 @@
             this.lbl_Msg.Text = "设备故障，暂停使用";
             this.lbl_Msg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // btn_Yes
+            // button2
             // 
-            this.btn_Yes.Font = new System.Drawing.Font("幼圆", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_Yes.Location = new System.Drawing.Point(342, 465);
-            this.btn_Yes.Name = "btn_Yes";
-            this.btn_Yes.Size = new System.Drawing.Size(139, 42);
-            this.btn_Yes.TabIndex = 50;
-            this.btn_Yes.Text = "确定";
-            this.btn_Yes.UseVisualStyleBackColor = true;
-            this.btn_Yes.Visible = false;
-            this.btn_Yes.Click += new System.EventHandler(this.button2_Click_1);
+            this.button2.Font = new System.Drawing.Font("幼圆", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.button2.Location = new System.Drawing.Point(1047, 140);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(139, 42);
+            this.button2.TabIndex = 51;
+            this.button2.Text = "确定";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // tihuoma
             // 
@@ -506,6 +518,7 @@
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(1918, 1078);
             this.ControlBox = false;
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.panel_Error);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.pic_Erweima);
@@ -564,5 +577,6 @@
         private System.Windows.Forms.Label lbl_Msg;
         private System.Windows.Forms.Label lbl_Msg2;
         private System.Windows.Forms.Button btn_Yes;
+        private System.Windows.Forms.Button button2;
     }
 }
