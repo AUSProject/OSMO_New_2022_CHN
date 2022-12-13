@@ -113,8 +113,8 @@ namespace SHJ
         
         private PrintHelper print = null;
 
-        private string logPath = null;//日志文件夹
-        private string nowLogPath = null;//当前日志文件夹
+        public static string logPath = null;//日志文件夹
+        private string nowLogPath = null;//当前日志路径
         private string imageUrlPath;//印章图片URL文件夹
         private string ErweimaUrl = "http://osmo.epscada.com/mobile/goodsList.html?machineId=";//二维码地址
         private string H5url = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/E4A8DFAFC5A8244";
@@ -202,7 +202,7 @@ namespace SHJ
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Control.CheckForIllegalCrossThreadCalls = false;
+            CheckForIllegalCrossThreadCalls = false;
 
             pic_Erweima.Visible = false;//隐藏二维码
             
@@ -875,6 +875,129 @@ namespace SHJ
                 ShowCursor(0);//关闭鼠标
                 guanggaoreturntime = 0;
             }
+            if (outSell)//提货码出货
+            {
+                safeOutSell();
+            }
+        }
+
+        int cNum = 0;
+        bool outSell = false;
+        /// <summary>
+        /// 提货码出货，避免跨线程
+        /// </summary>
+        private void safeOutSell()
+        {
+            outSell = false;
+            liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
+            ReCargoNum = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
+            nowLogPath=log.CreateRunningLog(ReCargoNum.ToString(),myTihuomastr);//创建日志
+            //检查是否下载成功印章图案
+            try
+            {
+                imageNames = ReadSections(imageUrlPath);
+                foreach (var item in imageNames)
+                {
+                    if (item.Contains(myTihuomastr))
+                    {
+                        string urlstr = IniReadValue(item, "url", imageUrlPath);//读取图片Url
+                        if (urlstr == "error")
+                        {
+                            throw new Exception("印章图案无法下载");
+                        }
+                        else
+                        {
+                            DownLoadPicture(urlstr, Path.Combine(bcmimagesaddress, item));
+                            FileInfo file = new FileInfo(Path.Combine(bcmimagesaddress, item));
+                            if (!file.Exists || file.Length == 0)
+                            {
+                                throw new Exception("印章图案下载失败，请稍后重试");
+                            }
+                            else
+                            {
+                                DeleteSection(item, imageUrlPath);
+                                try
+                                {
+                                    //加载印章图案
+                                    PEPrinter.PicPath = Path.Combine(bcmimagesaddress, item);
+                                    pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
+                                    log.WriteStepLog(StepType.印章图案检查, "状态正常");
+                                    AddCoverPicture(ReCargoNum);//加载盒体图片
+                                    break;
+                                }
+                                catch
+                                {
+                                    throw new Exception("印章图案加载失败");
+                                }
+                            }
+                        }
+                    }
+                }
+                bcmimagefiles = System.IO.Directory.GetFiles(bcmimagesaddress);//选择商品图片文件路径列表
+                foreach (var item in bcmimagefiles)//检查图案是否下载成功
+                {
+                    if (item.Contains(myTihuomastr))
+                    {
+                        FileInfo files = new FileInfo(item);
+                        if (files.Length > 0)
+                        {
+                            try
+                            {
+                                //加载印章图案
+                                PEPrinter.PicPath = Path.Combine(bcmimagesaddress, item);
+                                pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
+                                log.WriteStepLog(StepType.印章图案检查, "状态正常");
+                                AddCoverPicture(ReCargoNum);//加载盒体图片
+                                break;
+                            }
+                            catch
+                            {
+                                throw new Exception("印章图案加载失败");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("印章图案无法下载");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)//返回提货码页面并提示错误信息
+            {
+                ReturnInputPage();//返回提货码页面
+                tihuoma.errorMsg = ex.Message;
+                log.WriteStepLog(StepType.印章图案检查, ex.Message);
+                log.SaveRunningLog();
+                return;
+            }
+            int result = CargoStockAndStateCheck(ReCargoNum.ToString());
+            if (result < 90)
+            {
+                try
+                {
+                    ConnectCamera();//打开摄像头
+                }
+                catch { }
+                shangpinjiage = double.Parse(mynodelistshangpin[cNum].Attributes.GetNamedItem("jiage").Value);//实际出货商品价格
+                istestmode = false;
+                zhifutype = 4;//支付方式为提货码
+
+                HMIstep = 3;//出货
+                guanggaoreturntime = 0;
+                timer3.Enabled = true;
+                //this.Invoke(new Action(delegate () { timer3.Enabled = true; }));
+                PLCHelper.nowStep = 0x01;
+                wulihuodao = result;
+                setchuhuo();
+                addpayrecord(shangpinjiage, "提货码");
+
+                for (int k = 0; k < 6; k++)//记录时间戳清除防止进支付页面后生成上次请求的的二维码
+                {
+                    timerecord[0, k] = 0;
+                    timerecord[1, k] = 0;
+                    timerecord[2, k] = 0;
+                }
+            }
         }
 
         #endregion
@@ -1082,115 +1205,119 @@ namespace SHJ
                             string gettihuomastring = Encoding.Default.GetString(GSMRxBuffer, 6, 7);
                             if (myTihuomastr == gettihuomastring)
                             {
-                                liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
-                                ReCargoNum = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
-                                log.CreateRunningLog(ReCargoNum.ToString(), myTihuomastr);//创建日志
-                                //检查是否下载成功印章图案
-                                try
-                                {
-                                    imageNames = ReadSections(imageUrlPath);
-                                    foreach (var item in imageNames)
-                                    {
-                                        if (item.Contains(myTihuomastr))
-                                        {
-                                            string urlstr = IniReadValue(item, "url", imageUrlPath);//读取图片Url
-                                            if (urlstr == "error")
-                                            {
-                                                throw new Exception("印章图案无法下载");
-                                            }
-                                            else
-                                            {
-                                                DownLoadPicture(urlstr, Path.Combine(bcmimagesaddress, item));
-                                                FileInfo file = new FileInfo(Path.Combine(bcmimagesaddress, item));
-                                                if (!file.Exists || file.Length == 0)
-                                                {
-                                                    throw new Exception("印章图案下载失败，请稍后重试");
-                                                }
-                                                else
-                                                {
-                                                    DeleteSection(item, imageUrlPath);
-                                                    try
-                                                    {
-                                                        //加载印章图案
-                                                        PEPrinter.PicPath = Path.Combine(bcmimagesaddress, item);
-                                                        pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
-                                                        log.WriteStepLog(StepType.印章图案检查, "状态正常");
-                                                        AddCoverPicture(ReCargoNum);//加载盒体图片
-                                                        break;
-                                                    }
-                                                    catch
-                                                    {
-                                                        throw new Exception("印章图案加载失败");
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    bcmimagefiles = System.IO.Directory.GetFiles(bcmimagesaddress);//选择商品图片文件路径列表
-                                    foreach (var item in bcmimagefiles)
-                                    {
-                                        if (item.Contains(myTihuomastr))
-                                        {
-                                            FileInfo files = new FileInfo(item);
-                                            if (files.Length > 0)
-                                            {
-                                                try
-                                                {
-                                                    //加载印章图案
-                                                    PEPrinter.PicPath = Path.Combine(bcmimagesaddress, item);
-                                                    pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
-                                                    log.WriteStepLog(StepType.印章图案检查, "状态正常");
-                                                    AddCoverPicture(ReCargoNum);//加载盒体图片
-                                                    break;
-                                                }
-                                                catch
-                                                {
-                                                    throw new Exception("印章图案加载失败");
-                                                }
-                                            }
-                                            else
-                                            {
-                                                throw new Exception("印章图案无法下载");
-                                            }
-                                        }
-                                    }
-                                }
-                                catch(Exception ex)//返回提货码页面并提示错误信息
-                                {
-                                    ReturnInputPage();//返回提货码页面
-                                    tihuoma.errorMsg = ex.Message;
-                                    log.WriteStepLog(StepType.印章图案检查, ex.Message);
-                                    log.SaveRunningLog();
-                                    return;
-                                }
-                                int result = CargoStockAndStateCheck(ReCargoNum.ToString());
-                                if (result < 90)
-                                {
-                                    try
-                                    {
-                                        ConnectCamera(myTihuomastr);//打开摄像头
-                                    }
-                                    catch { }
-                                    shangpinjiage = double.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("jiage").Value);//实际出货商品价格
-                                    istestmode = false;
-                                    zhifutype = 4;//支付方式为提货码
-                                    
-                                    HMIstep = 3;//出货
-                                    guanggaoreturntime = 0;
-                                    //timer3.Enabled = true;
-                                    this.Invoke(new Action(delegate () { timer3.Enabled = true; }));
-                                    PLCHelper.nowStep = 0x01;
-                                    wulihuodao = result;
-                                    setchuhuo();
-                                    addpayrecord(shangpinjiage, "提货码");
+                                cNum = i;
+                                outSell = true;//避免跨线程调用
+                                #region old
+                                //liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
+                                //ReCargoNum = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
+                                //log.CreateRunningLog(ReCargoNum.ToString(), myTihuomastr);//创建日志
+                                ////检查是否下载成功印章图案
+                                //try
+                                //{
+                                //    imageNames = ReadSections(imageUrlPath);
+                                //    foreach (var item in imageNames)
+                                //    {
+                                //        if (item.Contains(myTihuomastr))
+                                //        {
+                                //            string urlstr = IniReadValue(item, "url", imageUrlPath);//读取图片Url
+                                //            if (urlstr == "error")
+                                //            {
+                                //                throw new Exception("印章图案无法下载");
+                                //            }
+                                //            else
+                                //            {
+                                //                DownLoadPicture(urlstr, Path.Combine(bcmimagesaddress, item));
+                                //                FileInfo file = new FileInfo(Path.Combine(bcmimagesaddress, item));
+                                //                if (!file.Exists || file.Length == 0)
+                                //                {
+                                //                    throw new Exception("印章图案下载失败，请稍后重试");
+                                //                }
+                                //                else
+                                //                {
+                                //                    DeleteSection(item, imageUrlPath);
+                                //                    try
+                                //                    {
+                                //                        //加载印章图案
+                                //                        PEPrinter.PicPath = Path.Combine(bcmimagesaddress, item);
+                                //                        pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
+                                //                        log.WriteStepLog(StepType.印章图案检查, "状态正常");
+                                //                        AddCoverPicture(ReCargoNum);//加载盒体图片
+                                //                        break;
+                                //                    }
+                                //                    catch
+                                //                    {
+                                //                        throw new Exception("印章图案加载失败");
+                                //                    }
+                                //                }
+                                //            }
+                                //        }
+                                //    }
+                                //    bcmimagefiles = System.IO.Directory.GetFiles(bcmimagesaddress);//选择商品图片文件路径列表
+                                //    foreach (var item in bcmimagefiles)
+                                //    {
+                                //        if (item.Contains(myTihuomastr))
+                                //        {
+                                //            FileInfo files = new FileInfo(item);
+                                //            if (files.Length > 0)
+                                //            {
+                                //                try
+                                //                {
+                                //                    //加载印章图案
+                                //                    PEPrinter.PicPath = Path.Combine(bcmimagesaddress, item);
+                                //                    pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
+                                //                    log.WriteStepLog(StepType.印章图案检查, "状态正常");
+                                //                    AddCoverPicture(ReCargoNum);//加载盒体图片
+                                //                    break;
+                                //                }
+                                //                catch
+                                //                {
+                                //                    throw new Exception("印章图案加载失败");
+                                //                }
+                                //            }
+                                //            else
+                                //            {
+                                //                throw new Exception("印章图案无法下载");
+                                //            }
+                                //        }
+                                //    }
+                                //}
+                                //catch(Exception ex)//返回提货码页面并提示错误信息
+                                //{
+                                //    ReturnInputPage();//返回提货码页面
+                                //    tihuoma.errorMsg = ex.Message;
+                                //    log.WriteStepLog(StepType.印章图案检查, ex.Message);
+                                //    log.SaveRunningLog();
+                                //    return;
+                                //}
+                                //int result = CargoStockAndStateCheck(ReCargoNum.ToString());
+                                //if (result < 90)
+                                //{
+                                //    try
+                                //    {
+                                //        ConnectCamera(myTihuomastr);//打开摄像头
+                                //    }
+                                //    catch { }
+                                //    shangpinjiage = double.Parse(mynodelistshangpin[i].Attributes.GetNamedItem("jiage").Value);//实际出货商品价格
+                                //    istestmode = false;
+                                //    zhifutype = 4;//支付方式为提货码
 
-                                    for (int k = 0; k < 6; k++)//记录时间戳清除防止进支付页面后生成上次请求的的二维码
-                                    {
-                                        timerecord[0, k] = 0;
-                                        timerecord[1, k] = 0;
-                                        timerecord[2, k] = 0;
-                                    }
-                                }
+                                //    HMIstep = 3;//出货
+                                //    guanggaoreturntime = 0;
+                                //    //timer3.Enabled = true;
+                                //    this.Invoke(new Action(delegate () { timer3.Enabled = true; }));
+                                //    PLCHelper.nowStep = 0x01;
+                                //    wulihuodao = result;
+                                //    setchuhuo();
+                                //    addpayrecord(shangpinjiage, "提货码");
+
+                                //    for (int k = 0; k < 6; k++)//记录时间戳清除防止进支付页面后生成上次请求的的二维码
+                                //    {
+                                //        timerecord[0, k] = 0;
+                                //        timerecord[1, k] = 0;
+                                //        timerecord[2, k] = 0;
+                                //    }
+                                //}
+                                #endregion
                             }
                             break;
                         case 0x02://验证失败
@@ -1826,15 +1953,25 @@ namespace SHJ
         }
 
         /// <summary>
-        /// 返回机器剩余总库存
+        /// 返回机器剩余总库存或单个货道库存
         /// </summary>
         /// <returns>库存数</returns>
-        public static int ReturnStock()
+        public static int ReturnStock(int cargoNum=-1)
         {
             int total = 0;
-            for (int i = 0; i < mynodelisthuodao.Count; i++)
+            switch (cargoNum)
             {
-                total += int.Parse(mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value);
+                case -1:
+                    for (int i = 0; i < mynodelisthuodao.Count; i++)
+                    {
+                        total += int.Parse(mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value);
+                    }
+                    break;
+                case 0:
+                case 1:
+                case 2:
+                    total = int.Parse(mynodelisthuodao[cargoNum].Attributes.GetNamedItem("kucun").Value);
+                    break;
             }
             return total;
         }
@@ -1984,7 +2121,7 @@ namespace SHJ
             this.pictureBox6.Location = new Point(800, 800);
             this.pictureBox7.Location = new Point(550, 400);
             this.pictureBox8.Location = new Point(1020, 400);
-            this.pel_SellTips.Location = new Point(1250, 850);
+            this.pel_SellTips.Location = new Point(1300, 850);
 
             needupdatePlaylist = true;
 
@@ -2318,8 +2455,8 @@ namespace SHJ
         /// <param name="PicPath">印章图案路径</param>
         public void WorkingTest(int huodaoNum,string PicPath)
         {
-            ConnectCamera("模拟测试");//打开摄像头
-            log.CreateRunningLog(huodaoNum.ToString(),nowLogPath+"\\"+"模拟测试");
+            ConnectCamera();//打开摄像头
+            nowLogPath=log.CreateRunningLog(huodaoNum.ToString(),"模拟测试");
             int result = CargoStockAndStateCheck(huodaoNum.ToString());
             if(result < 90 && PLCHelper.nowStep == 0x00)//无报错
             {
@@ -2446,13 +2583,8 @@ namespace SHJ
         /// <summary>
         /// 打开摄像头
         /// </summary>
-        private void ConnectCamera(string logName)
+        private void ConnectCamera()
         {
-            nowLogPath = logPath + "\\" + logName + DateTime.Now.ToString("MM-dd HH：mm：ss");
-            if (!Directory.Exists(nowLogPath))
-            {
-                Directory.CreateDirectory(nowLogPath);
-            }//添加日志文件夹
             CameraHelper.IniCamera();
             video1.VideoSource = CameraHelper.VideoDevice;
             video1.Start();
@@ -2563,6 +2695,14 @@ namespace SHJ
             sw1.WriteLine();
             TakePhoto("第" + writecount + "次记录");
             writecount++;
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            if (HMIstep == 3)
+            {
+                PLCHelper._RunEnd = true;
+            }
         }
 
         private void button5_Click(object sender, EventArgs e)

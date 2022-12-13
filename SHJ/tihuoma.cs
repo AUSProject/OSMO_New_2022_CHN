@@ -305,10 +305,17 @@ namespace SHJ
             if (String.IsNullOrEmpty(cmbCargoWay.Text))
             {
                 MessageBox.Show("请选择货道", "提示");
+                return;
             }
             else if (String.IsNullOrEmpty(imageFilePath))
             {
                 MessageBox.Show("请选择印章图章", "提示");
+                return;
+            }
+            else if (Form1.ReturnStock(cmbCargoWay.SelectedIndex) == 0)
+            {
+                MessageBox.Show("该货道库存不足");
+                return;
             }
             else
             {

@@ -39,12 +39,19 @@ namespace SHJ
         /// </summary>
         /// <param name="largoNum">货道号</param>
         /// <param name="logName">日志名称</param>
-        public void CreateRunningLog(string largoNum,string logName)
+        /// <returns>日志路径</returns>
+        public string CreateRunningLog(string largoNum,string logName)
         {
+            string path = Form1.logPath + "\\" + logName + "-" + DateTime.Now.ToString("MM-dd HH：mm：ss");
+            if (!System.IO.Directory.Exists(path))
+            {
+                System.IO.Directory.CreateDirectory(path);
+            }//添加日志文件夹
             _ShipCord = doc.CreateElement("出货记录");
             _ShipCord.SetAttribute("出货时间", DateTime.Now.ToString());
             _ShipCord.SetAttribute("货道号", largoNum);
-            filePath = logName + ".xml";
+            filePath = System.IO.Path.Combine(path,logName + ".xml");
+            return path;
         }
 
         /// <summary>
@@ -65,6 +72,7 @@ namespace SHJ
                 writer.Flush();
                 writer.Close();
                 doc.RemoveAll();
+                Osmo.RemoveAll();
                 _ShipCord.RemoveAll();
                 _taskStep.RemoveAll();
             }

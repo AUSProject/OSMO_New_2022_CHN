@@ -72,6 +72,7 @@
             this.lbl_D9 = new System.Windows.Forms.Label();
             this.lbl_D11 = new System.Windows.Forms.Label();
             this.lbl_D0 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -238,6 +239,7 @@
             // 
             this.panel4.BackgroundImage = global::SHJ.Properties.Resources.tihuo;
             this.panel4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.panel4.Controls.Add(this.label3);
             this.panel4.Controls.Add(this.pel_SellTips);
             this.panel4.Controls.Add(this.label16);
             this.panel4.Controls.Add(this.label15);
@@ -261,6 +263,7 @@
             this.pel_SellTips.Name = "pel_SellTips";
             this.pel_SellTips.Size = new System.Drawing.Size(206, 217);
             this.pel_SellTips.TabIndex = 54;
+            this.pel_SellTips.Visible = false;
             // 
             // label1
             // 
@@ -363,6 +366,7 @@
             this.label2.Size = new System.Drawing.Size(238, 24);
             this.label2.TabIndex = 46;
             this.label2.Text = "2016-03-07 12:00:00";
+            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // panel2
             // 
@@ -527,6 +531,17 @@
             this.lbl_D0.TabIndex = 0;
             this.lbl_D0.Text = "D0：";
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("宋体", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label3.ImageAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.label3.Location = new System.Drawing.Point(220, 20);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(0, 20);
+            this.label3.TabIndex = 55;
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -608,6 +623,7 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Label lbl_Photoing;
         private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Label label3;
     }
 }
 
