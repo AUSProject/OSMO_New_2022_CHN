@@ -156,11 +156,11 @@ namespace SHJ
                 errorToken = true;
                 errorMsg += "未知故障";
             }
-            //if (print.PrintFaultInspect() != null)
-            //{
-            //    errorToken = true;
-            //    errorMsg += "打印机故障";
-            //}
+            if (print.PrintFaultInspect() != null)
+            {
+                errorToken = true;
+                errorMsg += "打印机故障";
+            }
             if (isAutoRun)
             {
                 if (isRigPrint)

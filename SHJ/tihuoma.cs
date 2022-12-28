@@ -302,7 +302,12 @@ namespace SHJ
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
-            if (String.IsNullOrEmpty(cmbCargoWay.Text))
+            if (PLCHelper.nowStep != 0x00)
+            {
+                MessageBox.Show("设备正在运行");
+                return;
+            }
+            else if (String.IsNullOrEmpty(cmbCargoWay.Text))
             {
                 MessageBox.Show("请选择货道", "提示");
                 return;

@@ -1007,7 +1007,7 @@ namespace SHJ
         }
 
         #endregion
-
+         
         #region DataGridView
         
 
@@ -1809,5 +1809,10 @@ namespace SHJ
         }
 
         #endregion
+
+        private void panel_CPFR_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }

@@ -892,11 +892,19 @@ namespace SHJ
             liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
             ReCargoNum = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
             nowLogPath=log.CreateRunningLog(ReCargoNum.ToString(),myTihuomastr);//创建日志
+            if(ReturnStock(ReCargoNum - 1) == 0)
+            {
+                log.WriteStepLog(StepType.货道检测, "货道库存不足");
+                tihuoma.errorMsg = "货道库存不足";
+                log.SaveRunningLog();
+                ReturnInputPage();//返回提货码页面
+                return;
+            }
             //检查是否下载成功印章图案
             try
             {
                 imageNames = ReadSections(imageUrlPath);
-                foreach (var item in imageNames)
+                foreach (var item in imageNames)//如果未下载成功则重新下载图片
                 {
                     if (item.Contains(myTihuomastr))
                     {
@@ -908,28 +916,6 @@ namespace SHJ
                         else
                         {
                             DownLoadPicture(urlstr, Path.Combine(bcmimagesaddress, item));
-                            FileInfo file = new FileInfo(Path.Combine(bcmimagesaddress, item));
-                            if (!file.Exists || file.Length == 0)
-                            {
-                                throw new Exception("印章图案下载失败，请稍后重试");
-                            }
-                            else
-                            {
-                                DeleteSection(item, imageUrlPath);
-                                try
-                                {
-                                    //加载印章图案
-                                    PEPrinter.PicPath = Path.Combine(bcmimagesaddress, item);
-                                    pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
-                                    log.WriteStepLog(StepType.印章图案检查, "状态正常");
-                                    AddCoverPicture(ReCargoNum);//加载盒体图片
-                                    break;
-                                }
-                                catch
-                                {
-                                    throw new Exception("印章图案加载失败");
-                                }
-                            }
                         }
                     }
                 }
@@ -948,7 +934,7 @@ namespace SHJ
                                 pictureBox7.Load(Path.Combine(bcmimagesaddress, item));
                                 log.WriteStepLog(StepType.印章图案检查, "状态正常");
                                 AddCoverPicture(ReCargoNum);//加载盒体图片
-                                break;
+                                DeleteSection(item, imageUrlPath);
                             }
                             catch
                             {
@@ -956,9 +942,7 @@ namespace SHJ
                             }
                         }
                         else
-                        {
                             throw new Exception("印章图案无法下载");
-                        }
                     }
                 }
             }
@@ -2736,15 +2720,5 @@ namespace SHJ
 
         #endregion
 
-    }
-    public class DownloadFile
-    {
-        public DownloadFile(string fileName, string saveFileName)
-        {
-            FileName = fileName;
-            SaveFileName = saveFileName;
-        }
-        public string FileName;
-        public string SaveFileName;
     }
 }
