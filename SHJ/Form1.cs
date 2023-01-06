@@ -14,6 +14,8 @@ using ThoughtWorks.QRCode.Codec;
 using System.Threading.Tasks;
 using AForge.Controls;
 using System.Drawing.Imaging;
+using ICSharpCode.SharpZipLib.Zip;
+using ICSharpCode.SharpZipLib.Checksums;
 
 namespace SHJ
 {
@@ -155,6 +157,7 @@ namespace SHJ
         public static XmlNodeList mynodelistpay;//支付记录
         public static XmlNode mySystemNode;//系统信息
         public static XmlNode myMachineNode;//设备参数
+        public static XmlNode myappconfig;//系统设置
 
         public static string localsalerID = "";//本机商家号
         public static string vendortype = "0";//机器类型
@@ -202,6 +205,7 @@ namespace SHJ
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
             CheckForIllegalCrossThreadCalls = false;
 
             pic_Erweima.Visible = false;//隐藏二维码
@@ -538,6 +542,8 @@ namespace SHJ
                 video1.Location = new Point(300, 100);
             }
 
+            DeleteLogs();
+
             nowform1 = this;
         }
 
@@ -815,6 +821,9 @@ namespace SHJ
                 this.panel1.Visible = false;//广告面板关闭显示
                 this.panel4.Visible = false;//出货界面关闭显示
                 pic_Erweima.Visible = false;
+
+                axWindowsMediaPlayer1.Visible = false;
+                axWindowsMediaPlayer1.Ctlcontrols.stop();
             }
             else if (HMIstep == 3)//出货界面
             {
@@ -827,6 +836,9 @@ namespace SHJ
                 this.panel1.Visible = false;//广告面板关闭显示
                 this.panel4.Visible = true;//出货界面显示
                 pic_Erweima.Visible = false;
+
+                axWindowsMediaPlayer1.Visible = false;
+                axWindowsMediaPlayer1.Ctlcontrols.stop();
             }
             
             if ((Aisleoutcount > 0) && (Aisleoutcount < 1000))//最长1000*300 = 300s 
@@ -1003,6 +1015,7 @@ namespace SHJ
                     log.WriteStepLog(StepType.运行故障, PLCHelper.errorMsg);
                     log.SaveRunningLog();
                     CloseCamera();//关闭摄像头
+                    CompressDirectory(nowLogPath, false);
                 }
                 catch { }
             }
@@ -1014,6 +1027,7 @@ namespace SHJ
                 try
                 {
                     CloseCamera();//关闭摄像头
+                    CompressDirectory(nowLogPath, false);
                 }
                 catch { }
             }
@@ -2129,6 +2143,97 @@ namespace SHJ
             }
         }
 
+        /// <summary>
+        /// 定时清除日志
+        /// </summary>
+        private void DeleteLogs()
+        {
+            DateTime deleteTime = DateTime.ParseExact(myappconfig.Attributes.GetNamedItem("logDeleteTime").Value, "yyyy-MM-dd", System.Globalization.CultureInfo.CurrentCulture);
+            double timeInvteral = Double.Parse(myappconfig.Attributes.GetNamedItem("logDeleteTimeInvteral").Value);
+            if (deleteTime.AddDays(timeInvteral) <= DateTime.Now)
+            {
+                try
+                {
+                    string[] strDirs = Directory.GetDirectories(logPath);
+                    foreach (var item in strDirs)
+                    {
+                        File.Delete(item);
+                    }
+                    myappconfig.Attributes.GetNamedItem("logDeleteTime").Value = DateTime.Now.ToString("yyyy-MM-dd");
+                }
+                catch { }
+            }
+
+        }
+
+        /// <summary>
+        /// 创建压缩文件
+        /// </summary>
+        /// <param name="dirPath">文件路径</param>
+        /// <param name="deleteDir">是否删除原文件</param>
+        private void CompressDirectory(string dirPath,bool deleteDir)
+        {
+            string pCompressPath = dirPath + ".zip";
+            FileStream pCompressFile = new FileStream(pCompressPath, FileMode.Create);
+            using(ZipOutputStream zipoutputstream=new ZipOutputStream(pCompressFile))
+            {
+                Crc32 crc = new Crc32();
+                Dictionary<string, DateTime> fileList = GetAllFies(dirPath);
+                foreach (var item in fileList)
+                {
+                    FileStream fs = new FileStream(item.Key.ToString(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    byte[] buffer = new byte[fs.Length];
+                    fs.Read(buffer, 0, buffer.Length);
+                    ZipEntry entry = new ZipEntry(item.Key.Substring(dirPath.Length));
+                    entry.DateTime = item.Value;
+                    entry.Size = fs.Length;
+                    fs.Close();
+                    crc.Reset();
+                    crc.Update(buffer);
+                    entry.Crc = crc.Value;
+                    zipoutputstream.PutNextEntry(entry);
+                    zipoutputstream.Write(buffer, 0, buffer.Length);
+                }
+                if (deleteDir)
+                {
+                    Directory.Delete(dirPath, true);
+                }
+            }
+        }
+
+        private Dictionary<string, DateTime> GetAllFies(string dir)
+        {
+            Dictionary<string, DateTime> FilesList = new Dictionary<string, DateTime>();
+            DirectoryInfo fileDire = new DirectoryInfo(dir);
+            if (!fileDire.Exists)
+            {
+                throw new System.IO.FileNotFoundException("目录:" + fileDire.FullName + "没有找到!");
+            }
+            GetAllDirFiles(fileDire, FilesList);
+            GetAllDirsFiles(fileDire.GetDirectories(), FilesList);
+            return FilesList;
+        }
+
+        private void GetAllDirsFiles(DirectoryInfo[] dirs, Dictionary<string, DateTime> filesList)
+        {
+            foreach (DirectoryInfo dir in dirs)
+            {
+                foreach (FileInfo file in dir.GetFiles("."))
+                {
+                    filesList.Add(file.FullName, file.LastWriteTime);
+                }
+                GetAllDirsFiles(dir.GetDirectories(), filesList);
+            }
+        }
+
+        private static void GetAllDirFiles(DirectoryInfo dir, Dictionary<string, DateTime> filesList)
+        {
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                filesList.Add(file.FullName, file.LastWriteTime);
+            }
+        }
+
         #endregion
 
         #region 初始化
@@ -2215,6 +2320,17 @@ namespace SHJ
             debugPassAttribute.Value = "2024";
             systemNode.Attributes.Append(debugPassAttribute);
             rootNode.AppendChild(systemNode);
+
+            //系统配制信息
+            XmlNode appconfigNode = myxmldoc.CreateElement("appConfig");
+            XmlAttribute datetime = myxmldoc.CreateAttribute("logDeleteTime");
+            datetime.Value = DateTime.Now.ToString("yyyy-MM-dd");
+            appconfigNode.Attributes.Append(datetime);
+            XmlAttribute timeinternal = myxmldoc.CreateAttribute("logDeleteTimeInvteral");
+            timeinternal.Value = "30";
+            appconfigNode.Attributes.Append(timeinternal);
+            rootNode.AppendChild(appconfigNode);
+
 
             XmlNode config1Node = myxmldoc.CreateElement("payconfig");//支付定义
             XmlAttribute allpayAttribute = myxmldoc.CreateAttribute("allpay");//第一位为支付宝、第二位为微信、第三位为一码付、第四位为银联闪付、第五位为提货码、第六位为微信刷脸、第七位为支付宝刷脸
@@ -2358,6 +2474,7 @@ namespace SHJ
             mynodelistshangpin = myxmldoc.SelectSingleNode("config").SelectSingleNode("shangpin").ChildNodes;
             mynodelisthuodao = myxmldoc.SelectSingleNode("config").SelectSingleNode("huodao").ChildNodes;
             mynodelistpay = shipmentDoc.SelectSingleNode("sale").SelectSingleNode("pay").ChildNodes;
+            myappconfig = myxmldoc.SelectSingleNode("config").SelectSingleNode("appConfig");
             try
             {
                 paytypes = int.Parse(mypayconfignode.Attributes.GetNamedItem("allpay").Value);

@@ -106,6 +106,7 @@ namespace SHJ
         /// </summary>
         private void CloseProgram()
         {
+            PEPrinter.PE_Close(PEPrinter.PEhandle);
             try
             {
                 System.Diagnostics.Process[] MyProcesses = System.Diagnostics.Process.GetProcesses();
@@ -1809,10 +1810,5 @@ namespace SHJ
         }
 
         #endregion
-
-        private void panel_CPFR_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
     }
 }
