@@ -29,7 +29,7 @@ namespace SHJ
 
         private void updateshow()
         {
-            if (Form1.myfunctionnode.Attributes.GetNamedItem("vendortype").Value == "1")//印章打印机
+            if (Form1.functionnode.Attributes.GetNamedItem("vendortype").Value == "1")//印章打印机
             {
                 tihuomaresult = tihuomaresult.Replace("提货", "打印");
             }

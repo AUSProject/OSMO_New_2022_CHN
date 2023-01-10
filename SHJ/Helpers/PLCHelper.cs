@@ -483,7 +483,7 @@ namespace SHJ
             try
             {
                 isRigPrint = Is;
-                Form1.myMachineNode.Attributes.GetNamedItem("isRigPrint").Value = Is.ToString();
+                Form1.machineNode.Attributes.GetNamedItem("isRigPrint").Value = Is.ToString();
                 Form1.myxmldoc.Save(Form1.configxmlfile);
                 Form1.myxmldoc.Save(Form1.configxmlfilecopy);
             }

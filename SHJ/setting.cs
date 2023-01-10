@@ -47,7 +47,7 @@ namespace SHJ
 
         private void setting_Load(object sender, EventArgs e)
         {
-            if (Form1.myfunctionnode.Attributes.GetNamedItem("fenbianlv").Value == "0")
+            if (Form1.functionnode.Attributes.GetNamedItem("fenbianlv").Value == "0")
             {
                 this.Width = 1920;
                 this.Height = 1080;
@@ -137,67 +137,67 @@ namespace SHJ
             {
                 Form1.paytypes &= 0xFFEF;
             }
-            Form1.mypayconfignode.Attributes.GetNamedItem("allpay").Value = Form1.paytypes.ToString();
-            Form1.mypayconfignode.Attributes.GetNamedItem("zhekou").Value = textBox5.Text;
-            Form1.mynetcofignode.Attributes.GetNamedItem("ipconfig").Value = 
+            Form1.payconfignode.Attributes.GetNamedItem("allpay").Value = Form1.paytypes.ToString();
+            Form1.payconfignode.Attributes.GetNamedItem("zhekou").Value = textBox5.Text;
+            Form1.netcofignode.Attributes.GetNamedItem("ipconfig").Value = 
                 textBox6.Text + "." + textBox7.Text + "." + textBox8.Text + "." + textBox9.Text;
 
-            Form1.mynetcofignode.Attributes.GetNamedItem("port").Value = textBox3.Text;
-            Form1.mynetcofignode.Attributes.GetNamedItem("netdelay").Value = textBox4.Text;
+            Form1.netcofignode.Attributes.GetNamedItem("port").Value = textBox3.Text;
+            Form1.netcofignode.Attributes.GetNamedItem("netdelay").Value = textBox4.Text;
             if (rb_PC.Checked)
             {
-                Form1.myMachineNode.Attributes.GetNamedItem("isAutoRun").Value = "False";
+                Form1.machineNode.Attributes.GetNamedItem("isAutoRun").Value = "False";
                 PLCHelper.isAutoRun = false;
             }
             else
             {
-                Form1.myMachineNode.Attributes.GetNamedItem("isAutoRun").Value = "True";
+                Form1.machineNode.Attributes.GetNamedItem("isAutoRun").Value = "True";
                 PLCHelper.isAutoRun = true;
             }
             if (rb_RunType1.Checked)
             {
-                Form1.myMachineNode.Attributes.GetNamedItem("runType").Value = "01";
+                Form1.machineNode.Attributes.GetNamedItem("runType").Value = "01";
                 PLCHelper._MachineRunPlan = "01";
             }
             else
             {
-                Form1.myMachineNode.Attributes.GetNamedItem("runType").Value = "02";
+                Form1.machineNode.Attributes.GetNamedItem("runType").Value = "02";
                 PLCHelper._MachineRunPlan = "02";
             }
             if (checkBox8.Checked)
             {
-                Form1.myMachineNode.Attributes.GetNamedItem("photoTest").Value = "True";
+                Form1.machineNode.Attributes.GetNamedItem("photoTest").Value = "True";
                 Form1.photoPointTest = true;
             }
             else
             {
-                Form1.myMachineNode.Attributes.GetNamedItem("photoTest").Value = "False";
+                Form1.machineNode.Attributes.GetNamedItem("photoTest").Value = "False";
                 Form1.photoPointTest = false;
             }
 
             if (checkBox5.Checked)
             {
-                Form1.myfunctionnode.Attributes.GetNamedItem("adupdate").Value = "0";
+                Form1.functionnode.Attributes.GetNamedItem("adupdate").Value = "0";
             }
             else
             {
-                Form1.myfunctionnode.Attributes.GetNamedItem("adupdate").Value = "1";
+                Form1.functionnode.Attributes.GetNamedItem("adupdate").Value = "1";
             }
 
             int i;
             for (i = 0; i < dataGridView1.Rows.Count; i++)
             {
-                Form1.mynodelistshangpin[i].Attributes.GetNamedItem("jiage").Value = dataGridView1.Rows[i].Cells[1].Value.ToString();
-                Form1.mynodelistshangpin[i].Attributes.GetNamedItem("huodao").Value = dataGridView1.Rows[i].Cells[2].Value.ToString();
+                Form1.nodelistshangpin[i].Attributes.GetNamedItem("jiage").Value = dataGridView1.Rows[i].Cells[1].Value.ToString();
+                Form1.nodelistshangpin[i].Attributes.GetNamedItem("huodao").Value = dataGridView1.Rows[i].Cells[2].Value.ToString();
             }
             for (i = 0; i < dataGridView2.Rows.Count; i++)
             {
-                Form1.mynodelisthuodao[i].Attributes.GetNamedItem("kucun").Value = dataGridView2.Rows[i].Cells[1].Value.ToString();
-                Form1.mynodelisthuodao[i].Attributes.GetNamedItem("volume").Value = dataGridView2.Rows[i].Cells[3].Value.ToString();
-                Form1.mynodelisthuodao[i].Attributes.GetNamedItem("position").Value = dataGridView2.Rows[i].Cells[4].Value.ToString();
+                Form1.nodelisthuodao[i].Attributes.GetNamedItem("kucun").Value = dataGridView2.Rows[i].Cells[1].Value.ToString();
+                Form1.nodelisthuodao[i].Attributes.GetNamedItem("volume").Value = dataGridView2.Rows[i].Cells[3].Value.ToString();
+                Form1.nodelisthuodao[i].Attributes.GetNamedItem("position").Value = dataGridView2.Rows[i].Cells[4].Value.ToString();
             }
-            Form1.myfunctionnode.Attributes.GetNamedItem("temperature1").Value = hScrollBar1.Value.ToString();
-            Form1.myfunctionnode.Attributes.GetNamedItem("temperature2").Value = hScrollBar2.Value.ToString();
+            Form1.functionnode.Attributes.GetNamedItem("temperature1").Value = hScrollBar1.Value.ToString();
+            Form1.functionnode.Attributes.GetNamedItem("temperature2").Value = hScrollBar2.Value.ToString();
         }
 
         /// <summary>
@@ -239,8 +239,8 @@ namespace SHJ
                 button1.Visible = false;
             }
 
-            textBox5.Text = Form1.mypayconfignode.Attributes.GetNamedItem("zhekou").Value;
-            string[] ipstring = Form1.mynetcofignode.Attributes.GetNamedItem("ipconfig").Value.Split('.');
+            textBox5.Text = Form1.payconfignode.Attributes.GetNamedItem("zhekou").Value;
+            string[] ipstring = Form1.netcofignode.Attributes.GetNamedItem("ipconfig").Value.Split('.');
             if (ipstring.Length == 4)
             {
                 textBox6.Text = ipstring[0];
@@ -248,9 +248,9 @@ namespace SHJ
                 textBox8.Text = ipstring[2];
                 textBox9.Text = ipstring[3];
             }
-            textBox3.Text = Form1.mynetcofignode.Attributes.GetNamedItem("port").Value;
-            textBox4.Text = Form1.mynetcofignode.Attributes.GetNamedItem("netdelay").Value;
-            if (Form1.myMachineNode.Attributes.GetNamedItem("photoTest").Value == "True")
+            textBox3.Text = Form1.netcofignode.Attributes.GetNamedItem("port").Value;
+            textBox4.Text = Form1.netcofignode.Attributes.GetNamedItem("netdelay").Value;
+            if (Form1.machineNode.Attributes.GetNamedItem("photoTest").Value == "True")
             {
                 checkBox8.Checked = true;
             }
@@ -259,7 +259,7 @@ namespace SHJ
                 checkBox8.Checked = false;
             }
            
-            if (Form1.myfunctionnode.Attributes.GetNamedItem("adupdate").Value == "1")
+            if (Form1.functionnode.Attributes.GetNamedItem("adupdate").Value == "1")
             {
                 checkBox5.Checked = false;
             }
@@ -267,11 +267,11 @@ namespace SHJ
             {
                 checkBox5.Checked = true;
             }
-            textBox11.Text = Form1.mynodelistshangpin.Count.ToString();//商品数量
+            textBox11.Text = Form1.nodelistshangpin.Count.ToString();//商品数量
 
-            hScrollBar1.Value = int.Parse(Form1.myfunctionnode.Attributes.GetNamedItem("temperature1").Value);
-            hScrollBar2.Value = int.Parse(Form1.myfunctionnode.Attributes.GetNamedItem("temperature2").Value);
-            string tempvalue = Form1.myfunctionnode.Attributes.GetNamedItem("touch").Value;
+            hScrollBar1.Value = int.Parse(Form1.functionnode.Attributes.GetNamedItem("temperature1").Value);
+            hScrollBar2.Value = int.Parse(Form1.functionnode.Attributes.GetNamedItem("temperature2").Value);
+            string tempvalue = Form1.functionnode.Attributes.GetNamedItem("touch").Value;
 
             dataGridView1.Columns.Add("c0", "商品");
             dataGridView1.Columns.Add("c1", "价格");
@@ -288,7 +288,7 @@ namespace SHJ
             dataGridView1.Columns[2].SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns[3].SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns[4].SortMode = DataGridViewColumnSortMode.NotSortable;
-            foreach (XmlNode _node in Form1.mynodelistshangpin)
+            foreach (XmlNode _node in Form1.nodelistshangpin)
             {               
                 dataGridView1.Rows.Add();
                 dataGridView1.Rows[dataGridView1.RowCount - 1].Cells[0].Value = _node.Attributes.GetNamedItem("shangpinnum").Value;
@@ -306,7 +306,7 @@ namespace SHJ
             }
             dataGridView1.ClearSelection();
 
-            textBox12.Text = Form1.mynodelisthuodao.Count.ToString();//货道数量
+            textBox12.Text = Form1.nodelisthuodao.Count.ToString();//货道数量
             dataGridView2.Columns.Add("c0", "货道");
             dataGridView2.Columns.Add("c1", "库存");
             dataGridView2.Columns.Add("c2", "状态");
@@ -324,7 +324,7 @@ namespace SHJ
             dataGridView2.Columns[3].SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView2.Columns[4].SortMode = DataGridViewColumnSortMode.NotSortable;
             stateOK = 0;
-            foreach (XmlNode _node in Form1.mynodelisthuodao)
+            foreach (XmlNode _node in Form1.nodelisthuodao)
             {
                 dataGridView2.Rows.Add();
                 dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[0].Value = _node.Attributes.GetNamedItem("huodaonum").Value;
@@ -507,25 +507,25 @@ namespace SHJ
         {
             listBox1.Items.Clear();
             int i;
-            for (i = 0; i < Form1.mynodelistpay.Count; i++)
+            for (i = 0; i < Form1.nodelistpay.Count; i++)
             {
-                if (Form1.mynodelistpay[i].Attributes.GetNamedItem("start").Value == "1")
+                if (Form1.nodelistpay[i].Attributes.GetNamedItem("start").Value == "1")
                 {
-                    for (int k = 1; k <= Form1.mynodelistpay.Count; k++)
+                    for (int k = 1; k <= Form1.nodelistpay.Count; k++)
                     {
                         if (i - k >= 0)//未到第一条
                         {
-                            if (Form1.mynodelistpay[i - k].Attributes.GetNamedItem("time").Value.Length > 0)//有记录数据
+                            if (Form1.nodelistpay[i - k].Attributes.GetNamedItem("time").Value.Length > 0)//有记录数据
                             {
-                                string payrecord = Form1.mynodelistpay[i - k].Attributes.GetNamedItem("time").Value
-                                     + " " + Form1.mynodelistpay[i - k].Attributes.GetNamedItem("type").Value;
-                                if (Form1.mynodelistpay[i - k].Attributes.GetNamedItem("money").Value.StartsWith("-"))
+                                string payrecord = Form1.nodelistpay[i - k].Attributes.GetNamedItem("time").Value
+                                     + " " + Form1.nodelistpay[i - k].Attributes.GetNamedItem("type").Value;
+                                if (Form1.nodelistpay[i - k].Attributes.GetNamedItem("money").Value.StartsWith("-"))
                                 {
-                                    payrecord += " 退款:" + Form1.mynodelistpay[i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
+                                    payrecord += " 退款:" + Form1.nodelistpay[i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
                                 }
                                 else
                                 {
-                                    payrecord += " 收款:" + Form1.mynodelistpay[i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
+                                    payrecord += " 收款:" + Form1.nodelistpay[i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
                                 }
 
                                 listBox1.Items.Add(payrecord);
@@ -533,17 +533,17 @@ namespace SHJ
                         }
                         else
                         {
-                            if (Form1.mynodelistpay[Form1.mynodelistpay.Count + i - k].Attributes.GetNamedItem("time").Value.Length > 0)//有记录数据
+                            if (Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("time").Value.Length > 0)//有记录数据
                             {
-                                string payrecord = Form1.mynodelistpay[Form1.mynodelistpay.Count + i - k].Attributes.GetNamedItem("time").Value
-                                     + " " + Form1.mynodelistpay[Form1.mynodelistpay.Count + i - k].Attributes.GetNamedItem("type").Value;
-                                if (Form1.mynodelistpay[Form1.mynodelistpay.Count + i - k].Attributes.GetNamedItem("money").Value.StartsWith("-"))
+                                string payrecord = Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("time").Value
+                                     + " " + Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("type").Value;
+                                if (Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("money").Value.StartsWith("-"))
                                 {
-                                    payrecord += " 退款:" + Form1.mynodelistpay[Form1.mynodelistpay.Count + i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
+                                    payrecord += " 退款:" + Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
                                 }
                                 else
                                 {
-                                    payrecord += " 收款:" + Form1.mynodelistpay[Form1.mynodelistpay.Count + i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
+                                    payrecord += " 收款:" + Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
                                 }
 
                                 listBox1.Items.Add(payrecord);
@@ -597,18 +597,18 @@ namespace SHJ
             if (Form1.istestmode)
             {
                 stateOK = 0;
-                for (int i = 0; i < Form1.mynodelisthuodao.Count; i++)
+                for (int i = 0; i < Form1.nodelisthuodao.Count; i++)
                 {
-                    if (Form1.mynodelisthuodao[i].Attributes.GetNamedItem("state").Value == "0")
+                    if (Form1.nodelisthuodao[i].Attributes.GetNamedItem("state").Value == "0")
                     {
                         dataGridView2.Rows[i].Cells[2].Value = "正常";
                         stateOK++;
                     }
-                    else if (Form1.mynodelisthuodao[i].Attributes.GetNamedItem("state").Value == "1")
+                    else if (Form1.nodelisthuodao[i].Attributes.GetNamedItem("state").Value == "1")
                     {
                         dataGridView2.Rows[i].Cells[2].Value = "过流";
                     }
-                    else if (Form1.mynodelisthuodao[i].Attributes.GetNamedItem("state").Value == "2")
+                    else if (Form1.nodelisthuodao[i].Attributes.GetNamedItem("state").Value == "2")
                     {
                         dataGridView2.Rows[i].Cells[2].Value = "断线";
                     }
@@ -1062,10 +1062,10 @@ namespace SHJ
         private void button4_Click(object sender, EventArgs e)
         {
             int tempnum = Convert.ToInt32(this.textBox11.Text, 10);
-            XmlNode shangpinconfignode = Form1.mynodelistshangpin[0].ParentNode;
-            if (tempnum > Form1.mynodelistshangpin.Count)//需要增加商品数量
+            XmlNode shangpinconfignode = Form1.nodelistshangpin[0].ParentNode;
+            if (tempnum > Form1.nodelistshangpin.Count)//需要增加商品数量
             {
-                for (int i = Form1.mynodelistshangpin.Count + 1; i <= tempnum; i++)
+                for (int i = Form1.nodelistshangpin.Count + 1; i <= tempnum; i++)
                 {
                     //创建货道节点
                     XmlNode shangpinNode = Form1.myxmldoc.CreateElement("shangpin" + (i - 1).ToString());//商品定义
@@ -1108,13 +1108,13 @@ namespace SHJ
             }
             else if (tempnum == 0)//商品数量为0
             {
-                this.textBox11.Text = Form1.mynodelistshangpin.Count.ToString();
+                this.textBox11.Text = Form1.nodelistshangpin.Count.ToString();
             }
-            else if (tempnum < Form1.mynodelistshangpin.Count)//需要减少商品数量
+            else if (tempnum < Form1.nodelistshangpin.Count)//需要减少商品数量
             {
-                for (int i = Form1.mynodelistshangpin.Count; i > tempnum; i--)
+                for (int i = Form1.nodelistshangpin.Count; i > tempnum; i--)
                 {
-                    shangpinconfignode.RemoveChild(Form1.mynodelistshangpin[i - 1]);
+                    shangpinconfignode.RemoveChild(Form1.nodelistshangpin[i - 1]);
                     dataGridView1.Rows.RemoveAt(i - 1);
                 }
             }
@@ -1150,10 +1150,10 @@ namespace SHJ
         private void button8_Click(object sender, EventArgs e)
         {
             int tempnum = Convert.ToInt32(this.textBox12.Text, 10);
-            XmlNode huodaoconfignode = Form1.mynodelisthuodao[0].ParentNode;
-            if (tempnum > Form1.mynodelisthuodao.Count)//需要增加货道数量
+            XmlNode huodaoconfignode = Form1.nodelisthuodao[0].ParentNode;
+            if (tempnum > Form1.nodelisthuodao.Count)//需要增加货道数量
             {
-                for (int i = Form1.mynodelisthuodao.Count + 1; i <= tempnum; i++)
+                for (int i = Form1.nodelisthuodao.Count + 1; i <= tempnum; i++)
                 {
                     //创建货道节点
                     XmlNode huodaoNode = Form1.myxmldoc.CreateElement("huodao" + (i - 1).ToString());//货道定义
@@ -1205,13 +1205,13 @@ namespace SHJ
             }
             else if (tempnum == 0)//货道数量为0
             {
-                this.textBox12.Text = Form1.mynodelisthuodao.Count.ToString();
+                this.textBox12.Text = Form1.nodelisthuodao.Count.ToString();
             }
-            else if (tempnum < Form1.mynodelisthuodao.Count)//需要减少商品数量
+            else if (tempnum < Form1.nodelisthuodao.Count)//需要减少商品数量
             {
-                for (int i = Form1.mynodelisthuodao.Count; i > tempnum; i--)
+                for (int i = Form1.nodelisthuodao.Count; i > tempnum; i--)
                 {
-                    huodaoconfignode.RemoveChild(Form1.mynodelisthuodao[i - 1]);
+                    huodaoconfignode.RemoveChild(Form1.nodelisthuodao[i - 1]);
                     dataGridView2.Rows.RemoveAt(i - 1);
                 }
             }
@@ -1227,9 +1227,9 @@ namespace SHJ
             {
                 dataGridView1.Rows[i].Cells[4].Value = "0";
             }
-            for (int i = 0; i < Form1.mynodelistshangpin.Count; i++)
+            for (int i = 0; i < Form1.nodelistshangpin.Count; i++)
             {
-                Form1.mynodelistshangpin[i].Attributes.GetNamedItem("salesum").Value = "0";
+                Form1.nodelistshangpin[i].Attributes.GetNamedItem("salesum").Value = "0";
             }
             needsave = true;
         }
@@ -1304,7 +1304,7 @@ namespace SHJ
         {
             PEPrinter.needPutImage = true;
             PLCHelper.isRigPrint = false;//打印机里已无印面
-            Form1.myMachineNode.Attributes.GetNamedItem("isRigPrint").Value = "False";
+            Form1.machineNode.Attributes.GetNamedItem("isRigPrint").Value = "False";
         }
 
         /// <summary>

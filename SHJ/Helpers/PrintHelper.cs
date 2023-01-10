@@ -66,7 +66,7 @@ namespace SHJ
                 int osmotype = 3;
                 try
                 {
-                    osmotype = int.Parse(Form1.mynodelisthuodao[Form1.wulihuodao].Attributes.GetNamedItem("position").Value);
+                    osmotype = int.Parse(Form1.nodelisthuodao[Form1.wulihuodao].Attributes.GetNamedItem("position").Value);
                 }
                 catch
                 {

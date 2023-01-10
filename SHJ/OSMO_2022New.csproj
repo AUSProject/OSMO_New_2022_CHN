@@ -147,24 +147,24 @@
     <Reference Include="ThoughtWorks.QRCode, Version=1.0.3990.25764, Culture=neutral, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Helper\CameraHelper.cs" />
+    <Compile Include="Helpers\CameraHelper.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helper\FTPHelper.cs" />
+    <Compile Include="Helpers\FTPHelper.cs" />
     <Compile Include="Keyboard.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Keyboard.Designer.cs">
       <DependentUpon>Keyboard.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helper\LogHelper.cs" />
-    <Compile Include="Helper\PLCHelper.cs" />
-    <Compile Include="Helper\PEPrinter.cs" />
-    <Compile Include="Helper\PrintHelper.cs" />
+    <Compile Include="Helpers\LogHelper.cs" />
+    <Compile Include="Helpers\PLCHelper.cs" />
+    <Compile Include="Helpers\PEPrinter.cs" />
+    <Compile Include="Helpers\PrintHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -172,6 +172,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\Extends.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -211,7 +212,7 @@
     <Compile Include="setting.Designer.cs">
       <DependentUpon>setting.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helper\TcpCSFramework.cs" />
+    <Compile Include="Helpers\TcpCSFramework.cs" />
     <Compile Include="tihuoma.cs">
       <SubType>Form</SubType>
     </Compile>
