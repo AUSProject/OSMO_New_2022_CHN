@@ -155,7 +155,7 @@ namespace SHJ
         public static XmlNode functionnode;//功能配置
         public static XmlNode payconfignode;//支付配置
         public static XmlDocument shipmentDoc = new XmlDocument();//销售记录配置文件XML
-        public static XmlNodeList nodelistpay;//支付记录
+        //public static XmlNodeList nodelistpay;//支付记录
         public static XmlNode systemNode;//系统信息
         public static XmlNode machineNode;//设备参数
         public static XmlNode appconfig;//系统设置
@@ -167,7 +167,6 @@ namespace SHJ
         private bool isregedit = false;//是否已经注册
         public static int guanggaoreturntime;//返回广告页面计时。3分钟不操作，则返回广告页面
         private int MAXreturntime = 120;
-        private QRCodeEncoder qrCodeEncoder = new QRCodeEncoder();//二维码
         private PEPrinter myprint;
         
         public static int paytypes;//第一位为支付宝、第二位为微信、第三位为一码付、第四位为银联闪付、第五位为会员卡
@@ -215,7 +214,8 @@ namespace SHJ
             PLC = new PLCHelper();
             print = PrintHelper.GetExample();//获取打印机实例
             log = LogHelper.GetLogHelperExamlpe();//获取日志实例
-            
+            myprint = PEPrinter.GetPEPrinterExample();
+
             config1.START((Control)this, System.Reflection.Assembly.GetExecutingAssembly(), null);
             
             this.panel1.Dock = DockStyle.Fill;
@@ -486,7 +486,7 @@ namespace SHJ
                 IMEI[14] = mbyteadddata[2];
             }
             
-            if (!File.Exists(Path.Combine(adimagesaddress, "erweima.jpg")))//加载二维码
+            if (!File.Exists(Path.Combine(adimagesaddress+"\\Erweima", "erweima.jpg")))//加载二维码
             {
                 ErweimaUrl = String.Concat(ErweimaUrl, Encoding.ASCII.GetString(Form1.IMEI));
                 QRCode(ErweimaUrl);
@@ -507,18 +507,11 @@ namespace SHJ
             {
                 isregedit = true;
             }
-
-            myprint = PEPrinter.GetPEPrinterExample();
             
             myTcpCli.ReceivedDatagram += new NetEvent(myTcpCli_ReceivedDatagram);
             myTcpCli.DisConnectedServer += new NetEvent(myTcpCli_DisConnectedServer);
             myTcpCli.ConnectedServer += new NetEvent(myTcpCli_ConnectedServer);
-
-            qrCodeEncoder.QRCodeEncodeMode = QRCodeEncoder.ENCODE_MODE.BYTE;//二维码
-            qrCodeEncoder.QRCodeScale = 5;
-            qrCodeEncoder.QRCodeVersion = 8;
-            qrCodeEncoder.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.L;
-
+            
             pic_Erweima.Image = Image.FromFile(Path.Combine(adimagesaddress+"\\Erweima", "erweima.jpg"));//购物二维码
           
             //设备运行模式
@@ -991,7 +984,7 @@ namespace SHJ
                 PLCHelper.nowStep = 0x01;
                 wulihuodao = result;
                 setchuhuo();
-                addpayrecord(shangpinjiage, "提货码");
+                //addpayrecord(shangpinjiage, "提货码");
 
                 for (int k = 0; k < 6; k++)//记录时间戳清除防止进支付页面后生成上次请求的的二维码
                 {
@@ -1090,7 +1083,7 @@ namespace SHJ
         #endregion
 
         #region 数据接收
-
+        
         /// <summary>
         /// 网络收到数据事件方法
         /// </summary>
@@ -1434,13 +1427,11 @@ namespace SHJ
         {
             Bitmap bt;
             QRCodeEncoder qrCode = new QRCodeEncoder();
-            qrCode.QRCodeEncodeMode = QRCodeEncoder.ENCODE_MODE.BYTE;
-            qrCode.QRCodeScale = 4;
-            qrCode.QRCodeVersion = 0;
-            qrCode.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.M;
-            qrCode.QRCodeBackgroundColor = Color.Wheat;
-            qrCode.QRCodeForegroundColor = Color.Black;
-            bt = qrCodeEncoder.Encode(url, Encoding.UTF8);
+            qrCode.QRCodeEncodeMode = QRCodeEncoder.ENCODE_MODE.BYTE;//二维码
+            qrCode.QRCodeScale = 5;
+            qrCode.QRCodeVersion = 8;
+            qrCode.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.L;
+            bt = qrCode.Encode(url, Encoding.UTF8);
             string erweimaImgName = "erweima.jpg";
             bt.Save(Path.Combine(adimagesaddress + "\\Erweima", erweimaImgName));
         }
@@ -1955,36 +1946,36 @@ namespace SHJ
         /// <param name="type">支付方式</param>
         private void addpayrecord(double money, string type)
         {
-            int i;
-            for (i = 0; i < nodelistpay.Count; i++)
-            {
-                if (nodelistpay[i].Attributes.GetNamedItem("start").Value == "1")
-                {
-                    nodelistpay[i].Attributes.GetNamedItem("time").Value = DateTime.Now.ToString("MM-dd HH:mm:ss");
-                    nodelistpay[i].Attributes.GetNamedItem("money").Value = money.ToString();
-                    nodelistpay[i].Attributes.GetNamedItem("type").Value = type;
-                    nodelistpay[i].Attributes.GetNamedItem("start").Value = "";
-                    if (i == nodelistpay.Count - 1)
-                    {
-                        nodelistpay[0].Attributes.GetNamedItem("start").Value = "1";
-                    }
-                    else
-                    {
-                        nodelistpay[i + 1].Attributes.GetNamedItem("start").Value = "1";
-                    }
-                    break;
-                }
-            }
-            if (i == nodelistpay.Count)//未找到起始位置
-            {
-                nodelistpay[0].Attributes.GetNamedItem("time").Value = DateTime.Now.ToString("MM-dd HH:mm:ss");
-                nodelistpay[0].Attributes.GetNamedItem("money").Value = money.ToString();
-                nodelistpay[0].Attributes.GetNamedItem("type").Value = type;
-                nodelistpay[0].Attributes.GetNamedItem("start").Value = "";
-                nodelistpay[1].Attributes.GetNamedItem("start").Value = "1";
-            }
-            shipmentDoc.Save(salexmlfile);
-            shipmentDoc.Save(salexmlfilecopy);
+            //int i;
+            //for (i = 0; i < nodelistpay.Count; i++)
+            //{
+            //    if (nodelistpay[i].Attributes.GetNamedItem("start").Value == "1")
+            //    {
+            //        nodelistpay[i].Attributes.GetNamedItem("time").Value = DateTime.Now.ToString("MM-dd HH:mm:ss");
+            //        nodelistpay[i].Attributes.GetNamedItem("money").Value = money.ToString();
+            //        nodelistpay[i].Attributes.GetNamedItem("type").Value = type;
+            //        nodelistpay[i].Attributes.GetNamedItem("start").Value = "";
+            //        if (i == nodelistpay.Count - 1)
+            //        {
+            //            nodelistpay[0].Attributes.GetNamedItem("start").Value = "1";
+            //        }
+            //        else
+            //        {
+            //            nodelistpay[i + 1].Attributes.GetNamedItem("start").Value = "1";
+            //        }
+            //        break;
+            //    }
+            //}
+            //if (i == nodelistpay.Count)//未找到起始位置
+            //{
+            //    nodelistpay[0].Attributes.GetNamedItem("time").Value = DateTime.Now.ToString("MM-dd HH:mm:ss");
+            //    nodelistpay[0].Attributes.GetNamedItem("money").Value = money.ToString();
+            //    nodelistpay[0].Attributes.GetNamedItem("type").Value = type;
+            //    nodelistpay[0].Attributes.GetNamedItem("start").Value = "";
+            //    nodelistpay[1].Attributes.GetNamedItem("start").Value = "1";
+            //}
+            //shipmentDoc.Save(salexmlfile);
+            //shipmentDoc.Save(salexmlfilecopy);
         }
 
         /// <summary>
@@ -2050,8 +2041,8 @@ namespace SHJ
         /// </summary>
         private void DeleteLogs()
         {
-            DateTime deleteTime = DateTime.ParseExact(appconfig.Attributes.GetNamedItem("logDeleteTime").Value, "yyyy-MM-dd", System.Globalization.CultureInfo.CurrentCulture);
-            double timeInvteral = Double.Parse(appconfig.Attributes.GetNamedItem("logDeleteTimeInvteral").Value);
+            DateTime deleteTime = DateTime.ParseExact(appconfig.GetNameItemValue("logDeleteTime"), "yyyy-MM-dd", System.Globalization.CultureInfo.CurrentCulture);
+            double timeInvteral = Double.Parse(appconfig.GetNameItemValue("logDeleteTimeInvteral"));
             if (deleteTime.AddDays(timeInvteral) <= DateTime.Now)
             {
                 try
@@ -2061,7 +2052,9 @@ namespace SHJ
                     {
                         File.Delete(item);
                     }
-                    appconfig.Attributes.GetNamedItem("logDeleteTime").Value = DateTime.Now.ToString("yyyy-MM-dd");
+                    appconfig.WriteNameItemVAlue("logDeleteTime", DateTime.Now.ToString("yyyy-MM-dd"));
+                    myxmldoc.Save(configxmlfile);
+                    myxmldoc.Save(configxmlfilecopy);
                 }
                 catch { }
             }
@@ -2391,9 +2384,9 @@ namespace SHJ
             payconfignode = myxmldoc.SelectSingleNode("config").SelectSingleNode("payconfig");
             nodelistshangpin = myxmldoc.SelectSingleNode("config").SelectSingleNode("shangpin").ChildNodes;
             nodelisthuodao = myxmldoc.SelectSingleNode("config").SelectSingleNode("huodao").ChildNodes;
-            nodelistpay = shipmentDoc.SelectSingleNode("sale").SelectSingleNode("pay").ChildNodes;
             appconfig = myxmldoc.SelectSingleNode("config").SelectSingleNode("appConfig");
             ftpconfig = myxmldoc.SelectSingleNode("config").SelectSingleNode("FTPConfig");
+            //nodelistpay = shipmentDoc.SelectSingleNode("sale").SelectSingleNode("pay").ChildNodes;
             try
             {
                 paytypes = int.Parse(payconfignode.Attributes.GetNamedItem("allpay").Value);
@@ -2756,5 +2749,6 @@ namespace SHJ
 
         #endregion
 
+       
     }
 }

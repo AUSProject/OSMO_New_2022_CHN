@@ -156,11 +156,11 @@ namespace SHJ
                 errorToken = true;
                 errorMsg += "未知故障";
             }
-            if (print.PrintFaultInspect() != null)
-            {
-                errorToken = true;
-                errorMsg += "打印机故障";
-            }
+            //if (print.PrintFaultInspect() != null)
+            //{
+            //    errorToken = true;
+            //    errorMsg += "打印机故障";
+            //}
             if (isAutoRun)
             {
                 if (isRigPrint)
@@ -294,7 +294,7 @@ namespace SHJ
                     TrayQueryAndLabor();
                     break;
                 case 0x02:
-                    ReSet();//机器复位
+                    ReSetMachine();//机器复位
                     break;
                 case 0x05:
                     Printing();
@@ -317,17 +317,22 @@ namespace SHJ
                     Execution();//结束运行
                     break;
                 case 0x11://结束后自检
-                    if (Post() == null)
+                    string res = Post();
+                    if (res == "None")
                         curState = 0x10;
+                    else
+                        ResetProgram();
                     break;
                 case 0x90:
                     string result = Post();
-                    if (result == null)//故障检测
-                        curState = 0x02;
+                    if (result == "None")
+                        curState = 0x10;
+                    else if (result == "Error")
+                        curState = 0x91;
                     else
                     {
+                        errorMsg = result;
                         errorToken = true;
-                        errorMsg += result;
                         ResetProgram();
                     }
                     break;
@@ -483,7 +488,7 @@ namespace SHJ
             try
             {
                 isRigPrint = Is;
-                Form1.machineNode.Attributes.GetNamedItem("isRigPrint").Value = Is.ToString();
+                Form1.machineNode.WriteNameItemVAlue("isRigPrint", Is.ToString());
                 Form1.myxmldoc.Save(Form1.configxmlfile);
                 Form1.myxmldoc.Save(Form1.configxmlfilecopy);
             }
@@ -512,26 +517,23 @@ namespace SHJ
             if (X12 == 1)
             {
                 trubleNum[0] = 1;
-                curState = 0x91;//进入排故程序
+                result = "Error";
             }
             if (X10 == 1)
             {
                 trubleNum[1] = 1;
-                curState = 0x91;
+                result = "Error";
             }
             if (X7 == 1)
             {
                 trubleNum[2] = 1;
-                curState = 0x91;
+                result = "Error";
             }
-
             if (X13 == 1)
-            {
-                result= "缺少印面";
-            }
+                result = "NoPrinter";
             else if (X12 == 0 && X10 == 0 && X7 == 0)
             {
-                result = null;
+                result = "None";
             }
             return result;
         }
@@ -593,7 +595,7 @@ namespace SHJ
         /// <summary>
         /// PLC复位控制
         /// </summary>
-        private void ReSet()
+        private void ReSetMachine()
         {
             if (OverToken)
             {

@@ -155,6 +155,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\FTPHelper.cs" />
+    <Compile Include="Helpers\PLCHelper.cs" />
     <Compile Include="Keyboard.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -162,7 +163,6 @@
       <DependentUpon>Keyboard.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\LogHelper.cs" />
-    <Compile Include="Helpers\PLCHelper.cs" />
     <Compile Include="Helpers\PEPrinter.cs" />
     <Compile Include="Helpers\PrintHelper.cs" />
     <Compile Include="Program.cs" />

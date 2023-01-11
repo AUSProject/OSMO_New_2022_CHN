@@ -30,7 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            PCHMI.limits limits2 = new PCHMI.limits();
+            PCHMI.limits limits1 = new PCHMI.limits();
             this.panel1 = new System.Windows.Forms.Panel();
             this.button2 = new System.Windows.Forms.Button();
             this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
@@ -47,6 +47,7 @@
             this.video1 = new AForge.Controls.VideoSourcePlayer();
             this.pic_Erweima = new System.Windows.Forms.PictureBox();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.label3 = new System.Windows.Forms.Label();
             this.pel_SellTips = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
@@ -72,7 +73,6 @@
             this.lbl_D9 = new System.Windows.Forms.Label();
             this.lbl_D11 = new System.Windows.Forms.Label();
             this.lbl_D0 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -201,10 +201,10 @@
             this.config1.数据路径 = "D:\\";
             this.config1.画面 = null;
             this.config1.登录方式 = PCHMI.CONFIG.LOGType.快速登录;
-            limits2.PLC = ((uint)(0u));
-            limits2.地址 = "";
-            limits2.限制类型 = PCHMI.limits.LType.无效;
-            this.config1.运行限制 = limits2;
+            limits1.PLC = ((uint)(0u));
+            limits1.地址 = "";
+            limits1.限制类型 = PCHMI.limits.LType.无效;
+            this.config1.运行限制 = limits1;
             this.config1.通讯配置 = new string[] {
         "MITSUBISHI_FX_SERIAL;COM=4,9600,2,7,1;SN=1;JumpBit="};
             this.config1.通讯配置文件名 = "PLC1";
@@ -253,6 +253,17 @@
             this.panel4.Size = new System.Drawing.Size(784, 841);
             this.panel4.TabIndex = 14;
             this.panel4.Visible = false;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("宋体", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label3.ImageAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.label3.Location = new System.Drawing.Point(220, 20);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(0, 20);
+            this.label3.TabIndex = 55;
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pel_SellTips
             // 
@@ -530,17 +541,6 @@
             this.lbl_D0.Size = new System.Drawing.Size(40, 16);
             this.lbl_D0.TabIndex = 0;
             this.lbl_D0.Text = "D0：";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("宋体", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label3.ImageAlign = System.Drawing.ContentAlignment.BottomCenter;
-            this.label3.Location = new System.Drawing.Point(220, 20);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(0, 20);
-            this.label3.TabIndex = 55;
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // Form1
             // 

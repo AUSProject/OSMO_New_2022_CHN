@@ -18,7 +18,7 @@ namespace SHJ
         /// <returns></returns>
         public static string GetNameItemValue(this XmlNode node,string name)
         {
-            return node.Attributes.GetNamedItem(name).ToString();
+            return node.Attributes.GetNamedItem(name).Value.ToString();
         }
 
         /// <summary>

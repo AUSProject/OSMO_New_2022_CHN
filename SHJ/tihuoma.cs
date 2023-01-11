@@ -57,54 +57,54 @@ namespace SHJ
         private void timer1_Tick(object sender, EventArgs e)
         {
             updateshow();
-            if (errorMsg != null)
-            {
-                panel_Error.Visible = true;
-                lbl_Msg.Text = errorMsg;
-                lbl_Msg2.Visible = true;
-                btn_Yes.Visible = true;
-            }
-            if (PLCHelper.errorToken)//运行时出现故障
-            {
-                panel_Error.Visible = true;
-                lbl_Msg.Text = "设备故障，暂停使用";
-                lbl_Msg2.Visible = true;
-                btn_Yes.Visible = false;
-            }
-            else if (!PLCHelper.CheckPortConnect())//设备连接检查
-            {
-                lbl_Msg.Text = "设备未连接，暂停使用";
-                panel_Error.Visible = true;
-                lbl_Msg2.Visible = false;
-                btn_Yes.Visible = false;
-            }
-            else if (Form1.ReturnStock() == 0)//库存检测
-            {
-                panel_Error.Visible = true;
-                lbl_Msg.Text = "印章盒无库存，暂停使用";
-                lbl_Msg2.Visible = false;
-                btn_Yes.Visible = false;
-            }
-            else if (print.PrintFaultInspect() != null)//打印机检查 
-            {
-                panel_Error.Visible = true;
-                lbl_Msg.Text = "打印机故障，暂停使用";
-                lbl_Msg2.Visible = false;
-                btn_Yes.Visible = false;
-            }
-            else if (!PLCHelper.GoodsInspect())//印面数量检查
-            {
-                lbl_Msg.Text = "印面无库存，暂停使用";
-                panel_Error.Visible = true;
-                lbl_Msg2.Visible = false;
-                btn_Yes.Visible = false;
-            }
-            else
-            {
-                panel_Error.Visible = false;
-                lbl_Msg2.Visible = false;
-                btn_Yes.Visible = false;
-            }
+            //if (errorMsg != null)
+            //{
+            //    panel_Error.Visible = true;
+            //    lbl_Msg.Text = errorMsg;
+            //    lbl_Msg2.Visible = true;
+            //    btn_Yes.Visible = true;
+            //}
+            //if (PLCHelper.errorToken)//运行时出现故障
+            //{
+            //    panel_Error.Visible = true;
+            //    lbl_Msg.Text = "设备故障，暂停使用";
+            //    lbl_Msg2.Visible = true;
+            //    btn_Yes.Visible = false;
+            //}
+            //else if (!PLCHelper.CheckPortConnect())//设备连接检查
+            //{
+            //    lbl_Msg.Text = "设备未连接，暂停使用";
+            //    panel_Error.Visible = true;
+            //    lbl_Msg2.Visible = false;
+            //    btn_Yes.Visible = false;
+            //}
+            //else if (Form1.ReturnStock() == 0)//库存检测
+            //{
+            //    panel_Error.Visible = true;
+            //    lbl_Msg.Text = "印章盒无库存，暂停使用";
+            //    lbl_Msg2.Visible = false;
+            //    btn_Yes.Visible = false;
+            //}
+            //else if (print.PrintFaultInspect() != null)//打印机检查 
+            //{
+            //    panel_Error.Visible = true;
+            //    lbl_Msg.Text = "打印机故障，暂停使用";
+            //    lbl_Msg2.Visible = false;
+            //    btn_Yes.Visible = false;
+            //}
+            //else if (!PLCHelper.GoodsInspect())//印面数量检查
+            //{
+            //    lbl_Msg.Text = "印面无库存，暂停使用";
+            //    panel_Error.Visible = true;
+            //    lbl_Msg2.Visible = false;
+            //    btn_Yes.Visible = false;
+            //}
+            //else
+            //{
+            //    panel_Error.Visible = false;
+            //    lbl_Msg2.Visible = false;
+            //    btn_Yes.Visible = false;
+            //}
 
         }
         

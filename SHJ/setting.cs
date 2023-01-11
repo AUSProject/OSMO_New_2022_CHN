@@ -54,7 +54,7 @@ namespace SHJ
                 this.Location = new Point(0, 0);
             }
             updatecaidan();
-            showpayrecord();
+            //showpayrecord();
             txt_Pass.Text = "";
             keyboard = Keyboard.GetKeyboard();//获取实例
 
@@ -499,63 +499,7 @@ namespace SHJ
         //    }
         //}
         #endregion
-
-        /// <summary>
-        /// 添加支付记录
-        /// </summary>
-        private void showpayrecord()
-        {
-            listBox1.Items.Clear();
-            int i;
-            for (i = 0; i < Form1.nodelistpay.Count; i++)
-            {
-                if (Form1.nodelistpay[i].Attributes.GetNamedItem("start").Value == "1")
-                {
-                    for (int k = 1; k <= Form1.nodelistpay.Count; k++)
-                    {
-                        if (i - k >= 0)//未到第一条
-                        {
-                            if (Form1.nodelistpay[i - k].Attributes.GetNamedItem("time").Value.Length > 0)//有记录数据
-                            {
-                                string payrecord = Form1.nodelistpay[i - k].Attributes.GetNamedItem("time").Value
-                                     + " " + Form1.nodelistpay[i - k].Attributes.GetNamedItem("type").Value;
-                                if (Form1.nodelistpay[i - k].Attributes.GetNamedItem("money").Value.StartsWith("-"))
-                                {
-                                    payrecord += " 退款:" + Form1.nodelistpay[i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
-                                }
-                                else
-                                {
-                                    payrecord += " 收款:" + Form1.nodelistpay[i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
-                                }
-
-                                listBox1.Items.Add(payrecord);
-                            }
-                        }
-                        else
-                        {
-                            if (Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("time").Value.Length > 0)//有记录数据
-                            {
-                                string payrecord = Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("time").Value
-                                     + " " + Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("type").Value;
-                                if (Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("money").Value.StartsWith("-"))
-                                {
-                                    payrecord += " 退款:" + Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
-                                }
-                                else
-                                {
-                                    payrecord += " 收款:" + Form1.nodelistpay[Form1.nodelistpay.Count + i - k].Attributes.GetNamedItem("money").Value.TrimStart('-') + "元";
-                                }
-
-                                listBox1.Items.Add(payrecord);
-                            }
-                        }
-                        
-                    }
-                    break;
-                }
-            }
-        }
-        
+            
         private int count1000;//1000ms计数
         /// <summary>
         /// 更新菜单状态
@@ -1555,8 +1499,14 @@ namespace SHJ
 
         private void button9_Click(object sender, EventArgs e)//摄像头设置
         {
+            InitCamera();
+        }
+
+        private void InitCamera()
+        {
             pel_CameraSet.Location = new Point(450, 300);
             pel_CameraSet.Visible = true;
+            pel_CameraSet.BringToFront();
             bool result = CameraHelper.IniCamera();
             if (result)
             {
@@ -1690,6 +1640,7 @@ namespace SHJ
             cbx_Rp.Items.Clear();
             cbx_PicWatermark.Items.Clear();
             this.pel_CameraSet.Visible = false;
+            //this.pel_CameraSet.SendToBack();
 
         }
 
@@ -1810,5 +1761,10 @@ namespace SHJ
         }
 
         #endregion
+
+        private void button19_Click(object sender, EventArgs e)
+        {
+            InitCamera();
+        }
     }
 }

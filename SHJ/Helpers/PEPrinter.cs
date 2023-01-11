@@ -104,9 +104,12 @@ namespace SHJ
         /// <returns></returns>
         public static PEPrinter GetPEPrinterExample()
         {
-            if (_Peprinter == null)
-                _Peprinter = new PEPrinter();
-            return _Peprinter;
+            lock ("print")
+            {
+                if (_Peprinter == null)
+                    _Peprinter = new PEPrinter();
+                return _Peprinter;
+            }
         }
 
         /// <summary>
