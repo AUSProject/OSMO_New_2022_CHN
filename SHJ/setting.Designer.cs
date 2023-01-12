@@ -176,7 +176,7 @@
             this.按钮34 = new PCHMI.按钮(this.components);
             this.button12 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
-            this.pel_AutoType = new System.Windows.Forms.Panel();
+            this.pel_PCControl = new System.Windows.Forms.Panel();
             this.rb_RunType2 = new System.Windows.Forms.RadioButton();
             this.rb_RunType1 = new System.Windows.Forms.RadioButton();
             this.label164 = new System.Windows.Forms.Label();
@@ -553,7 +553,7 @@
             this.panel_setup = new System.Windows.Forms.Panel();
             this.button5 = new System.Windows.Forms.Button();
             this.gb_Setting.SuspendLayout();
-            this.pel_AutoType.SuspendLayout();
+            this.pel_PCControl.SuspendLayout();
             this.pel_runType.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -591,7 +591,7 @@
             this.gb_Setting.Controls.Add(this.按钮34);
             this.gb_Setting.Controls.Add(this.button12);
             this.gb_Setting.Controls.Add(this.button4);
-            this.gb_Setting.Controls.Add(this.pel_AutoType);
+            this.gb_Setting.Controls.Add(this.pel_PCControl);
             this.gb_Setting.Controls.Add(this.label27);
             this.gb_Setting.Controls.Add(this.label18);
             this.gb_Setting.Controls.Add(this.button7);
@@ -712,17 +712,17 @@
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
-            // pel_AutoType
+            // pel_PCControl
             // 
-            this.pel_AutoType.BackColor = System.Drawing.Color.DarkGray;
-            this.pel_AutoType.Controls.Add(this.rb_RunType2);
-            this.pel_AutoType.Controls.Add(this.rb_RunType1);
-            this.pel_AutoType.Controls.Add(this.label164);
-            this.pel_AutoType.Location = new System.Drawing.Point(292, 526);
-            this.pel_AutoType.Name = "pel_AutoType";
-            this.pel_AutoType.Size = new System.Drawing.Size(182, 87);
-            this.pel_AutoType.TabIndex = 69;
-            this.pel_AutoType.Visible = false;
+            this.pel_PCControl.BackColor = System.Drawing.Color.DarkGray;
+            this.pel_PCControl.Controls.Add(this.rb_RunType2);
+            this.pel_PCControl.Controls.Add(this.rb_RunType1);
+            this.pel_PCControl.Controls.Add(this.label164);
+            this.pel_PCControl.Location = new System.Drawing.Point(292, 526);
+            this.pel_PCControl.Name = "pel_PCControl";
+            this.pel_PCControl.Size = new System.Drawing.Size(182, 87);
+            this.pel_PCControl.TabIndex = 69;
+            this.pel_PCControl.Visible = false;
             // 
             // rb_RunType2
             // 
@@ -735,7 +735,7 @@
             this.rb_RunType2.TabStop = true;
             this.rb_RunType2.Text = "印面安装模式";
             this.rb_RunType2.UseVisualStyleBackColor = true;
-            this.rb_RunType2.CheckedChanged += new System.EventHandler(this.rb_RunType2_CheckedChanged);
+            this.rb_RunType2.Click += new System.EventHandler(this.rb_RunType2_Click);
             // 
             // rb_RunType1
             // 
@@ -748,7 +748,7 @@
             this.rb_RunType1.TabStop = true;
             this.rb_RunType1.Text = "常规模式";
             this.rb_RunType1.UseVisualStyleBackColor = true;
-            this.rb_RunType1.CheckedChanged += new System.EventHandler(this.rb_RunType1_CheckedChanged);
+            this.rb_RunType1.Click += new System.EventHandler(this.rb_RunType1_Click);
             // 
             // label164
             // 
@@ -811,7 +811,7 @@
             this.checkBox8.TabIndex = 66;
             this.checkBox8.Text = "照片定位测试";
             this.checkBox8.UseVisualStyleBackColor = true;
-            this.checkBox8.CheckedChanged += new System.EventHandler(this.checkBox8_CheckedChanged);
+            this.checkBox8.Click += new System.EventHandler(this.checkBox8_Click);
             // 
             // checkBox5
             // 
@@ -823,7 +823,7 @@
             this.checkBox5.TabIndex = 83;
             this.checkBox5.Text = "广告更新";
             this.checkBox5.UseVisualStyleBackColor = true;
-            this.checkBox5.CheckedChanged += new System.EventHandler(this.checkBox5_CheckedChanged);
+            this.checkBox5.Click += new System.EventHandler(this.checkBox5_Click);
             // 
             // textBox4
             // 
@@ -851,7 +851,7 @@
             this.checkBox14.TabIndex = 82;
             this.checkBox14.Text = "提货码";
             this.checkBox14.UseVisualStyleBackColor = true;
-            this.checkBox14.CheckedChanged += new System.EventHandler(this.checkBox14_CheckedChanged);
+            this.checkBox14.Click += new System.EventHandler(this.checkBox14_Click);
             // 
             // button9
             // 
@@ -1088,7 +1088,7 @@
             this.rb_PC.TabStop = true;
             this.rb_PC.Text = "PC程序控制";
             this.rb_PC.UseVisualStyleBackColor = true;
-            this.rb_PC.CheckedChanged += new System.EventHandler(this.rb_PC_CheckedChanged);
+            this.rb_PC.Click += new System.EventHandler(this.rb_PC_Click);
             // 
             // rb_PLC
             // 
@@ -1101,7 +1101,7 @@
             this.rb_PLC.TabStop = true;
             this.rb_PLC.Text = "PLC自动控制";
             this.rb_PLC.UseVisualStyleBackColor = true;
-            this.rb_PLC.CheckedChanged += new System.EventHandler(this.rb_PLC_CheckedChanged);
+            this.rb_PLC.Click += new System.EventHandler(this.rb_PLC_Click);
             // 
             // textBox8
             // 
@@ -1886,7 +1886,7 @@
             this.hScrollBar2.Size = new System.Drawing.Size(419, 22);
             this.hScrollBar2.TabIndex = 136;
             this.hScrollBar2.Value = 2;
-            this.hScrollBar2.ValueChanged += new System.EventHandler(this.hScrollBar2_ValueChanged);
+            this.hScrollBar2.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hScrollBar2_Scroll);
             // 
             // label31
             // 
@@ -1907,7 +1907,7 @@
             this.hScrollBar1.Name = "hScrollBar1";
             this.hScrollBar1.Size = new System.Drawing.Size(419, 22);
             this.hScrollBar1.TabIndex = 134;
-            this.hScrollBar1.ValueChanged += new System.EventHandler(this.hScrollBar1_ValueChanged);
+            this.hScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hScrollBar1_Scroll);
             // 
             // label30
             // 
@@ -2419,7 +2419,7 @@
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(85, 19);
             this.label22.TabIndex = 76;
-            this.label22.Text = "支付记录";
+            this.label22.Text = "出货记录";
             this.label22.DoubleClick += new System.EventHandler(this.label22_DoubleClick);
             // 
             // dataGridView1
@@ -8578,11 +8578,11 @@
             this.BackColor = System.Drawing.SystemColors.GrayText;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
             this.ControlBox = false;
+            this.Controls.Add(this.panel_CPFR);
+            this.Controls.Add(this.panel_setup);
+            this.Controls.Add(this.panel_Back);
             this.Controls.Add(this.panel_debug);
             this.Controls.Add(this.pel_CameraSet);
-            this.Controls.Add(this.panel_setup);
-            this.Controls.Add(this.panel_CPFR);
-            this.Controls.Add(this.panel_Back);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -8593,8 +8593,8 @@
             this.Load += new System.EventHandler(this.setting_Load);
             this.gb_Setting.ResumeLayout(false);
             this.gb_Setting.PerformLayout();
-            this.pel_AutoType.ResumeLayout(false);
-            this.pel_AutoType.PerformLayout();
+            this.pel_PCControl.ResumeLayout(false);
+            this.pel_PCControl.PerformLayout();
             this.pel_runType.ResumeLayout(false);
             this.pel_runType.PerformLayout();
             this.groupBox3.ResumeLayout(false);
@@ -8976,7 +8976,7 @@
         private System.Windows.Forms.Button btn_RunType;
         private System.Windows.Forms.RadioButton rb_PC;
         private System.Windows.Forms.RadioButton rb_PLC;
-        private System.Windows.Forms.Panel pel_AutoType;
+        private System.Windows.Forms.Panel pel_PCControl;
         private System.Windows.Forms.RadioButton rb_RunType1;
         private System.Windows.Forms.RadioButton rb_RunType2;
         private System.Windows.Forms.Label label155;

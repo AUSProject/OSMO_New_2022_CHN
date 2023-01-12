@@ -357,7 +357,7 @@ namespace SHJ
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Form1.HMIstep = 3;
+            new PCHMI.VAR().SEND_INT16(0, "D5", 1);
         }
     }
 }

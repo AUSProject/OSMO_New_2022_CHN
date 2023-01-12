@@ -49,17 +49,19 @@ namespace SHJ
 
         private void setting_Load(object sender, EventArgs e)
         {
+            updatecaidan();
             if (Form1.functionnode.Attributes.GetNamedItem("fenbianlv").Value == "0")
             {
                 this.Width = 1920;
                 this.Height = 1080;
                 this.Location = new Point(0, 0);
             }
-            updatecaidan();
-            //showpayrecord();
             txt_Pass.Text = "";
             keyboard = Keyboard.GetKeyboard();//获取实例
 
+            label31.Text = "设定输出灰度值:" + hScrollBar2.Value.ToString();
+            label30.Text = "设定橡胶打印行速:" + hScrollBar1.Value.ToString();
+            
             if (!Directory.Exists(photoTestPath))
             {
                 Directory.CreateDirectory(photoTestPath);
@@ -78,8 +80,7 @@ namespace SHJ
         #endregion
 
         #region Method
-
-      
+        
         /// <summary>
         /// 键盘
         /// </summary>
@@ -95,6 +96,8 @@ namespace SHJ
             keyboard.valueType = valueType;
             if (keyboard.ShowDialog() == DialogResult.OK)
             {
+                if (inputNum != keyboard.inputValue)
+                    needsave = true;
                 return keyboard.inputValue;
             }
             else
@@ -124,6 +127,19 @@ namespace SHJ
             Form1.needcloseform = true;
             ShowWindow(FindWindow("Shell_TrayWnd", null), SW_RESTORE);
             ShowWindow(FindWindow("Button", null), SW_RESTORE);
+        }
+
+        private void ShowShipRecord()
+        {
+            listBox1.Items.Clear();
+            XmlNodeList list = Form1.shipmentDoc.SelectSingleNode("Sale").SelectSingleNode("ShipRecord").ChildNodes;
+            listBox1.Items.Add("  货道号      价格            出货时间");
+            for (int i = 0; i < list.Count; i++)
+            {
+                string str;
+                str = "    "+list[i].GetNameItemValue("itemNo") + "       " + list[i].GetNameItemValue("price")+"\t"+list[i].GetNameItemValue("time");
+                listBox1.Items.Add(str);
+            }
         }
 
         /// <summary>
@@ -209,6 +225,8 @@ namespace SHJ
         {
             label28.Text = "软件版本:"+ Form1.versionstring;
             label15.Text = "设备编号:" + Encoding.ASCII.GetString(Form1.IMEI);
+
+            ShowShipRecord();
 
             comboBox9.SelectedIndex = 1;
             comboBox1.SelectedIndex = 2;
@@ -355,153 +373,6 @@ namespace SHJ
             
         }
         
-        #region 销售记录(停用)
-        /// <summary>
-        /// 添加销售记录
-        /// </summary>
-        //private void showsalerecord()
-        //{
-        //    double saletoday = 0;
-        //    double salelastday = 0;
-        //    listBox1.Items.Clear();
-        //    int i;
-        //    for (i = 0; i < Form1.mynodelistchuhuo.Count; i++)
-        //    {
-        //        if (Form1.mynodelistchuhuo[i].Attributes.GetNamedItem("start").Value == "1")
-        //        {
-        //            for (int k = 1; k <= Form1.mynodelistchuhuo.Count; k++)
-        //            {
-        //                if (i - k >= 0)//未到第一条
-        //                {
-        //                    string temptime = Form1.mynodelistchuhuo[i - k].Attributes.GetNamedItem("time").Value;
-        //                    if (temptime.Length > 0)//有记录数据
-        //                    {
-        //                        string salerecord = temptime + " 出货:" + Form1.mynodelistchuhuo[i - k].Attributes.GetNamedItem("shangpinnum").Value
-        //                            + " 价格:" + Form1.mynodelistchuhuo[i - k].Attributes.GetNamedItem("jiage").Value;
-        //                        switch (Form1.mynodelistchuhuo[i - k].Attributes.GetNamedItem("type").Value)
-        //                        {
-        //                            case "0":
-        //                                salerecord += "元 现金";
-        //                                break;
-        //                            case "1":
-        //                                salerecord += "元 支付宝";
-        //                                break;
-        //                            case "2":
-        //                                salerecord += "元 微信";
-        //                                break;
-        //                            case "3":
-        //                                salerecord += "元 一码付";
-        //                                break;
-        //                            case "4":
-        //                                salerecord += "元 会员卡";
-        //                                break;
-        //                        }
-        //                        listBox1.Items.Add(salerecord);
-        //                        try
-        //                        {
-        //                            string tempjiage = Form1.mynodelistchuhuo[i - k].Attributes.GetNamedItem("jiage").Value;
-        //                            int tempmonth = int.Parse(temptime.Substring(0,2));
-        //                            int tempday = int.Parse(temptime.Substring(3,2));
-        //                            if(tempmonth==DateTime.Now.Month)//记录的是当前月
-        //                            {
-        //                                if(tempday == DateTime.Now.Day -1)//昨天
-        //                                {
-        //                                    salelastday += double.Parse(tempjiage);
-        //                                }
-        //                                if (tempday == DateTime.Now.Day)//今天
-        //                                {
-        //                                    saletoday += double.Parse(tempjiage);
-        //                                }
-        //                            }
-        //                            else if((DateTime.Now.Month==1)&&(tempmonth==12)) //记录的是上月,去年
-        //                            {
-        //                                if (tempday == DateTime.DaysInMonth(DateTime.Now.Year-1,tempmonth))//昨天
-        //                                {
-        //                                    salelastday += double.Parse(tempjiage);
-        //                                }
-        //                            }
-        //                            else if (tempmonth == DateTime.Now.Month - 1)  //记录的是上月，今年
-        //                            {
-        //                                if (tempday == DateTime.DaysInMonth(DateTime.Now.Year, tempmonth))//昨天
-        //                                {
-        //                                    salelastday += double.Parse(tempjiage);
-        //                                }
-        //                            }
-        //                        }
-        //                        catch
-        //                        {
-        //                        }
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    string temptime = Form1.mynodelistchuhuo[Form1.mynodelistchuhuo.Count + i - k].Attributes.GetNamedItem("time").Value;
-        //                    if (temptime.Length > 0)//有记录数据
-        //                    {
-        //                        string salerecord = temptime + " 出货:" + Form1.mynodelistchuhuo[Form1.mynodelistchuhuo.Count + i - k].Attributes.GetNamedItem("shangpinnum").Value
-        //                            + " 价格:" + Form1.mynodelistchuhuo[Form1.mynodelistchuhuo.Count + i - k].Attributes.GetNamedItem("jiage").Value;
-        //                        switch (Form1.mynodelistchuhuo[Form1.mynodelistchuhuo.Count + i - k].Attributes.GetNamedItem("type").Value)
-        //                        {
-        //                            case "0":
-        //                                salerecord += "元 现金";
-        //                                break;
-        //                            case "1":
-        //                                salerecord += "元 支付宝";
-        //                                break;
-        //                            case "2":
-        //                                salerecord += "元 微信";
-        //                                break;
-        //                            case "3":
-        //                                salerecord += "元 一码付";
-        //                                break;
-        //                            case "4":
-        //                                salerecord += "元 会员卡";
-        //                                break;
-        //                        }
-        //                        listBox1.Items.Add(salerecord);
-        //                        try
-        //                        {
-        //                            string tempjiage = Form1.mynodelistchuhuo[Form1.mynodelistchuhuo.Count + i - k].Attributes.GetNamedItem("jiage").Value;
-        //                            int tempmonth = int.Parse(temptime.Substring(0, 2));
-        //                            int tempday = int.Parse(temptime.Substring(3, 2));
-        //                            if (tempmonth == DateTime.Now.Month)//记录的是当前月
-        //                            {
-        //                                if (tempday == DateTime.Now.Day - 1)//昨天
-        //                                {
-        //                                    salelastday += double.Parse(tempjiage);
-        //                                }
-        //                                if (tempday == DateTime.Now.Day)//今天
-        //                                {
-        //                                    saletoday += double.Parse(tempjiage);
-        //                                }
-        //                            }
-        //                            else if ((DateTime.Now.Month == 1) && (tempmonth == 12)) //记录的是上月,去年
-        //                            {
-        //                                if (tempday == DateTime.DaysInMonth(DateTime.Now.Year - 1, tempmonth))//昨天
-        //                                {
-        //                                    salelastday += double.Parse(tempjiage);
-        //                                }
-        //                            }
-        //                            else if (tempmonth == DateTime.Now.Month - 1)  //记录的是上月，今年
-        //                            {
-        //                                if (tempday == DateTime.DaysInMonth(DateTime.Now.Year, tempmonth))//昨天
-        //                                {
-        //                                    salelastday += double.Parse(tempjiage);
-        //                                }
-        //                            }
-        //                        }
-        //                        catch
-        //                        {
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //            break;
-        //        }
-        //    }
-        //}
-        #endregion
-            
         private int count1000;//1000ms计数
         /// <summary>
         /// 更新菜单状态
@@ -871,9 +742,35 @@ namespace SHJ
         }
 
         #endregion
-        
+
         #region TextBox
-        
+
+        private void txt_Pass_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (txt_Pass.Text == CPFRPass)
+                {
+                    panel_Back.Visible = false;
+                    panel_CPFR.Visible = true;
+                }
+                else if (txt_Pass.Text == setupPass)
+                {
+                    panel_Back.Visible = false;
+                    panel_setup.Visible = true;
+                }
+                else if (txt_Pass.Text == debugPass)
+                {
+                    panel_Back.Visible = false;
+                    panel_debug.Visible = true;
+                }
+                else
+                {
+                    MessageBox.Show("密码错误！！");
+                }
+            }
+        }
+
         private void textBox5_Click(object sender, EventArgs e)
         {
             textBox5.Text=ShowKeyboard(99, textBox5.Text, defualtPoint);
@@ -933,30 +830,29 @@ namespace SHJ
         {
             textBox16.Text = ShowKeyboard(150, textBox16.Text, defualtPoint);
         }
-        
+
         #endregion
-        
+
         #region CheckBox
-
-        private void checkBox5_CheckedChanged(object sender, EventArgs e)
+        private void checkBox14_Click(object sender, EventArgs e)
         {
-            needsave = true;//需要保存
+            needsave = true;
         }
 
-        private void checkBox8_CheckedChanged(object sender, EventArgs e)
+        private void checkBox5_Click(object sender, EventArgs e)
         {
-            needsave = true;//需要保存
+            needsave = true;
         }
-        
-        private void checkBox14_CheckedChanged(object sender, EventArgs e)
+
+        private void checkBox8_Click(object sender, EventArgs e)
         {
             needsave = true;
         }
 
         #endregion
-         
+
         #region DataGridView
-        
+
 
         private void dataGridView2_CellLeave(object sender, DataGridViewCellEventArgs e)
         {
@@ -991,10 +887,122 @@ namespace SHJ
                 this.dataGridView1.CurrentCell.Value = ShowKeyboard(1000, this.dataGridView1.CurrentCell.Value.ToString(), defualtPoint,"Double");
             }
         }
-        
+
         #endregion
 
         #region Button
+
+        private void button12_Click(object sender, EventArgs e)
+        {
+            PLCHelper.errorToken = false;//清除故障提示
+            PLCHelper.errorMsg = null;
+            MessageBox.Show("清零成功");
+        }
+
+        private void button19_Click(object sender, EventArgs e)
+        {
+            InitCamera();
+        }
+
+        CancellationTokenSource token;
+        private void button21_Click(object sender, EventArgs e)//排故测试
+        {
+            button23.Enabled = true;
+            token = new CancellationTokenSource();
+            int[] trubleNum = new int[3];
+            bool truble = false;
+            bool OverToken = true;
+            ushort X12 = new PCHMI.VAR().GET_BIT(0, "X12");
+            ushort X10 = new PCHMI.VAR().GET_BIT(0, "X10");
+            ushort X7 = new PCHMI.VAR().GET_BIT(0, "X7");
+            if (X12 == 1)
+            {
+                trubleNum[0] = 1;
+                truble = true;
+            }
+            if (X10 == 1)
+            {
+                trubleNum[1] = 1;
+                truble = true;
+            }
+            if (X7 == 1)
+            {
+                trubleNum[2] = 1;
+                truble = true;
+            }
+            if (truble)
+            {
+                Task.Factory.StartNew(() =>
+                {
+                    while (true)
+                    {
+                        if (OverToken)
+                        {
+                            if (trubleNum[0] == 1)//故障1
+                            {
+                                new PCHMI.VAR().SEND_INT16(0, "D12", 1);
+                                OverToken = false;
+                            }
+                            else if (trubleNum[1] == 1)//故障2
+                            {
+                                new PCHMI.VAR().SEND_INT16(0, "D13", 1);
+                                OverToken = false;
+                            }
+                            else if (trubleNum[2] == 1)//故障3
+                            {
+                                new PCHMI.VAR().SEND_INT16(0, "D14", 1);
+                                OverToken = false;
+                            }
+                            else
+                                break;
+                        }
+                        else
+                        {//监控排故是否完成
+                            if (trubleNum[0] != 0)
+                            {
+                                short D12 = new PCHMI.VAR().GET_INT16(0, "D12");
+                                OverToken = D12 == 10 ? true : false;
+                                trubleNum[0] = D12 == 10 ? 0 : 1;
+                            }
+                            else if (trubleNum[1] != 0)
+                            {
+                                short D13 = new PCHMI.VAR().GET_INT16(0, "D13");
+                                OverToken = D13 == 12 ? true : false;
+                                trubleNum[1] = D13 == 12 ? 0 : 1;
+                            }
+                            else if (trubleNum[2] != 0)
+                            {
+                                short D14 = new PCHMI.VAR().GET_INT16(0, "D14");
+                                OverToken = D14 == 10 ? true : false;
+                                trubleNum[2] = D14 == 10 ? 0 : 1;
+                            }
+                        }
+                    }
+                }, token.Token);
+            }
+
+        }
+
+        private void button22_Click(object sender, EventArgs e)
+        {
+            if (button22.Text == "更多")
+            {
+                pel_More.Visible = true;
+                button22.Text = "关闭";
+            }
+            else
+            {
+                pel_More.Visible = false;
+                button22.Text = "更多";
+                button23.Enabled = false;
+            }
+        }
+
+        private void button23_Click(object sender, EventArgs e)
+        {
+            token.Cancel();
+            button23.Enabled = false;
+        }
 
         private void button10_Click(object sender, EventArgs e)
         {
@@ -1363,7 +1371,7 @@ namespace SHJ
             if (btn_RunType.Text == "关闭")
             {
                 pel_runType.Visible = false;
-                pel_AutoType.Visible = false;
+                pel_PCControl.Visible = false;
                 btn_RunType.Text = "运行模式选择";
             }
             else
@@ -1371,7 +1379,7 @@ namespace SHJ
                 pel_runType.Visible = true;
                 btn_RunType.Text = "关闭";
                 if (rb_PC.Checked)
-                    pel_AutoType.Visible = true;
+                    pel_PCControl.Visible = true;
             }
         }
 
@@ -1380,16 +1388,16 @@ namespace SHJ
         #region hScrollBar
 
         private int PEPrinterupdatedelay;
-        private void hScrollBar1_ValueChanged(object sender, EventArgs e)
+        private void hScrollBar2_Scroll(object sender, ScrollEventArgs e)
         {
-            label30.Text = "设定橡胶打印行速:" + hScrollBar1.Value.ToString();
+            label31.Text = "设定输出灰度值:" + hScrollBar2.Value.ToString();
             PEPrinterupdatedelay = 1;
             needsave = true;
         }
-        
-        private void hScrollBar2_ValueChanged(object sender, EventArgs e)
+
+        private void hScrollBar1_Scroll(object sender, ScrollEventArgs e)
         {
-            label31.Text = "设定输出灰度值:" + hScrollBar2.Value.ToString();
+            label30.Text = "设定橡胶打印行速:" + hScrollBar1.Value.ToString();
             PEPrinterupdatedelay = 1;
             needsave = true;
         }
@@ -1398,7 +1406,7 @@ namespace SHJ
 
         #region radioButton
 
-        private void rb_PLC_CheckedChanged(object sender, EventArgs e)
+        private void rb_PLC_Click(object sender, EventArgs e)
         {
             needsave = true;
             if (rb_PLC.Checked)
@@ -1412,29 +1420,29 @@ namespace SHJ
                 }
             }
             if (rb_PLC.Checked)
-                pel_AutoType.Visible = false;
-
+                pel_PCControl.Visible = false;
         }
 
-        private void rb_PC_CheckedChanged(object sender, EventArgs e)
+        private void rb_PC_Click(object sender, EventArgs e)
         {
             needsave = true;
             if (pel_runType.Visible == true && rb_PC.Checked)
-                pel_AutoType.Visible = true;
+                pel_PCControl.Visible = true;
         }
-        
-        private void rb_RunType1_CheckedChanged(object sender, EventArgs e)
+
+        private void rb_RunType1_Click(object sender, EventArgs e)
         {
             needsave = true;
         }
 
-        private void rb_RunType2_CheckedChanged(object sender, EventArgs e)
+        private void rb_RunType2_Click(object sender, EventArgs e)
         {
             needsave = true;
         }
 
         #endregion
 
+        #region label
 
         private void listBox1_DoubleClick(object sender, EventArgs e)
         {
@@ -1464,38 +1472,7 @@ namespace SHJ
             CloseProgram();
         }
 
-        private void txt_Pass_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                if (txt_Pass.Text == CPFRPass)
-                {
-                    panel_Back.Visible = false;
-                    panel_CPFR.Visible = true;
-                }
-                else if (txt_Pass.Text == setupPass)
-                {
-                    panel_Back.Visible = false;
-                    panel_setup.Visible = true;
-                }
-                else if (txt_Pass.Text == debugPass)
-                {
-                    panel_Back.Visible = false;
-                    panel_debug.Visible = true;
-                }
-                else
-                {
-                    MessageBox.Show("密码错误！！");
-                }
-            }
-        }
-
-        private void button12_Click(object sender, EventArgs e)
-        {
-            PLCHelper.errorToken=false;//清除故障提示
-            PLCHelper.errorMsg = null;
-            MessageBox.Show("清零成功");
-        }
+        #endregion
 
         #region CameraSet
 
@@ -1763,111 +1740,6 @@ namespace SHJ
         }
 
         #endregion
-
-        private void button19_Click(object sender, EventArgs e)
-        {
-            InitCamera();
-        }
-
-        bool stopTest = false;
-        CancellationTokenSource token;
-        private void button21_Click(object sender, EventArgs e)
-        {
-            button23.Enabled = true;
-            token = new CancellationTokenSource();
-            int[] trubleNum = new int[3];
-            bool truble = false;
-            bool OverToken = true;
-            ushort X12 = new PCHMI.VAR().GET_BIT(0, "X12");
-            ushort X10 = new PCHMI.VAR().GET_BIT(0, "X10");
-            ushort X7 = new PCHMI.VAR().GET_BIT(0, "X7");
-            if (X12 == 1)
-            {
-                trubleNum[0] = 1;
-                truble = true;
-            }
-            if (X10 == 1)
-            {
-                trubleNum[1] = 1;
-                truble = true;
-            }
-            if (X7 == 1)
-            {
-                trubleNum[2] = 1;
-                truble = true;
-            }
-            if(truble)
-            {
-                Task.Factory.StartNew(() =>
-                {
-                    while (true)
-                    {
-                        if (OverToken)
-                        {
-                            if (trubleNum[0] == 1)//故障1
-                            {
-                                new PCHMI.VAR().SEND_INT16(0, "D12", 1);
-                                OverToken = false;
-                            }
-                            else if (trubleNum[1] == 1)//故障2
-                            {
-                                new PCHMI.VAR().SEND_INT16(0, "D13", 1);
-                                OverToken = false;
-                            }
-                            else if (trubleNum[2] == 1)//故障3
-                            {
-                                new PCHMI.VAR().SEND_INT16(0, "D14", 1);
-                                OverToken = false;
-                            }
-                            else
-                                break;
-                        }
-                        else
-                        {//监控排故是否完成
-                            if (trubleNum[0] != 0)
-                            {
-                                short D12 = new PCHMI.VAR().GET_INT16(0, "D12");
-                                OverToken = D12 == 10 ? true : false;
-                                trubleNum[0] = D12 == 10 ? 0 : 1;
-                            }
-                            else if (trubleNum[1] != 0)
-                            {
-                                short D13 = new PCHMI.VAR().GET_INT16(0, "D13");
-                                OverToken = D13 == 12 ? true : false;
-                                trubleNum[1] = D13 == 12 ? 0 : 1;
-                            }
-                            else if (trubleNum[2] != 0)
-                            {
-                                short D14 = new PCHMI.VAR().GET_INT16(0, "D14");
-                                OverToken = D14 == 10 ? true : false;
-                                trubleNum[2] = D14 == 10 ? 0 : 1;
-                            }
-                        }
-                    }
-                }, token.Token);
-            }
-            
-        }
-
-        private void button22_Click(object sender, EventArgs e)
-        {
-            if(button22.Text=="更多")
-            {
-                pel_More.Visible = true;
-                button22.Text = "关闭";
-            }
-            else
-            {
-                pel_More.Visible = false;
-                button22.Text = "更多";
-                button23.Enabled = false;
-            }
-        }
-
-        private void button23_Click(object sender, EventArgs e)
-        {
-            token.Cancel();
-            button23.Enabled = false;
-        }
+        
     }
 }

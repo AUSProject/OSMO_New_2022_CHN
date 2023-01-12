@@ -155,7 +155,7 @@ namespace SHJ
         public static XmlNode functionnode;//功能配置
         public static XmlNode payconfignode;//支付配置
         public static XmlDocument shipmentDoc = new XmlDocument();//销售记录配置文件XML
-        //public static XmlNodeList nodelistpay;//支付记录
+        public static XmlNode shipRecordNode;//支付记录
         public static XmlNode systemNode;//系统信息
         public static XmlNode machineNode;//设备参数
         public static XmlNode appconfig;//系统设置
@@ -540,11 +540,7 @@ namespace SHJ
             }
 
             DeleteLogs();
-
-            //CompressDirectory(Path.Combine(logPath, "FtpTest"), false);
-            //FTPHelper ftp = new FTPHelper("192.168.2.144", "FTPTestUser", "pwd123");
-            //ftp.Upload(Path.Combine(logPath, "FtpTest.zip"),myMAC);
-
+            
             nowform1 = this;
         }
 
@@ -976,17 +972,17 @@ namespace SHJ
                 }
                 catch { }
                 shangpinjiage = double.Parse(nodelistshangpin[cNum].GetNameItemValue("jiage"));//实际出货商品价格
+                AddShipRecord(result.ToString(), shangpinjiage.ToString());
+                
                 istestmode = false;
                 zhifutype = 4;//支付方式为提货码
 
                 HMIstep = 3;//出货
                 guanggaoreturntime = 0;
                 timer3.Enabled = true;
-                //this.Invoke(new Action(delegate () { timer3.Enabled = true; }));
                 PLCHelper.nowStep = 0x01;
                 wulihuodao = result;
                 setchuhuo();
-                //addpayrecord(shangpinjiage, "提货码");
 
                 for (int k = 0; k < 6; k++)//记录时间戳清除防止进支付页面后生成上次请求的的二维码
                 {
@@ -2327,35 +2323,45 @@ namespace SHJ
             shipmentDoc.RemoveAll();//去除所有节点
             shipmentDoc.CreateXmlDeclaration("1.0", "utf-8", "yes");
             //创建根节点
-            XmlNode rootNode = shipmentDoc.CreateElement("sale");//配置定义
-
+            XmlNode rootNode = shipmentDoc.CreateElement("Sale");//配置定义
             //创建销售数据节点1
-            XmlNode sale1Node = shipmentDoc.CreateElement("chuhuo");//出货定义
-            for (int i = 0; i < 500; i++)
-            {
-                //创建货道节点
-                XmlNode chuhuoNode = shipmentDoc.CreateElement("chuhuo" + i.ToString());//出货定义
-                XmlAttribute timeAttribute = shipmentDoc.CreateAttribute("time");//时间戳
-                timeAttribute.Value = "";
-                chuhuoNode.Attributes.Append(timeAttribute);//xml节点附件属性
-                XmlAttribute shangpinnumAttribute = shipmentDoc.CreateAttribute("shangpinnum");//对应商品编号
-                shangpinnumAttribute.Value = "";
-                chuhuoNode.Attributes.Append(shangpinnumAttribute);//xml节点附件属性
-                XmlAttribute jiageAttribute = shipmentDoc.CreateAttribute("jiage");//商品价格
-                jiageAttribute.Value = "";
-                chuhuoNode.Attributes.Append(jiageAttribute);//xml节点附件属性
-                XmlAttribute typeAttribute = shipmentDoc.CreateAttribute("type");//支付方式
-                typeAttribute.Value = "";
-                chuhuoNode.Attributes.Append(typeAttribute);//xml节点附件属性
-
-                XmlAttribute startAttribute = shipmentDoc.CreateAttribute("start");//是否是最新记录
-                startAttribute.Value = "";
-                chuhuoNode.Attributes.Append(startAttribute);//xml节点附件属性
-
-                sale1Node.AppendChild(chuhuoNode);
-            }
+            XmlNode sale1Node = shipmentDoc.CreateElement("ShipRecord");//出货定义
+            XmlNode chuhuoNode = shipmentDoc.CreateElement("Record0");//出货定义
+            XmlAttribute timeAttribute = shipmentDoc.CreateAttribute("time");//时间戳
+            timeAttribute.Value = DateTime.Now.ToString();
+            chuhuoNode.Attributes.Append(timeAttribute);//xml节点附件属性
+            XmlAttribute shangpinnumAttribute = shipmentDoc.CreateAttribute("itemNo");//货道号
+            shangpinnumAttribute.Value = "0";
+            chuhuoNode.Attributes.Append(shangpinnumAttribute);//xml节点附件属性
+            XmlAttribute jiageAttribute = shipmentDoc.CreateAttribute("price");//商品价格
+            jiageAttribute.Value = "00";
+            chuhuoNode.Attributes.Append(jiageAttribute);//xml节点附件属性
+            sale1Node.AppendChild(chuhuoNode);
             rootNode.AppendChild(sale1Node);
             shipmentDoc.AppendChild(rootNode);
+        }
+
+        /// <summary>
+        /// 添加出货记录
+        /// </summary>
+        /// <param name="itemNo">货道号</param>
+        /// <param name="price">价格</param>
+        private void AddShipRecord(string itemNo,string price)
+        {
+            int i = shipRecordNode.ChildNodes.Count;
+            XmlNode chuhuoNode = shipmentDoc.CreateElement("Record"+i.ToString());//出货定义
+            XmlAttribute timeAttribute = shipmentDoc.CreateAttribute("time");//时间戳
+            timeAttribute.Value = DateTime.Now.ToString();
+            chuhuoNode.Attributes.Append(timeAttribute);//xml节点附件属性
+            XmlAttribute shangpinnumAttribute = shipmentDoc.CreateAttribute("itemNo");//对应商品编号
+            shangpinnumAttribute.Value = itemNo;
+            chuhuoNode.Attributes.Append(shangpinnumAttribute);//xml节点附件属性
+            XmlAttribute jiageAttribute = shipmentDoc.CreateAttribute("price");//商品价格
+            jiageAttribute.Value = price;
+            chuhuoNode.Attributes.Append(jiageAttribute);//xml节点附件属性
+            shipRecordNode.AppendChild(chuhuoNode);
+            shipmentDoc.Save(salexmlfile);
+            shipmentDoc.Save(salexmlfilecopy);
         }
 
         /// <summary>
@@ -2388,7 +2394,7 @@ namespace SHJ
             nodelisthuodao = myxmldoc.SelectSingleNode("config").SelectSingleNode("huodao").ChildNodes;
             appconfig = myxmldoc.SelectSingleNode("config").SelectSingleNode("appConfig");
             ftpconfig = myxmldoc.SelectSingleNode("config").SelectSingleNode("FTPConfig");
-            //nodelistpay = shipmentDoc.SelectSingleNode("sale").SelectSingleNode("pay").ChildNodes;
+            shipRecordNode = shipmentDoc.SelectSingleNode("Sale").SelectSingleNode("ShipRecord");
             try
             {
                 paytypes = int.Parse(payconfignode.Attributes.GetNamedItem("allpay").Value);
@@ -2475,6 +2481,7 @@ namespace SHJ
             int result = CargoStockAndStateCheck(huodaoNum.ToString());
             if(result < 90 && PLCHelper.nowStep == 0x00)//无报错
             {
+                AddShipRecord(huodaoNum.ToString(), "模拟测试");
                 netreturncount = 0;//超时计时停止
                 tihuoma.tihuomaresult = "模拟运行开始";
                 try
@@ -2718,6 +2725,11 @@ namespace SHJ
             {
                 PLCHelper._RunEnd = true;
             }
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            AddShipRecord("12345", "10");
         }
 
         private void button5_Click(object sender, EventArgs e)

@@ -31,6 +31,5 @@ namespace SHJ
         {
             node.Attributes.GetNamedItem(name).Value = value;
         }
-        
     }
 }

@@ -326,7 +326,7 @@ namespace SHJ
                 case 0x90:
                     string result = Post();
                     if (result == "None")
-                        curState = 0x10;
+                        curState = 0x02;
                     else if (result == "Error")
                         curState = 0x91;
                     else
