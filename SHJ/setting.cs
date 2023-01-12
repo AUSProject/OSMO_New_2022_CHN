@@ -7,6 +7,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using AForge.Video.DirectShow;
 using System.Drawing.Imaging;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SHJ
 {
@@ -1765,6 +1767,107 @@ namespace SHJ
         private void button19_Click(object sender, EventArgs e)
         {
             InitCamera();
+        }
+
+        bool stopTest = false;
+        CancellationTokenSource token;
+        private void button21_Click(object sender, EventArgs e)
+        {
+            button23.Enabled = true;
+            token = new CancellationTokenSource();
+            int[] trubleNum = new int[3];
+            bool truble = false;
+            bool OverToken = true;
+            ushort X12 = new PCHMI.VAR().GET_BIT(0, "X12");
+            ushort X10 = new PCHMI.VAR().GET_BIT(0, "X10");
+            ushort X7 = new PCHMI.VAR().GET_BIT(0, "X7");
+            if (X12 == 1)
+            {
+                trubleNum[0] = 1;
+                truble = true;
+            }
+            if (X10 == 1)
+            {
+                trubleNum[1] = 1;
+                truble = true;
+            }
+            if (X7 == 1)
+            {
+                trubleNum[2] = 1;
+                truble = true;
+            }
+            if(truble)
+            {
+                Task.Factory.StartNew(() =>
+                {
+                    while (true)
+                    {
+                        if (OverToken)
+                        {
+                            if (trubleNum[0] == 1)//故障1
+                            {
+                                new PCHMI.VAR().SEND_INT16(0, "D12", 1);
+                                OverToken = false;
+                            }
+                            else if (trubleNum[1] == 1)//故障2
+                            {
+                                new PCHMI.VAR().SEND_INT16(0, "D13", 1);
+                                OverToken = false;
+                            }
+                            else if (trubleNum[2] == 1)//故障3
+                            {
+                                new PCHMI.VAR().SEND_INT16(0, "D14", 1);
+                                OverToken = false;
+                            }
+                            else
+                                break;
+                        }
+                        else
+                        {//监控排故是否完成
+                            if (trubleNum[0] != 0)
+                            {
+                                short D12 = new PCHMI.VAR().GET_INT16(0, "D12");
+                                OverToken = D12 == 10 ? true : false;
+                                trubleNum[0] = D12 == 10 ? 0 : 1;
+                            }
+                            else if (trubleNum[1] != 0)
+                            {
+                                short D13 = new PCHMI.VAR().GET_INT16(0, "D13");
+                                OverToken = D13 == 12 ? true : false;
+                                trubleNum[1] = D13 == 12 ? 0 : 1;
+                            }
+                            else if (trubleNum[2] != 0)
+                            {
+                                short D14 = new PCHMI.VAR().GET_INT16(0, "D14");
+                                OverToken = D14 == 10 ? true : false;
+                                trubleNum[2] = D14 == 10 ? 0 : 1;
+                            }
+                        }
+                    }
+                }, token.Token);
+            }
+            
+        }
+
+        private void button22_Click(object sender, EventArgs e)
+        {
+            if(button22.Text=="更多")
+            {
+                pel_More.Visible = true;
+                button22.Text = "关闭";
+            }
+            else
+            {
+                pel_More.Visible = false;
+                button22.Text = "更多";
+                button23.Enabled = false;
+            }
+        }
+
+        private void button23_Click(object sender, EventArgs e)
+        {
+            token.Cancel();
+            button23.Enabled = false;
         }
     }
 }

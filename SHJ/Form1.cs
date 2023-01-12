@@ -207,6 +207,8 @@ namespace SHJ
         private void Form1_Load(object sender, EventArgs e)
         {
 
+            pel_Mage.Location = new Point(2000, 0);
+
             CheckForIllegalCrossThreadCalls = false;
 
             pic_Erweima.Visible = false;//隐藏二维码

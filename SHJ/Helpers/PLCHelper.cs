@@ -271,7 +271,7 @@ namespace SHJ
         /// </summary>
         private bool OverToken=true;
 
-        private int[] trubleNum = new int[]{ 0, 0, 0 };//排故序号 
+        public int[] trubleNum = new int[]{ 0, 0, 0 };//排故序号 
 
         HashSet<string> cargoMsg = new HashSet<string>();//货道出货记录
         HashSet<string> printMsg = new HashSet<string>();//打印机状态记录
@@ -782,43 +782,46 @@ namespace SHJ
             {
                 if (trubleNum[0] == 1)//故障1
                 {
-                    if (OverToken)
-                    {
-                        new PCHMI.VAR().SEND_INT16(0, "D12", _Start);
-                        OverToken = false;
-                        nowStep = 0x81;
-                    }
-                    D12 = new PCHMI.VAR().GET_INT16(0, "D12");
-                    OverToken = D12 == 10 ? true : false;
-                    trubleNum[0] = D12 == 10 ? 0 : 1;
+                    new PCHMI.VAR().SEND_INT16(0, "D12", _Start);
+                    OverToken = false;
+                    nowStep = 0x81;
                 }
                 else if (trubleNum[1] == 1)//故障2
                 {
-                    if (OverToken)
-                    {
-                        new PCHMI.VAR().SEND_INT16(0, "D13", _Start);
-                        OverToken = false;
-                        nowStep = 0x81;
-                    }
-                    D13 = new PCHMI.VAR().GET_INT16(0, "D13");
-                    OverToken = D13 == 12 ? true : false;
-                    trubleNum[1] = D13 == 12 ? 0 : 1;
+                    new PCHMI.VAR().SEND_INT16(0, "D13", _Start);
+                    OverToken = false;
+                    nowStep = 0x81;
                 }
                 else if (trubleNum[2] == 1)//故障3
                 {
-                    if (OverToken)
-                    {
-                        new PCHMI.VAR().SEND_INT16(0, "D14", _Start);
-                        OverToken = false;
-                        nowStep = 0x81;
-                    }
-                    D14 = new PCHMI.VAR().GET_INT16(0, "D14");
-                    OverToken = D14 == 10 ? true : false;
-                    trubleNum[2] = D14 == 10 ? 0 : 1;
+                    new PCHMI.VAR().SEND_INT16(0, "D14", _Start);
+                    OverToken = false;
+                    nowStep = 0x81;
                 }
                 else
                 {
                     curState = 0x90;//排故完成后再次检查
+                }
+            }
+            else
+            {//监控排故是否完成
+                if (trubleNum[0] != 0)
+                {
+                    D12 = new PCHMI.VAR().GET_INT16(0, "D12");
+                    OverToken = D12 == 10 ? true : false;
+                    trubleNum[0] = D12 == 10 ? 0 : 1;
+                }
+                else if (trubleNum[1] != 0)
+                {
+                    D13 = new PCHMI.VAR().GET_INT16(0, "D13");
+                    OverToken = D13 == 12 ? true : false;
+                    trubleNum[1] = D13 == 12 ? 0 : 1;
+                }
+                else if (trubleNum[2] != 0)
+                {
+                    D14 = new PCHMI.VAR().GET_INT16(0, "D14");
+                    OverToken = D14 == 10 ? true : false;
+                    trubleNum[2] = D14 == 10 ? 0 : 1;
                 }
             }
         }

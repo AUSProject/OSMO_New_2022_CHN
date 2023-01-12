@@ -31,6 +31,21 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             PCHMI.limits limits1 = new PCHMI.limits();
+            PCHMI.InterLock interLock1 = new PCHMI.InterLock();
+            PCHMI.ST_SW_IF sT_SW_IF1 = new PCHMI.ST_SW_IF();
+            PCHMI.ST_SW_IF sT_SW_IF2 = new PCHMI.ST_SW_IF();
+            PCHMI.InterLock interLock2 = new PCHMI.InterLock();
+            PCHMI.ST_SW_IF sT_SW_IF3 = new PCHMI.ST_SW_IF();
+            PCHMI.ST_SW_IF sT_SW_IF4 = new PCHMI.ST_SW_IF();
+            PCHMI.InterLock interLock3 = new PCHMI.InterLock();
+            PCHMI.ST_SW_IF sT_SW_IF5 = new PCHMI.ST_SW_IF();
+            PCHMI.ST_SW_IF sT_SW_IF6 = new PCHMI.ST_SW_IF();
+            PCHMI.InterLock interLock4 = new PCHMI.InterLock();
+            PCHMI.ST_SW_IF sT_SW_IF7 = new PCHMI.ST_SW_IF();
+            PCHMI.ST_SW_IF sT_SW_IF8 = new PCHMI.ST_SW_IF();
+            PCHMI.InterLock interLock5 = new PCHMI.InterLock();
+            PCHMI.ST_SW_IF sT_SW_IF9 = new PCHMI.ST_SW_IF();
+            PCHMI.ST_SW_IF sT_SW_IF10 = new PCHMI.ST_SW_IF();
             this.panel1 = new System.Windows.Forms.Panel();
             this.button2 = new System.Windows.Forms.Button();
             this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
@@ -73,6 +88,12 @@
             this.lbl_D9 = new System.Windows.Forms.Label();
             this.lbl_D11 = new System.Windows.Forms.Label();
             this.lbl_D0 = new System.Windows.Forms.Label();
+            this.按钮1 = new PCHMI.按钮(this.components);
+            this.按钮2 = new PCHMI.按钮(this.components);
+            this.按钮3 = new PCHMI.按钮(this.components);
+            this.按钮4 = new PCHMI.按钮(this.components);
+            this.pel_Mage = new System.Windows.Forms.Panel();
+            this.按钮5 = new PCHMI.按钮(this.components);
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -84,6 +105,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
             this.panel2.SuspendLayout();
+            this.pel_Mage.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -542,11 +564,404 @@
             this.lbl_D0.TabIndex = 0;
             this.lbl_D0.Text = "D0：";
             // 
+            // 按钮1
+            // 
+            this.按钮1.BackColor = System.Drawing.Color.Red;
+            this.按钮1.HDADDR = "X7";
+            this.按钮1.Location = new System.Drawing.Point(3, 4);
+            this.按钮1.LockValue = ((uint)(0u));
+            this.按钮1.Name = "按钮1";
+            this.按钮1.PLC = ((uint)(0u));
+            this.按钮1.Size = new System.Drawing.Size(75, 23);
+            this.按钮1.TabIndex = 19;
+            this.按钮1.Text = "X7";
+            this.按钮1.UseVisualStyleBackColor = false;
+            this.按钮1.Value = ((ulong)(0ul));
+            interLock1.HDADDR = "";
+            interLock1.PLC = ((uint)(0u));
+            interLock1.互锁启用值 = ((uint)(1u));
+            interLock1.互锁地址 = "";
+            interLock1.互锁显示图标 = null;
+            interLock1.互锁显示文本 = "LOCK";
+            interLock1.互锁类型 = PCHMI.InterLock.DatType.BIT;
+            this.按钮1.互锁 = interLock1;
+            this.按钮1.单击事件参数 = "NULL";
+            this.按钮1.安全级别 = ((uint)(0u));
+            this.按钮1.开关功能.PLC = null;
+            this.按钮1.开关功能.地址 = null;
+            this.按钮1.开关功能.开关 = null;
+            this.按钮1.开关功能.扩展 = null;
+            this.按钮1.指示类型 = PCHMI.按钮.DatType.BIT;
+            this.按钮1.操作确认 = false;
+            this.按钮1.操作确认提示 = new string[] {
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null};
+            this.按钮1.数值改变事件参数 = "NULL";
+            this.按钮1.显示内容.BkImg = null;
+            this.按钮1.显示内容.状态切换条件 = PCHMI.Employee.STSW.按序号值切换状态;
+            sT_SW_IF1.BkColor = System.Drawing.Color.Red;
+            sT_SW_IF1.Img = null;
+            sT_SW_IF1.MaxVal = ((ulong)(0ul));
+            sT_SW_IF1.MinVal = ((ulong)(0ul));
+            sT_SW_IF1.Txt0 = "X7";
+            sT_SW_IF1.Txt1 = "";
+            sT_SW_IF1.Txt2 = "";
+            sT_SW_IF1.Txt3 = "";
+            sT_SW_IF1.Txt4 = "";
+            sT_SW_IF1.Txt5 = "";
+            sT_SW_IF1.Txt6 = "";
+            sT_SW_IF1.Txt7 = "";
+            sT_SW_IF1.TxtColor = System.Drawing.Color.Black;
+            sT_SW_IF1.TxtNumber = "";
+            sT_SW_IF2.BkColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            sT_SW_IF2.Img = null;
+            sT_SW_IF2.MaxVal = ((ulong)(0ul));
+            sT_SW_IF2.MinVal = ((ulong)(0ul));
+            sT_SW_IF2.Txt0 = "X7";
+            sT_SW_IF2.Txt1 = "";
+            sT_SW_IF2.Txt2 = "";
+            sT_SW_IF2.Txt3 = "";
+            sT_SW_IF2.Txt4 = "";
+            sT_SW_IF2.Txt5 = "";
+            sT_SW_IF2.Txt6 = "";
+            sT_SW_IF2.Txt7 = "";
+            sT_SW_IF2.TxtColor = System.Drawing.Color.Black;
+            sT_SW_IF2.TxtNumber = "";
+            this.按钮1.显示内容.状态文本 = new PCHMI.ST_SW_IF[] {
+        sT_SW_IF1,
+        sT_SW_IF2};
+            this.按钮1.显示内容.默认状态文本ID = ((uint)(0u));
+            this.按钮1.权限提示文本 = "";
+            this.按钮1.语言 = ((uint)(0u));
+            // 
+            // 按钮2
+            // 
+            this.按钮2.BackColor = System.Drawing.Color.Red;
+            this.按钮2.HDADDR = "X10";
+            this.按钮2.Location = new System.Drawing.Point(79, 4);
+            this.按钮2.LockValue = ((uint)(0u));
+            this.按钮2.Name = "按钮2";
+            this.按钮2.PLC = ((uint)(0u));
+            this.按钮2.Size = new System.Drawing.Size(75, 23);
+            this.按钮2.TabIndex = 19;
+            this.按钮2.Text = "X10";
+            this.按钮2.UseVisualStyleBackColor = false;
+            this.按钮2.Value = ((ulong)(0ul));
+            interLock2.HDADDR = "";
+            interLock2.PLC = ((uint)(0u));
+            interLock2.互锁启用值 = ((uint)(1u));
+            interLock2.互锁地址 = "";
+            interLock2.互锁显示图标 = null;
+            interLock2.互锁显示文本 = "LOCK";
+            interLock2.互锁类型 = PCHMI.InterLock.DatType.BIT;
+            this.按钮2.互锁 = interLock2;
+            this.按钮2.单击事件参数 = "NULL";
+            this.按钮2.安全级别 = ((uint)(0u));
+            this.按钮2.开关功能.PLC = null;
+            this.按钮2.开关功能.地址 = null;
+            this.按钮2.开关功能.开关 = null;
+            this.按钮2.开关功能.扩展 = null;
+            this.按钮2.指示类型 = PCHMI.按钮.DatType.BIT;
+            this.按钮2.操作确认 = false;
+            this.按钮2.操作确认提示 = new string[] {
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null};
+            this.按钮2.数值改变事件参数 = "NULL";
+            this.按钮2.显示内容.BkImg = null;
+            this.按钮2.显示内容.状态切换条件 = PCHMI.Employee.STSW.按序号值切换状态;
+            sT_SW_IF3.BkColor = System.Drawing.Color.Red;
+            sT_SW_IF3.Img = null;
+            sT_SW_IF3.MaxVal = ((ulong)(0ul));
+            sT_SW_IF3.MinVal = ((ulong)(0ul));
+            sT_SW_IF3.Txt0 = "X10";
+            sT_SW_IF3.Txt1 = "";
+            sT_SW_IF3.Txt2 = "";
+            sT_SW_IF3.Txt3 = "";
+            sT_SW_IF3.Txt4 = "";
+            sT_SW_IF3.Txt5 = "";
+            sT_SW_IF3.Txt6 = "";
+            sT_SW_IF3.Txt7 = "";
+            sT_SW_IF3.TxtColor = System.Drawing.Color.Black;
+            sT_SW_IF3.TxtNumber = "";
+            sT_SW_IF4.BkColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            sT_SW_IF4.Img = null;
+            sT_SW_IF4.MaxVal = ((ulong)(0ul));
+            sT_SW_IF4.MinVal = ((ulong)(0ul));
+            sT_SW_IF4.Txt0 = "X10";
+            sT_SW_IF4.Txt1 = "";
+            sT_SW_IF4.Txt2 = "";
+            sT_SW_IF4.Txt3 = "";
+            sT_SW_IF4.Txt4 = "";
+            sT_SW_IF4.Txt5 = "";
+            sT_SW_IF4.Txt6 = "";
+            sT_SW_IF4.Txt7 = "";
+            sT_SW_IF4.TxtColor = System.Drawing.Color.Black;
+            sT_SW_IF4.TxtNumber = "";
+            this.按钮2.显示内容.状态文本 = new PCHMI.ST_SW_IF[] {
+        sT_SW_IF3,
+        sT_SW_IF4};
+            this.按钮2.显示内容.默认状态文本ID = ((uint)(0u));
+            this.按钮2.权限提示文本 = "";
+            this.按钮2.语言 = ((uint)(0u));
+            // 
+            // 按钮3
+            // 
+            this.按钮3.BackColor = System.Drawing.Color.Red;
+            this.按钮3.HDADDR = "X12";
+            this.按钮3.Location = new System.Drawing.Point(3, 44);
+            this.按钮3.LockValue = ((uint)(0u));
+            this.按钮3.Name = "按钮3";
+            this.按钮3.PLC = ((uint)(0u));
+            this.按钮3.Size = new System.Drawing.Size(75, 23);
+            this.按钮3.TabIndex = 19;
+            this.按钮3.Text = "X12";
+            this.按钮3.UseVisualStyleBackColor = false;
+            this.按钮3.Value = ((ulong)(0ul));
+            interLock3.HDADDR = "";
+            interLock3.PLC = ((uint)(0u));
+            interLock3.互锁启用值 = ((uint)(1u));
+            interLock3.互锁地址 = "";
+            interLock3.互锁显示图标 = null;
+            interLock3.互锁显示文本 = "LOCK";
+            interLock3.互锁类型 = PCHMI.InterLock.DatType.BIT;
+            this.按钮3.互锁 = interLock3;
+            this.按钮3.单击事件参数 = "NULL";
+            this.按钮3.安全级别 = ((uint)(0u));
+            this.按钮3.开关功能.PLC = null;
+            this.按钮3.开关功能.地址 = null;
+            this.按钮3.开关功能.开关 = null;
+            this.按钮3.开关功能.扩展 = null;
+            this.按钮3.指示类型 = PCHMI.按钮.DatType.BIT;
+            this.按钮3.操作确认 = false;
+            this.按钮3.操作确认提示 = new string[] {
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null};
+            this.按钮3.数值改变事件参数 = "NULL";
+            this.按钮3.显示内容.BkImg = null;
+            this.按钮3.显示内容.状态切换条件 = PCHMI.Employee.STSW.按序号值切换状态;
+            sT_SW_IF5.BkColor = System.Drawing.Color.Red;
+            sT_SW_IF5.Img = null;
+            sT_SW_IF5.MaxVal = ((ulong)(0ul));
+            sT_SW_IF5.MinVal = ((ulong)(0ul));
+            sT_SW_IF5.Txt0 = "X12";
+            sT_SW_IF5.Txt1 = "";
+            sT_SW_IF5.Txt2 = "";
+            sT_SW_IF5.Txt3 = "";
+            sT_SW_IF5.Txt4 = "";
+            sT_SW_IF5.Txt5 = "";
+            sT_SW_IF5.Txt6 = "";
+            sT_SW_IF5.Txt7 = "";
+            sT_SW_IF5.TxtColor = System.Drawing.Color.Black;
+            sT_SW_IF5.TxtNumber = "";
+            sT_SW_IF6.BkColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            sT_SW_IF6.Img = null;
+            sT_SW_IF6.MaxVal = ((ulong)(0ul));
+            sT_SW_IF6.MinVal = ((ulong)(0ul));
+            sT_SW_IF6.Txt0 = "X12";
+            sT_SW_IF6.Txt1 = "";
+            sT_SW_IF6.Txt2 = "";
+            sT_SW_IF6.Txt3 = "";
+            sT_SW_IF6.Txt4 = "";
+            sT_SW_IF6.Txt5 = "";
+            sT_SW_IF6.Txt6 = "";
+            sT_SW_IF6.Txt7 = "";
+            sT_SW_IF6.TxtColor = System.Drawing.Color.Black;
+            sT_SW_IF6.TxtNumber = "";
+            this.按钮3.显示内容.状态文本 = new PCHMI.ST_SW_IF[] {
+        sT_SW_IF5,
+        sT_SW_IF6};
+            this.按钮3.显示内容.默认状态文本ID = ((uint)(0u));
+            this.按钮3.权限提示文本 = "";
+            this.按钮3.语言 = ((uint)(0u));
+            // 
+            // 按钮4
+            // 
+            this.按钮4.BackColor = System.Drawing.Color.Red;
+            this.按钮4.HDADDR = "X13";
+            this.按钮4.Location = new System.Drawing.Point(79, 44);
+            this.按钮4.LockValue = ((uint)(0u));
+            this.按钮4.Name = "按钮4";
+            this.按钮4.PLC = ((uint)(0u));
+            this.按钮4.Size = new System.Drawing.Size(75, 23);
+            this.按钮4.TabIndex = 19;
+            this.按钮4.Text = "X13";
+            this.按钮4.UseVisualStyleBackColor = false;
+            this.按钮4.Value = ((ulong)(0ul));
+            interLock4.HDADDR = "";
+            interLock4.PLC = ((uint)(0u));
+            interLock4.互锁启用值 = ((uint)(1u));
+            interLock4.互锁地址 = "";
+            interLock4.互锁显示图标 = null;
+            interLock4.互锁显示文本 = "LOCK";
+            interLock4.互锁类型 = PCHMI.InterLock.DatType.BIT;
+            this.按钮4.互锁 = interLock4;
+            this.按钮4.单击事件参数 = "NULL";
+            this.按钮4.安全级别 = ((uint)(0u));
+            this.按钮4.开关功能.PLC = null;
+            this.按钮4.开关功能.地址 = null;
+            this.按钮4.开关功能.开关 = null;
+            this.按钮4.开关功能.扩展 = null;
+            this.按钮4.指示类型 = PCHMI.按钮.DatType.BIT;
+            this.按钮4.操作确认 = false;
+            this.按钮4.操作确认提示 = new string[] {
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null};
+            this.按钮4.数值改变事件参数 = "NULL";
+            this.按钮4.显示内容.BkImg = null;
+            this.按钮4.显示内容.状态切换条件 = PCHMI.Employee.STSW.按序号值切换状态;
+            sT_SW_IF7.BkColor = System.Drawing.Color.Red;
+            sT_SW_IF7.Img = null;
+            sT_SW_IF7.MaxVal = ((ulong)(0ul));
+            sT_SW_IF7.MinVal = ((ulong)(0ul));
+            sT_SW_IF7.Txt0 = "X13";
+            sT_SW_IF7.Txt1 = "";
+            sT_SW_IF7.Txt2 = "";
+            sT_SW_IF7.Txt3 = "";
+            sT_SW_IF7.Txt4 = "";
+            sT_SW_IF7.Txt5 = "";
+            sT_SW_IF7.Txt6 = "";
+            sT_SW_IF7.Txt7 = "";
+            sT_SW_IF7.TxtColor = System.Drawing.Color.Black;
+            sT_SW_IF7.TxtNumber = "";
+            sT_SW_IF8.BkColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            sT_SW_IF8.Img = null;
+            sT_SW_IF8.MaxVal = ((ulong)(0ul));
+            sT_SW_IF8.MinVal = ((ulong)(0ul));
+            sT_SW_IF8.Txt0 = "X13";
+            sT_SW_IF8.Txt1 = "";
+            sT_SW_IF8.Txt2 = "";
+            sT_SW_IF8.Txt3 = "";
+            sT_SW_IF8.Txt4 = "";
+            sT_SW_IF8.Txt5 = "";
+            sT_SW_IF8.Txt6 = "";
+            sT_SW_IF8.Txt7 = "";
+            sT_SW_IF8.TxtColor = System.Drawing.Color.Black;
+            sT_SW_IF8.TxtNumber = "";
+            this.按钮4.显示内容.状态文本 = new PCHMI.ST_SW_IF[] {
+        sT_SW_IF7,
+        sT_SW_IF8};
+            this.按钮4.显示内容.默认状态文本ID = ((uint)(0u));
+            this.按钮4.权限提示文本 = "";
+            this.按钮4.语言 = ((uint)(0u));
+            // 
+            // pel_Mage
+            // 
+            this.pel_Mage.Controls.Add(this.按钮1);
+            this.pel_Mage.Controls.Add(this.按钮5);
+            this.pel_Mage.Controls.Add(this.按钮4);
+            this.pel_Mage.Controls.Add(this.按钮2);
+            this.pel_Mage.Controls.Add(this.按钮3);
+            this.pel_Mage.Location = new System.Drawing.Point(1074, 41);
+            this.pel_Mage.Name = "pel_Mage";
+            this.pel_Mage.Size = new System.Drawing.Size(254, 89);
+            this.pel_Mage.TabIndex = 20;
+            // 
+            // 按钮5
+            // 
+            this.按钮5.BackColor = System.Drawing.Color.Red;
+            this.按钮5.HDADDR = "X6";
+            this.按钮5.Location = new System.Drawing.Point(160, 4);
+            this.按钮5.LockValue = ((uint)(0u));
+            this.按钮5.Name = "按钮5";
+            this.按钮5.PLC = ((uint)(0u));
+            this.按钮5.Size = new System.Drawing.Size(75, 23);
+            this.按钮5.TabIndex = 19;
+            this.按钮5.Text = "X6";
+            this.按钮5.UseVisualStyleBackColor = false;
+            this.按钮5.Value = ((ulong)(0ul));
+            interLock5.HDADDR = "";
+            interLock5.PLC = ((uint)(0u));
+            interLock5.互锁启用值 = ((uint)(1u));
+            interLock5.互锁地址 = "";
+            interLock5.互锁显示图标 = null;
+            interLock5.互锁显示文本 = "LOCK";
+            interLock5.互锁类型 = PCHMI.InterLock.DatType.BIT;
+            this.按钮5.互锁 = interLock5;
+            this.按钮5.单击事件参数 = "NULL";
+            this.按钮5.安全级别 = ((uint)(0u));
+            this.按钮5.开关功能.PLC = null;
+            this.按钮5.开关功能.地址 = null;
+            this.按钮5.开关功能.开关 = null;
+            this.按钮5.开关功能.扩展 = null;
+            this.按钮5.指示类型 = PCHMI.按钮.DatType.BIT;
+            this.按钮5.操作确认 = false;
+            this.按钮5.操作确认提示 = new string[] {
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null};
+            this.按钮5.数值改变事件参数 = "NULL";
+            this.按钮5.显示内容.BkImg = null;
+            this.按钮5.显示内容.状态切换条件 = PCHMI.Employee.STSW.按序号值切换状态;
+            sT_SW_IF9.BkColor = System.Drawing.Color.Red;
+            sT_SW_IF9.Img = null;
+            sT_SW_IF9.MaxVal = ((ulong)(0ul));
+            sT_SW_IF9.MinVal = ((ulong)(0ul));
+            sT_SW_IF9.Txt0 = "X6";
+            sT_SW_IF9.Txt1 = "";
+            sT_SW_IF9.Txt2 = "";
+            sT_SW_IF9.Txt3 = "";
+            sT_SW_IF9.Txt4 = "";
+            sT_SW_IF9.Txt5 = "";
+            sT_SW_IF9.Txt6 = "";
+            sT_SW_IF9.Txt7 = "";
+            sT_SW_IF9.TxtColor = System.Drawing.Color.Black;
+            sT_SW_IF9.TxtNumber = "";
+            sT_SW_IF10.BkColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            sT_SW_IF10.Img = null;
+            sT_SW_IF10.MaxVal = ((ulong)(0ul));
+            sT_SW_IF10.MinVal = ((ulong)(0ul));
+            sT_SW_IF10.Txt0 = "X6";
+            sT_SW_IF10.Txt1 = "";
+            sT_SW_IF10.Txt2 = "";
+            sT_SW_IF10.Txt3 = "";
+            sT_SW_IF10.Txt4 = "";
+            sT_SW_IF10.Txt5 = "";
+            sT_SW_IF10.Txt6 = "";
+            sT_SW_IF10.Txt7 = "";
+            sT_SW_IF10.TxtColor = System.Drawing.Color.Black;
+            sT_SW_IF10.TxtNumber = "";
+            this.按钮5.显示内容.状态文本 = new PCHMI.ST_SW_IF[] {
+        sT_SW_IF9,
+        sT_SW_IF10};
+            this.按钮5.显示内容.默认状态文本ID = ((uint)(0u));
+            this.按钮5.权限提示文本 = "";
+            this.按钮5.语言 = ((uint)(0u));
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1490, 1080);
+            this.Controls.Add(this.pel_Mage);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.pic_Erweima);
             this.Controls.Add(this.video1);
@@ -575,6 +990,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.pel_Mage.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -624,6 +1040,12 @@
         private System.Windows.Forms.Label lbl_Photoing;
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Label label3;
+        private PCHMI.按钮 按钮1;
+        private PCHMI.按钮 按钮2;
+        private PCHMI.按钮 按钮3;
+        private PCHMI.按钮 按钮4;
+        private System.Windows.Forms.Panel pel_Mage;
+        private PCHMI.按钮 按钮5;
     }
 }
 
