@@ -163,44 +163,25 @@ namespace SHJ
             Form1.netcofignode.Attributes.GetNamedItem("port").Value = textBox3.Text;
             Form1.netcofignode.Attributes.GetNamedItem("netdelay").Value = textBox4.Text;
             if (rb_PC.Checked)
-            {
                 Form1.machineNode.Attributes.GetNamedItem("isAutoRun").Value = "False";
-                PLCHelper.isAutoRun = false;
-            }
             else
-            {
                 Form1.machineNode.Attributes.GetNamedItem("isAutoRun").Value = "True";
-                PLCHelper.isAutoRun = true;
-            }
             if (rb_RunType1.Checked)
-            {
                 Form1.machineNode.Attributes.GetNamedItem("runType").Value = "01";
-                PLCHelper._MachineRunPlan = "01";
-            }
             else
-            {
                 Form1.machineNode.Attributes.GetNamedItem("runType").Value = "02";
-                PLCHelper._MachineRunPlan = "02";
-            }
             if (checkBox8.Checked)
-            {
                 Form1.machineNode.Attributes.GetNamedItem("photoTest").Value = "True";
-                Form1.photoPointTest = true;
-            }
             else
-            {
                 Form1.machineNode.Attributes.GetNamedItem("photoTest").Value = "False";
-                Form1.photoPointTest = false;
-            }
-
             if (checkBox5.Checked)
-            {
                 Form1.functionnode.Attributes.GetNamedItem("adupdate").Value = "0";
-            }
             else
-            {
                 Form1.functionnode.Attributes.GetNamedItem("adupdate").Value = "1";
-            }
+            if (checkBox1.Checked)
+                Form1.appconfig.WriteNameItemVAlue("fualtCheck", "True");
+            else
+                Form1.appconfig.WriteNameItemVAlue("fualtCheck", "False");
 
             int i;
             for (i = 0; i < dataGridView1.Rows.Count; i++)
@@ -240,20 +221,16 @@ namespace SHJ
                 checkBox14.Checked = false;
             }
 
-            if(PLCHelper.isAutoRun)
-            {
+            if(Form1.machineNode.GetNameItemValue("isAutoRun")=="True")
                 rb_PLC.Checked = true;
-            }
             else
-            {
                 rb_PC.Checked = true;
-            }
-            if(PLCHelper._MachineRunPlan=="01")
+            if(Form1.machineNode.GetNameItemValue("runType")=="01")
             {
                 rb_RunType1.Checked = true;
                 button1.Visible = true;
             }
-            else if(PLCHelper._MachineRunPlan=="02")
+            else if(Form1.machineNode.GetNameItemValue("runType")=="02")
             {
                 rb_RunType2.Checked = true;
                 button1.Visible = false;
@@ -271,22 +248,20 @@ namespace SHJ
             textBox3.Text = Form1.netcofignode.Attributes.GetNamedItem("port").Value;
             textBox4.Text = Form1.netcofignode.Attributes.GetNamedItem("netdelay").Value;
             if (Form1.machineNode.Attributes.GetNamedItem("photoTest").Value == "True")
-            {
                 checkBox8.Checked = true;
-            }
             else
-            {
                 checkBox8.Checked = false;
-            }
            
             if (Form1.functionnode.Attributes.GetNamedItem("adupdate").Value == "1")
-            {
                 checkBox5.Checked = false;
-            }
             else
-            {
                 checkBox5.Checked = true;
-            }
+
+            if (Form1.appconfig.GetNameItemValue("fualtCheck") == "True")
+                checkBox1.Checked = true;
+            else
+                checkBox1.Checked = false;
+
             textBox11.Text = Form1.nodelistshangpin.Count.ToString();//商品数量
 
             hScrollBar1.Value = int.Parse(Form1.functionnode.Attributes.GetNamedItem("temperature1").Value);
@@ -315,13 +290,9 @@ namespace SHJ
                 dataGridView1.Rows[dataGridView1.RowCount - 1].Cells[1].Value = _node.Attributes.GetNamedItem("jiage").Value;
                 dataGridView1.Rows[dataGridView1.RowCount - 1].Cells[2].Value = _node.Attributes.GetNamedItem("huodao").Value;
                 if (_node.Attributes.GetNamedItem("state").Value == "0")
-                {
                     dataGridView1.Rows[dataGridView1.RowCount - 1].Cells[3].Value = "正常";
-                }
                 else
-                {
                     dataGridView1.Rows[dataGridView1.RowCount - 1].Cells[3].Value = "暂停";
-                }
                 dataGridView1.Rows[dataGridView1.RowCount - 1].Cells[4].Value = _node.Attributes.GetNamedItem("salesum").Value;
             }
             dataGridView1.ClearSelection();
@@ -355,17 +326,11 @@ namespace SHJ
                     stateOK++;
                 }
                 else if (_node.Attributes.GetNamedItem("state").Value == "1")
-                {
                     dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "过流";
-                }
 				else if (_node.Attributes.GetNamedItem("state").Value == "2")
-                {
                     dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "断线";
-                }
 				else
-                {
                     dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[2].Value = "故障";
-                }
                 dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[3].Value = _node.Attributes.GetNamedItem("volume").Value;
                 dataGridView2.Rows[dataGridView2.RowCount - 1].Cells[4].Value = _node.Attributes.GetNamedItem("position").Value;
             }
@@ -848,7 +813,10 @@ namespace SHJ
         {
             needsave = true;
         }
-
+        private void checkBox1_Click(object sender, EventArgs e)
+        {
+            needsave = true;
+        }
         #endregion
 
         #region DataGridView
@@ -1257,8 +1225,7 @@ namespace SHJ
         private void button26_Click(object sender, EventArgs e)
         {
             PEPrinter.needPutImage = true;
-            PLCHelper.isRigPrint = false;//打印机里已无印面
-            Form1.machineNode.Attributes.GetNamedItem("isRigPrint").Value = "False";
+            PLCHelper.PrintFaceRecord(false);
         }
 
         /// <summary>
@@ -1740,6 +1707,7 @@ namespace SHJ
         }
 
         #endregion
+
         
     }
 }

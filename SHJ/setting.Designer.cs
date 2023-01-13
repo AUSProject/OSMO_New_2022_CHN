@@ -184,6 +184,7 @@
             this.label18 = new System.Windows.Forms.Label();
             this.button7 = new System.Windows.Forms.Button();
             this.checkBox8 = new System.Windows.Forms.CheckBox();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox5 = new System.Windows.Forms.CheckBox();
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.checkBox14 = new System.Windows.Forms.CheckBox();
@@ -596,6 +597,7 @@
             this.gb_Setting.Controls.Add(this.label18);
             this.gb_Setting.Controls.Add(this.button7);
             this.gb_Setting.Controls.Add(this.checkBox8);
+            this.gb_Setting.Controls.Add(this.checkBox1);
             this.gb_Setting.Controls.Add(this.checkBox5);
             this.gb_Setting.Controls.Add(this.textBox4);
             this.gb_Setting.Controls.Add(this.checkBox14);
@@ -807,11 +809,23 @@
             this.checkBox8.ForeColor = System.Drawing.SystemColors.HighlightText;
             this.checkBox8.Location = new System.Drawing.Point(20, 416);
             this.checkBox8.Name = "checkBox8";
-            this.checkBox8.Size = new System.Drawing.Size(142, 23);
+            this.checkBox8.Size = new System.Drawing.Size(104, 23);
             this.checkBox8.TabIndex = 66;
-            this.checkBox8.Text = "照片定位测试";
+            this.checkBox8.Text = "定位测试";
             this.checkBox8.UseVisualStyleBackColor = true;
             this.checkBox8.Click += new System.EventHandler(this.checkBox8_Click);
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.ForeColor = System.Drawing.SystemColors.HighlightText;
+            this.checkBox1.Location = new System.Drawing.Point(149, 416);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(104, 23);
+            this.checkBox1.TabIndex = 83;
+            this.checkBox1.Text = "故障检测";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.Click += new System.EventHandler(this.checkBox1_Click);
             // 
             // checkBox5
             // 
@@ -8472,7 +8486,7 @@
             // 
             this.txt_Pass.Font = new System.Drawing.Font("宋体", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txt_Pass.HDADDR = "";
-            this.txt_Pass.Location = new System.Drawing.Point(201, 115);
+            this.txt_Pass.Location = new System.Drawing.Point(194, 113);
             this.txt_Pass.Name = "txt_Pass";
             this.txt_Pass.PLC = ((uint)(0u));
             this.txt_Pass.Size = new System.Drawing.Size(203, 31);
@@ -8507,7 +8521,7 @@
             // btn_Quit
             // 
             this.btn_Quit.Font = new System.Drawing.Font("宋体", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_Quit.Location = new System.Drawing.Point(93, 216);
+            this.btn_Quit.Location = new System.Drawing.Point(99, 216);
             this.btn_Quit.Name = "btn_Quit";
             this.btn_Quit.Size = new System.Drawing.Size(140, 40);
             this.btn_Quit.TabIndex = 3;
@@ -8518,7 +8532,7 @@
             // btn_Login
             // 
             this.btn_Login.Font = new System.Drawing.Font("宋体", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_Login.Location = new System.Drawing.Point(273, 215);
+            this.btn_Login.Location = new System.Drawing.Point(279, 215);
             this.btn_Login.Name = "btn_Login";
             this.btn_Login.Size = new System.Drawing.Size(140, 40);
             this.btn_Login.TabIndex = 2;
@@ -8531,7 +8545,7 @@
             this.label169.AutoSize = true;
             this.label169.Font = new System.Drawing.Font("宋体", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.label169.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.label169.Location = new System.Drawing.Point(127, 120);
+            this.label169.Location = new System.Drawing.Point(120, 118);
             this.label169.Name = "label169";
             this.label169.Size = new System.Drawing.Size(73, 21);
             this.label169.TabIndex = 0;
@@ -8542,7 +8556,7 @@
             this.label165.AutoSize = true;
             this.label165.Font = new System.Drawing.Font("宋体", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.label165.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.label165.Location = new System.Drawing.Point(178, 31);
+            this.label165.Location = new System.Drawing.Point(182, 31);
             this.label165.Name = "label165";
             this.label165.Size = new System.Drawing.Size(160, 24);
             this.label165.TabIndex = 0;
@@ -8578,9 +8592,9 @@
             this.BackColor = System.Drawing.SystemColors.GrayText;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
             this.ControlBox = false;
+            this.Controls.Add(this.panel_Back);
             this.Controls.Add(this.panel_CPFR);
             this.Controls.Add(this.panel_setup);
-            this.Controls.Add(this.panel_Back);
             this.Controls.Add(this.panel_debug);
             this.Controls.Add(this.pel_CameraSet);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
@@ -9028,5 +9042,6 @@
         private System.Windows.Forms.Button button22;
         private System.Windows.Forms.Panel pel_More;
         private System.Windows.Forms.Button button23;
+        private System.Windows.Forms.CheckBox checkBox1;
     }
 }

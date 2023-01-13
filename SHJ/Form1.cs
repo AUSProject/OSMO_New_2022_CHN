@@ -125,7 +125,6 @@ namespace SHJ
         FTPHelper ftpClient;
         
         public static string cameraParaFile;//摄像机参数文件
-        public static bool photoPointTest;//拍照位置记录功能
 
         public static bool needcloseform = false;//是否需要关闭窗体
         public static int HMIstep;//界面页面：0广告 1触摸选择商品 2支付页面
@@ -516,12 +515,6 @@ namespace SHJ
             
             pic_Erweima.Image = Image.FromFile(Path.Combine(adimagesaddress+"\\Erweima", "erweima.jpg"));//购物二维码
           
-            //设备运行模式
-            PLCHelper.isAutoRun = machineNode.GetNameItemValue("isAutoRun") == "True" ? true : false;
-            PLCHelper._MachineRunPlan = machineNode.GetNameItemValue("runType");
-            PLCHelper.isRigPrint = machineNode.GetNameItemValue("isRigPrint") == "True" ? true : false;
-            photoPointTest = machineNode.GetNameItemValue("photoTest") == "True" ? true : false;//拍照位置记录功能
-
             //进入后台设置页面的密码
             setting.CPFRPass = systemNode.GetNameItemValue("CPFRPass");
             setting.debugPass = systemNode.GetNameItemValue("debugPass");
@@ -529,7 +522,7 @@ namespace SHJ
 
             versionstring = systemNode.GetNameItemValue("Version");//版本号
 
-            if (photoPointTest)//需要记录位置则显示功能
+            if (machineNode.GetNameItemValue("photoTest")=="True")//需要记录位置则显示功能
             {
                 //拍照的位置测试功能
                 sw1 = new StreamWriter(Path.Combine(logPath, "拍照定位" + ".txt"));
@@ -1012,6 +1005,7 @@ namespace SHJ
                     log.WriteStepLog(StepType.运行故障, PLCHelper.errorMsg);
                     log.SaveRunningLog();
                     CloseCamera();//关闭摄像头
+                    PLC.ResetProgram();
                     CompressDirectory(nowLogPath, false);
                     ftpClient = new FTPHelper(ftpconfig.GetNameItemValue("IP") + ":" + ftpconfig.GetNameItemValue("Port"), ftpconfig.GetNameItemValue("User"), ftpconfig.GetNameItemValue("Pwd"));
                     ftpClient.Upload(nowLogPath);
@@ -1065,7 +1059,7 @@ namespace SHJ
                 lbl_Photoing.Visible = false;
             }
 
-            if (photoPointTest)
+            if (machineNode.GetNameItemValue("photoTest")=="True")
             {
                 lbl_D0.Text = "D0：" + PLC.D0;
                 lbl_D11.Text = "D11：" + PLC.D11;
@@ -2014,7 +2008,7 @@ namespace SHJ
 
             needupdatePlaylist = true;
 
-            if (photoPointTest)//需要记录位置则显示功能
+            if (machineNode.GetNameItemValue("photoTest")=="True")//需要记录位置则显示功能
             {
                 //拍照的位置测试功能
                 try
@@ -2723,7 +2717,7 @@ namespace SHJ
         {
             if (HMIstep == 3)
             {
-                PLCHelper._RunEnd = true;
+                PLCHelper.errorToken = true;
             }
         }
 

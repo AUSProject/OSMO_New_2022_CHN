@@ -32,12 +32,10 @@ namespace SHJ
         private LogHelper log;
 
         public static bool _RunEnd=false;//机器运行结束
-        public static bool isAutoRun = true;
         public short runCode;//运行代码
         public static short faultCode;//错误代码
         public short mainCode;//主控程序
         public int runTiming = 150;//运行总时长
-        public static bool isRigPrint;//是否装配印面 false:未安装  true:已安装 
         public static bool rigPrinting;//正在安装印面
         /// <summary>
         /// 运行故障标志
@@ -156,14 +154,14 @@ namespace SHJ
                 errorToken = true;
                 errorMsg += "未知故障";
             }
-            //if (print.PrintFaultInspect() != null)
-            //{
-            //    errorToken = true;
-            //    errorMsg += "打印机故障";
-            //}
-            if (isAutoRun)
+            if (Form1.appconfig.GetNameItemValue("fualtCheck")=="True" && print.PrintFaultInspect() != null)
             {
-                if (isRigPrint)
+                errorToken = true;
+                errorMsg += "打印机故障";
+            }
+            if (Form1.machineNode.GetNameItemValue("isAutoRun")=="True")
+            {
+                if (Form1.machineNode.GetNameItemValue("isRigPrint")=="True")
                 {
                     errorToken = true;
                     errorMsg += "印章机内有印面";
@@ -183,11 +181,6 @@ namespace SHJ
             else
             {
                 MachineControlAndMonitoring(number);
-            }
-
-            if (errorToken)//故障则复位程序
-            {
-                ResetProgram();
             }
         }
 
@@ -249,13 +242,6 @@ namespace SHJ
 
         #region 上端手动控制
         
-        /// <summary>
-        /// 机器执行方案
-        /// <para>01执行顺序:货道出料->装配印面->取盖子->打印机位置装配->装配盖子->装配位置出料->出成品和回零->自检</para>
-        /// <para>02执行顺序:装配印面->货道出料->取盖子->打印机位置装配->装配盖子->装配位置出料->出成品和回零->自检->装配印面</para>
-        /// </summary>
-        public static string _MachineRunPlan;
-
         private const int _Start=1;//置位标志
 
         /// <summary>
@@ -359,7 +345,7 @@ namespace SHJ
         /// </summary>
         private void TrayQueryAndLabor()
         {
-            if (isRigPrint)//托盘已有印面
+            if (Form1.machineNode.GetNameItemValue("isRigPrint")=="True")//托盘已有印面
             {
                 if (!InPrintPos)//未在打印位置
                 {
@@ -401,7 +387,7 @@ namespace SHJ
                     cargoMsg.Add("货道出货完成");
                 }
             }
-            else if (!isRigPrint && OverToken)//托盘无印面
+            else if (Form1.machineNode.GetNameItemValue("isRigPrint")=="False" && OverToken)//托盘无印面
             {
                 RigPrintFace();
                 OverToken = false;
@@ -487,14 +473,12 @@ namespace SHJ
         {
             try
             {
-                isRigPrint = Is;
                 Form1.machineNode.WriteNameItemVAlue("isRigPrint", Is.ToString());
                 Form1.myxmldoc.Save(Form1.configxmlfile);
                 Form1.myxmldoc.Save(Form1.configxmlfilecopy);
             }
             catch
             {
-                isRigPrint = Is;
             }
         }
 
@@ -544,7 +528,7 @@ namespace SHJ
         /// </summary>
         private void Execution()
         {
-            if (_MachineRunPlan == "02")
+            if (Form1.machineNode.GetNameItemValue("runType")=="02")
             {
                 rigPrinting = true;
                 Form1.HMIstep = 1;//退出页面
@@ -583,7 +567,7 @@ namespace SHJ
         /// <summary>
         /// 复位系统
         /// </summary>
-        private void ResetProgram()
+        public void ResetProgram()
         {
             OverToken = true;
             isAisleSell = true;
