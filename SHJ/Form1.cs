@@ -152,7 +152,6 @@ namespace SHJ
         public static XmlNodeList nodelisthuodao;//货道列表
         public static XmlNode netcofignode;//网络配置
         public static XmlNode functionnode;//功能配置
-        public static XmlNode payconfignode;//支付配置
         public static XmlDocument shipmentDoc = new XmlDocument();//销售记录配置文件XML
         public static XmlNode shipRecordNode;//支付记录
         public static XmlNode systemNode;//系统信息
@@ -168,8 +167,6 @@ namespace SHJ
         private int MAXreturntime = 120;
         private PEPrinter myprint;
         
-        public static int paytypes;//第一位为支付宝、第二位为微信、第三位为一码付、第四位为银联闪付、第五位为会员卡
-
         //GPRS变量
         private byte[] GSMRxBuffer;  //GSM发送缓冲区
         private byte[] GSMTxBuffer = new byte[GSMRXTXBUFLEN];  //GSM接收缓冲区
@@ -184,7 +181,6 @@ namespace SHJ
         private int netport;//服务器网络端口号
         private string myMAC;//MAC地址
         public static byte[] IMEI = new byte[15];//设备唯一号
-        public static string versionstring = "ADH816AZV3.3.02";
         private int liushuirecv;//接收到的流水号
         public static string myTihuomastr = "";//输入的7位提货码
         public static bool checktihuoma;//需要验证提货码
@@ -196,7 +192,6 @@ namespace SHJ
         private int totalshangpinnum = 16;//显示的商品总数
         private int totalhuodaonum = 16;//显示的货道总数
         
-        private int Aisleoutcount;//电机输出超时计时
         public static bool istestmode;//测试出货模式
 
         #endregion
@@ -519,9 +514,7 @@ namespace SHJ
             setting.CPFRPass = systemNode.GetNameItemValue("CPFRPass");
             setting.debugPass = systemNode.GetNameItemValue("debugPass");
             setting.setupPass = systemNode.GetNameItemValue("setupPass");
-
-            versionstring = systemNode.GetNameItemValue("Version");//版本号
-
+            
             if (machineNode.GetNameItemValue("photoTest")=="True")//需要记录位置则显示功能
             {
                 //拍照的位置测试功能
@@ -830,35 +823,7 @@ namespace SHJ
                 axWindowsMediaPlayer1.Visible = false;
                 axWindowsMediaPlayer1.Ctlcontrols.stop();
             }
-            
-            if ((Aisleoutcount > 0) && (Aisleoutcount < 1000))//最长1000*300 = 300s 
-            {
-                Aisleoutcount++;
-            }
-            if (Aisleoutcount >= 600)//170s
-            {
-                Aisleoutcount = 0;
-                if (istestmode == false)//购买模式需要退币
-                {
-                    switch (zhifutype)
-                    {
-                        case 1:
-                            addnettrade(0xe3, shangpinjiage, 6, liushuirecv);
-                            break;
-                        case 2:
-                            addnettrade(0xe3, shangpinjiage, 7, liushuirecv);
-                            break;
-                        case 3:
-                            addnettrade(0xe3, shangpinjiage, 6, liushuirecv);
-                            break;
-                        case 4:
-                            addnettrade(0xe3, shangpinjiage, 6, liushuirecv);
-                            break;
-                    }
-                }
-                ReturnInputPage();//返回提货码页面
-            }
-            
+
             if (needopensettingform)
             {
                 needopensettingform = false;
@@ -975,7 +940,6 @@ namespace SHJ
                 timer3.Enabled = true;
                 PLCHelper.nowStep = 0x01;
                 wulihuodao = result;
-                setchuhuo();
 
                 for (int k = 0; k < 6; k++)//记录时间戳清除防止进支付页面后生成上次请求的的二维码
                 {
@@ -997,9 +961,7 @@ namespace SHJ
             RunningDisplay();
             if (PLCHelper.errorToken)
             {
-                HMIstep = 1;
-                timer3.Enabled = false;
-                pel_SellTips.Visible = false;
+                ReturnInputPage();
                 try
                 {
                     log.WriteStepLog(StepType.运行故障, PLCHelper.errorMsg);
@@ -1014,9 +976,7 @@ namespace SHJ
             }
             else if (PLCHelper._RunEnd)
             {
-                HMIstep = 1;
-                timer3.Enabled = false;
-                pel_SellTips.Visible = false;
+                ReturnInputPage();
                 try
                 {
                     CloseCamera();//关闭摄像头
@@ -1676,7 +1636,7 @@ namespace SHJ
             {
                 GSMTxBuffer[4 + i] = IMEI[i];
             }
-            byte[] softversion = new Coder(Coder.EncodingMothord.ASCII).GetEncodingBytes(versionstring);
+            byte[] softversion = new Coder(Coder.EncodingMothord.ASCII).GetEncodingBytes(systemNode.GetNameItemValue("Version"));
             if (softversion.Length >= 15)
             {
                 for (i = 0; i < 15; i++)
@@ -1864,6 +1824,8 @@ namespace SHJ
         /// </summary>
         private void ReturnInputPage()
         {
+            timer3.Enabled = false;
+            pel_SellTips.Visible = false;
             ReCargoNum = 0;
             shangpinjiage = 0;
             guanggaoreturntime = 0;
@@ -1930,54 +1892,7 @@ namespace SHJ
             {
             }
         }
-
-        /// <summary>
-        /// 添加支付记录
-        /// </summary>
-        /// <param name="money">支付金额</param>
-        /// <param name="type">支付方式</param>
-        private void addpayrecord(double money, string type)
-        {
-            //int i;
-            //for (i = 0; i < nodelistpay.Count; i++)
-            //{
-            //    if (nodelistpay[i].Attributes.GetNamedItem("start").Value == "1")
-            //    {
-            //        nodelistpay[i].Attributes.GetNamedItem("time").Value = DateTime.Now.ToString("MM-dd HH:mm:ss");
-            //        nodelistpay[i].Attributes.GetNamedItem("money").Value = money.ToString();
-            //        nodelistpay[i].Attributes.GetNamedItem("type").Value = type;
-            //        nodelistpay[i].Attributes.GetNamedItem("start").Value = "";
-            //        if (i == nodelistpay.Count - 1)
-            //        {
-            //            nodelistpay[0].Attributes.GetNamedItem("start").Value = "1";
-            //        }
-            //        else
-            //        {
-            //            nodelistpay[i + 1].Attributes.GetNamedItem("start").Value = "1";
-            //        }
-            //        break;
-            //    }
-            //}
-            //if (i == nodelistpay.Count)//未找到起始位置
-            //{
-            //    nodelistpay[0].Attributes.GetNamedItem("time").Value = DateTime.Now.ToString("MM-dd HH:mm:ss");
-            //    nodelistpay[0].Attributes.GetNamedItem("money").Value = money.ToString();
-            //    nodelistpay[0].Attributes.GetNamedItem("type").Value = type;
-            //    nodelistpay[0].Attributes.GetNamedItem("start").Value = "";
-            //    nodelistpay[1].Attributes.GetNamedItem("start").Value = "1";
-            //}
-            //shipmentDoc.Save(salexmlfile);
-            //shipmentDoc.Save(salexmlfilecopy);
-        }
-
-        /// <summary>
-        /// 设置出货
-        /// </summary>
-        private void setchuhuo()
-        {
-            Aisleoutcount = 1;//超时计时开始
-        }
-
+        
         /// <summary>
         /// 初始化窗口大小
         /// </summary>
@@ -2195,7 +2110,7 @@ namespace SHJ
             //系统信息
             XmlNode systemNode = myxmldoc.CreateElement("System");
             XmlAttribute version = myxmldoc.CreateAttribute("Version");
-            version.Value = "ADH816AZV4.1.01";
+            version.Value = "ADH816AZV4.1.02";
             systemNode.Attributes.Append(version);
             XmlAttribute CPFRPassAttribute = myxmldoc.CreateAttribute("CPFRPass");//补货密码
             CPFRPassAttribute.Value = "2022";
@@ -2234,15 +2149,6 @@ namespace SHJ
             FtpNode.Attributes.Append(pwd);
             rootNode.AppendChild(FtpNode);
 
-
-            XmlNode config1Node = myxmldoc.CreateElement("payconfig");//支付定义
-            XmlAttribute allpayAttribute = myxmldoc.CreateAttribute("allpay");//第一位为支付宝、第二位为微信、第三位为一码付、第四位为银联闪付、第五位为提货码、第六位为微信刷脸、第七位为支付宝刷脸
-            allpayAttribute.Value = "0";
-            config1Node.Attributes.Append(allpayAttribute);//xml节点附件属性
-            XmlAttribute zhekouAttribute = myxmldoc.CreateAttribute("zhekou");//折扣
-            zhekouAttribute.Value = "100";
-            config1Node.Attributes.Append(zhekouAttribute);//xml节点附件属性
-            rootNode.AppendChild(config1Node);
 
             //创建根节点2
             XmlNode config2Node = myxmldoc.CreateElement("shangpin");//商品定义
@@ -2383,19 +2289,11 @@ namespace SHJ
             machineNode = myxmldoc.SelectSingleNode("config").SelectSingleNode("MachineInfo");
             netcofignode = myxmldoc.SelectSingleNode("config").SelectSingleNode("netconfig");
             functionnode = myxmldoc.SelectSingleNode("config").SelectSingleNode("function");
-            payconfignode = myxmldoc.SelectSingleNode("config").SelectSingleNode("payconfig");
             nodelistshangpin = myxmldoc.SelectSingleNode("config").SelectSingleNode("shangpin").ChildNodes;
             nodelisthuodao = myxmldoc.SelectSingleNode("config").SelectSingleNode("huodao").ChildNodes;
             appconfig = myxmldoc.SelectSingleNode("config").SelectSingleNode("appConfig");
             ftpconfig = myxmldoc.SelectSingleNode("config").SelectSingleNode("FTPConfig");
             shipRecordNode = shipmentDoc.SelectSingleNode("Sale").SelectSingleNode("ShipRecord");
-            try
-            {
-                paytypes = int.Parse(payconfignode.Attributes.GetNamedItem("allpay").Value);
-            }
-            catch
-            {
-            }
             try
             {
                 Getvendortype();
@@ -2498,7 +2396,6 @@ namespace SHJ
                 zhifutype = 4;//支付方式为提货码
                 try
                 {
-                    setchuhuo();
                     PEPrinter.PicPath = PicPath;
                 }
                 catch(Exception ex)
@@ -2756,7 +2653,6 @@ namespace SHJ
         #endregion
 
         #endregion
-
-       
+        
     }
 }

@@ -27,7 +27,7 @@ namespace SHJ
         {
             InitializeComponent();
         }
-
+         
         #region Feild
         
         public static string debugPass = null;//机器调试密码
@@ -129,6 +129,9 @@ namespace SHJ
             ShowWindow(FindWindow("Button", null), SW_RESTORE);
         }
 
+        /// <summary>
+        /// 显示出货记录
+        /// </summary>
         private void ShowShipRecord()
         {
             listBox1.Items.Clear();
@@ -141,22 +144,22 @@ namespace SHJ
                 listBox1.Items.Add(str);
             }
         }
+        /// <summary>
+        /// 切换设置页面
+        /// </summary>
+        /// <param name="panel"></param>
+        private void SwitchPage(Panel panel)
+        {
+            txt_Pass.Text = "";
+            panel_Back.Visible = true;
+            panel.Visible = false;
+        }
 
         /// <summary>
         /// 将修改保存到XML
         /// </summary>
         private void updatexml()
         {
-            if (checkBox14.Checked)
-            {
-                Form1.paytypes |= 0x10;
-            }
-            else
-            {
-                Form1.paytypes &= 0xFFEF;
-            }
-            Form1.payconfignode.Attributes.GetNamedItem("allpay").Value = Form1.paytypes.ToString();
-            Form1.payconfignode.Attributes.GetNamedItem("zhekou").Value = textBox5.Text;
             Form1.netcofignode.Attributes.GetNamedItem("ipconfig").Value = 
                 textBox6.Text + "." + textBox7.Text + "." + textBox8.Text + "." + textBox9.Text;
 
@@ -204,23 +207,18 @@ namespace SHJ
         /// </summary>
         private void updatecaidan()
         {
-            label28.Text = "软件版本:"+ Form1.versionstring;
+            label28.Text = "软件版本:"+ Form1.systemNode.GetNameItemValue("Version");
             label15.Text = "设备编号:" + Encoding.ASCII.GetString(Form1.IMEI);
 
             ShowShipRecord();
 
             comboBox9.SelectedIndex = 1;
             comboBox1.SelectedIndex = 2;
-            
-            if ((Form1.paytypes & 0x10) != 0)
-            {
-                checkBox14.Checked = true;
-            }
+            if (Form1.appconfig.GetNameItemValue("fualtCheck") == "True")
+                checkBox1.Checked = true;
             else
-            {
-                checkBox14.Checked = false;
-            }
-
+                checkBox1.Checked = false;
+            
             if(Form1.machineNode.GetNameItemValue("isAutoRun")=="True")
                 rb_PLC.Checked = true;
             else
@@ -235,8 +233,7 @@ namespace SHJ
                 rb_RunType2.Checked = true;
                 button1.Visible = false;
             }
-
-            textBox5.Text = Form1.payconfignode.Attributes.GetNamedItem("zhekou").Value;
+            
             string[] ipstring = Form1.netcofignode.Attributes.GetNamedItem("ipconfig").Value.Split('.');
             if (ipstring.Length == 4)
             {
@@ -799,10 +796,6 @@ namespace SHJ
         #endregion
 
         #region CheckBox
-        private void checkBox14_Click(object sender, EventArgs e)
-        {
-            needsave = true;
-        }
 
         private void checkBox5_Click(object sender, EventArgs e)
         {
@@ -859,6 +852,21 @@ namespace SHJ
         #endregion
 
         #region Button
+
+        private void button30_Click(object sender, EventArgs e)
+        {
+            SwitchPage(this.panel_setup);
+        }
+
+        private void button31_Click(object sender, EventArgs e)
+        {
+            SwitchPage(this.panel_CPFR);
+        }
+
+        private void button32_Click(object sender, EventArgs e)
+        {
+            SwitchPage(this.panel_debug);
+        }
 
         private void button12_Click(object sender, EventArgs e)
         {
@@ -1706,8 +1714,8 @@ namespace SHJ
             }
         }
 
-        #endregion
 
+        #endregion
         
     }
 }
