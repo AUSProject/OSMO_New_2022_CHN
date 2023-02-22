@@ -10,9 +10,8 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using Ibms.Net.TcpCSFramework;
-using ThoughtWorks.QRCode.Codec;    
+using ThoughtWorks.QRCode.Codec;
 using System.Threading.Tasks;
-using AForge.Controls;
 using System.Drawing.Imaging;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Checksums;
@@ -526,7 +525,9 @@ namespace SHJ
             }
 
             DeleteLogs();
-            
+
+            CompressDirectory(@"C:\Users\admin\Desktop\Logs\1", false);
+
             nowform1 = this;
         }
 
@@ -1967,7 +1968,7 @@ namespace SHJ
             }
 
         }
-
+        
         /// <summary>
         /// 创建压缩文件
         /// </summary>
@@ -1976,6 +1977,8 @@ namespace SHJ
         private void CompressDirectory(string dirPath,bool deleteDir)
         {
             string pCompressPath = dirPath + ".zip";
+            var gbk = Encoding.GetEncoding("GBK");
+            ZipConstants.DefaultCodePage = gbk.CodePage;
             FileStream pCompressFile = new FileStream(pCompressPath, FileMode.Create);
             using(ZipOutputStream zipoutputstream=new ZipOutputStream(pCompressFile))
             {

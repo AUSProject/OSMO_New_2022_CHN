@@ -849,7 +849,6 @@ namespace SHJ
             trayOut = false;
             nowStep = 0x00;
             runTiming = 150;
-            Form1.HMIstep = 1;
             _RunEnd = true;
         }
 
