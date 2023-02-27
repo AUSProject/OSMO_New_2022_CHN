@@ -41,37 +41,34 @@ namespace SHJ
         /// <returns>是否打开成功</returns>
         public static bool IniCamera()
         {
-            bool result = false;
             _VideoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
             if (_VideoDevices.Count == 0)
             {
-                result=false;
+                return false;
             }
             else
             {
-                if(VideoDevice!=null)//如果已经获取到设置
+                try
                 {
-                    result = true;
-                    return result;
-                }
-                for (int i = 0; i < _VideoDevices.Count; i++)
-                {
-                    if (_VideoDevices[i].Name == _CameraName)
+                    if (VideoDevice != null)//如果已经获取到设置
                     {
-                        try
+                        return true;
+                    }
+                    for (int i = 0; i < _VideoDevices.Count; i++)
+                    {
+                        if (_VideoDevices[i].Name == _CameraName)
                         {
                             VideoDevice = new VideoCaptureDevice(_VideoDevices[i].MonikerString);
                             VideoDevice.VideoResolution = VideoDevice.VideoCapabilities[videoCapabilitieItem];
-                            result = true;
-                            break;
-                        }
-                        catch
-                        {
+                            return true;
                         }
                     }
+                    VideoDevice = new VideoCaptureDevice(_VideoDevices[0].MonikerString);
+                    VideoDevice.VideoResolution = VideoDevice.VideoCapabilities[videoCapabilitieItem];
                 }
+                catch { }
+                return true;
             }
-            return result;
         }
     }
 }

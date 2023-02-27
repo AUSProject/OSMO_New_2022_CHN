@@ -2502,9 +2502,11 @@ namespace SHJ
         /// </summary>
         private void ConnectCamera()
         {
-            CameraHelper.IniCamera();
-            video1.VideoSource = CameraHelper.VideoDevice;
-            video1.Start();
+            if (CameraHelper.IniCamera())
+            {
+                video1.VideoSource = CameraHelper.VideoDevice;
+                video1.Start();
+            }
         }
 
         private void video1_NewFrame(object sender, ref Bitmap image)//水印
