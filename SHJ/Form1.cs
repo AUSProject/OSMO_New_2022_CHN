@@ -118,7 +118,8 @@ namespace SHJ
         private string nowLogPath = null;//当前日志路径
         private string imageUrlPath;//印章图片URL文件夹
         private string ErweimaUrl = "http://osmo.epscada.com/mobile/goodsList.html?machineId=";//二维码地址
-        private string H5url = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/E4A8DFAFC5A8244";
+        private string H5url = "https://fun.shachihata-china.com/boot/make/qmyz/SHAK/";
+        private string nowQRcode = "";
         PLCHelper PLC;//机器控制
         LogHelper log;//运行日志
         FTPHelper ftpClient;
@@ -199,6 +200,8 @@ namespace SHJ
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
+            nowQRcode = H5url;
 
             pel_Mage.Location = new Point(2000, 0);
 
@@ -483,8 +486,8 @@ namespace SHJ
             
             if (!File.Exists(Path.Combine(adimagesaddress+"\\Erweima", "erweima.jpg")))//加载二维码
             {
-                ErweimaUrl = String.Concat(ErweimaUrl, Encoding.ASCII.GetString(Form1.IMEI));
-                QRCode(ErweimaUrl);
+                nowQRcode = String.Concat(nowQRcode, Encoding.ASCII.GetString(Form1.IMEI));
+                QRCode(nowQRcode);
             }
             
             //判断是否注册
@@ -525,9 +528,7 @@ namespace SHJ
             }
 
             DeleteLogs();
-
-            CompressDirectory(@"C:\Users\admin\Desktop\Logs\1", false);
-
+            
             nowform1 = this;
         }
 
