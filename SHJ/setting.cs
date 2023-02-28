@@ -1599,7 +1599,9 @@ namespace SHJ
             cbx_PicType.Items.Clear();
             cbx_Rp.Items.Clear();
             cbx_PicWatermark.Items.Clear();
+            cbx_cameraFro.Items.Clear();
             this.pel_CameraSet.Visible = false;
+
 
         }
 

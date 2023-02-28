@@ -75,7 +75,6 @@ namespace SHJ
                         {
                             Camera1.VideoDevice = new VideoCaptureDevice(VideoDevices[i].MonikerString);
                             Camera1.VideoDevice.VideoResolution = Camera1.VideoDevice.VideoCapabilities[Camera1.CapabilitieItem];//设置分辨率
-                            VideoDevices.RemoveAt(i);
                             break;
                         }
                         else if (i == VideoDevices.Count)
@@ -83,13 +82,12 @@ namespace SHJ
                             Camera1.VideoDevice = new VideoCaptureDevice(VideoDevices[0].MonikerString);
                             Camera1.VideoDevice.VideoResolution = Camera1.VideoDevice.VideoCapabilities[Camera1.CapabilitieItem];
                             Camera1.CameraName = VideoDevices[0].Name;
-                            VideoDevices.RemoveAt(0);
                             break;
                         }
                     }
                     for (int i = 0; i < VideoDevices.Count; i++)//第二个相机
                     {
-                        if (VideoDevices[i].Name == Camera2.CameraName)
+                        if (VideoDevices[i].Name == Camera2.CameraName && VideoDevices[i].Name!=Camera1.CameraName)
                         {
                             Camera2.VideoDevice = new VideoCaptureDevice(VideoDevices[i].MonikerString);
                             Camera2.VideoDevice.VideoResolution = Camera2.VideoDevice.VideoCapabilities[Camera2.CapabilitieItem];

@@ -824,6 +824,8 @@ namespace SHJ
 
                 axWindowsMediaPlayer1.Visible = false;
                 axWindowsMediaPlayer1.Ctlcontrols.stop();
+
+                ConnectCamera();
             }
 
             if (needopensettingform)
@@ -1950,7 +1952,7 @@ namespace SHJ
             else
             {
                 panel2.Visible = false;
-                video1.Visible = false;
+                //video1.Visible = false;
             }
         }
 
@@ -2511,7 +2513,8 @@ namespace SHJ
         /// </summary>
         private void ConnectCamera()
         {
-            if (camera.Camera1.VideoDevice!=null)
+            camera.IniCamera();
+            if (camera.Camera1.VideoDevice != null)
             {
                 video1.VideoSource = camera.Camera1.VideoDevice;
                 video1.Start();

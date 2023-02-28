@@ -240,13 +240,13 @@
             // 
             // video1
             // 
+            this.video1.Enabled = false;
             this.video1.Location = new System.Drawing.Point(0, 0);
             this.video1.Name = "video1";
             this.video1.Size = new System.Drawing.Size(354, 233);
             this.video1.TabIndex = 17;
             this.video1.Text = "video1";
             this.video1.VideoSource = null;
-            this.video1.Visible = false;
             this.video1.NewFrame += new AForge.Controls.VideoSourcePlayer.NewFrameHandler(this.video1_NewFrame);
             // 
             // pic_Erweima
@@ -965,7 +965,6 @@
             this.video2.TabIndex = 21;
             this.video2.Text = "video2";
             this.video2.VideoSource = null;
-            this.video2.Visible = false;
             this.video2.NewFrame += new AForge.Controls.VideoSourcePlayer.NewFrameHandler(this.video2_NewFrame);
             // 
             // Form1
