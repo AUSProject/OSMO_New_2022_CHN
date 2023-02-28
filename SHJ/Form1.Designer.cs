@@ -94,6 +94,7 @@
             this.按钮4 = new PCHMI.按钮(this.components);
             this.pel_Mage = new System.Windows.Forms.Panel();
             this.按钮5 = new PCHMI.按钮(this.components);
+            this.video2 = new AForge.Controls.VideoSourcePlayer();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -241,9 +242,9 @@
             // 
             this.video1.Location = new System.Drawing.Point(0, 0);
             this.video1.Name = "video1";
-            this.video1.Size = new System.Drawing.Size(878, 597);
+            this.video1.Size = new System.Drawing.Size(354, 233);
             this.video1.TabIndex = 17;
-            this.video1.Text = "videoSourcePlayer1";
+            this.video1.Text = "video1";
             this.video1.VideoSource = null;
             this.video1.Visible = false;
             this.video1.NewFrame += new AForge.Controls.VideoSourcePlayer.NewFrameHandler(this.video1_NewFrame);
@@ -956,14 +957,26 @@
             this.按钮5.权限提示文本 = "";
             this.按钮5.语言 = ((uint)(0u));
             // 
+            // video2
+            // 
+            this.video2.Location = new System.Drawing.Point(0, 239);
+            this.video2.Name = "video2";
+            this.video2.Size = new System.Drawing.Size(354, 233);
+            this.video2.TabIndex = 21;
+            this.video2.Text = "video2";
+            this.video2.VideoSource = null;
+            this.video2.Visible = false;
+            this.video2.NewFrame += new AForge.Controls.VideoSourcePlayer.NewFrameHandler(this.video2_NewFrame);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1490, 1080);
+            this.Controls.Add(this.pic_Erweima);
+            this.Controls.Add(this.video2);
             this.Controls.Add(this.pel_Mage);
             this.Controls.Add(this.panel2);
-            this.Controls.Add(this.pic_Erweima);
             this.Controls.Add(this.video1);
             this.Controls.Add(this.panel4);
             this.Controls.Add(this.panel1);
@@ -1046,6 +1059,7 @@
         private PCHMI.按钮 按钮4;
         private System.Windows.Forms.Panel pel_Mage;
         private PCHMI.按钮 按钮5;
+        private AForge.Controls.VideoSourcePlayer video2;
     }
 }
 

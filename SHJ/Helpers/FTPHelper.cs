@@ -11,15 +11,13 @@ namespace SHJ
     public class FTPHelper
     {
         private int BUFFSIZE = 1024 * 2;
-        public string ServerIP { get; set; }
-        public string ServerPort { get; set; }
-        public string UserName { get; set; }
-        public string PassWord { get; set; }
-        public string Url { get; set; }
-        public Action CompleteDownload = null;
-        public Action CompeteUpload = null;
-        public Action<string> FailDownload = null;
-        public Action<string> FailUpload = null;
+        private string ServerIP { get; set; }
+        private string ServerPort { get; set; }
+        private string UserName { get; set; }
+        private string PassWord { get; set; }
+        private string Url { get; set; }
+        private Action CompeteUpload = null;
+        private Action<string> FailUpload = null;
         private FtpWebRequest reqFTP;
         private FileStream fs;
         private Stream strm;
@@ -30,7 +28,7 @@ namespace SHJ
         /// <param name="ip">服务器IP</param>
         /// <param name="user">用户名</param>
         /// <param name="pwd">密码</param>
-        public FTPHelper(string ip, string user, string pwd)
+        public FTPHelper(string ip, string user="", string pwd="")
         {
             this.ServerIP = ip;
             this.UserName = user;
@@ -130,6 +128,7 @@ namespace SHJ
                 strm.Close();
                 strm = null;
             }
+            
         }
 
         /// <summary>

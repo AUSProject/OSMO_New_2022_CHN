@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Drawing.Imaging;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Checksums;
+using AForge.Controls;
 
 namespace SHJ
 {
@@ -46,9 +47,9 @@ namespace SHJ
         /// <param name="key">键</param>
         /// <param name="value">值</param>
         /// <param name="path">路径</param>
-        public static void IniWriteValue(string section, string key, string value, string path)
+        public static bool IniWriteValue(string section, string key, string value, string path)
         {
-            WritePrivateProfileString(section, key, value, path);
+            return WritePrivateProfileString(section, key, value, path);
         }
 
         /// <summary>
@@ -74,6 +75,11 @@ namespace SHJ
             WritePrivateProfileString(section, null, null, path);
         }
 
+        /// <summary>
+        /// 获取所有项目名称
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         private List<string> ReadSections(string filePath)
         {
             List<string> sections = new List<string>();
@@ -123,6 +129,7 @@ namespace SHJ
         PLCHelper PLC;//机器控制
         LogHelper log;//运行日志
         FTPHelper ftpClient;
+        CameraHelper camera;//像机
         
         public static string cameraParaFile;//摄像机参数文件
 
@@ -213,6 +220,7 @@ namespace SHJ
             print = PrintHelper.GetExample();//获取打印机实例
             log = LogHelper.GetLogHelperExamlpe();//获取日志实例
             myprint = PEPrinter.GetPEPrinterExample();
+            camera = CameraHelper.GetCameraExample();
 
             config1.START((Control)this, System.Reflection.Assembly.GetExecutingAssembly(), null);
             
@@ -222,7 +230,7 @@ namespace SHJ
             imageUrlPath = Directory.GetCurrentDirectory() + "\\imageUrl.ini";
             logPath = Directory.GetCurrentDirectory() + "\\Logs";
             cameraParaFile = Directory.GetCurrentDirectory() + "\\cameraPara.ini";
-
+            
             adimagesaddress = System.IO.Directory.GetCurrentDirectory() + "\\adimages";
             bkimagesaddress = System.IO.Directory.GetCurrentDirectory() + "\\bkimages";
             cmimagesaddress = System.IO.Directory.GetCurrentDirectory() + "\\cmimages";
@@ -259,7 +267,7 @@ namespace SHJ
             }
             if (!File.Exists(imageUrlPath))//印章图案Url文件
             {
-                File.Create(imageUrlPath);
+                File.Create(imageUrlPath).Close();
             }
             if (!Directory.Exists(logPath))//日志路径
             {
@@ -273,36 +281,28 @@ namespace SHJ
             {
                 try
                 {
-                    File.Create(cameraParaFile);
-                    CameraHelper.IniCameraPara();
+                    File.Create(cameraParaFile).Close();
+                    camera.IniCameraPara();
                 }
                 catch { }
             }
             else
             {
-                CameraHelper.fontSize=int.Parse(IniReadValue("Camera","fontSize",cameraParaFile));//字体大小
-                CameraHelper._CameraName = IniReadValue("Camera", "cameraName", cameraParaFile);//相机名称
-                CameraHelper.watermarkType = IniReadValue("Camera", "watermarkType", cameraParaFile);//水印类型
-                CameraHelper.videoCapabilitieItem = int.Parse(IniReadValue("Camera", "capabilitieItem", cameraParaFile));//分辨率
-                string picType = IniReadValue("Camera", "picType", cameraParaFile);
-                switch (picType)//图片格式
+                try
                 {
-                    case "Jpeg":
-                        CameraHelper.imageExt = ImageFormat.Jpeg;
-                        break;
-                    case "Bmp":
-                        CameraHelper.imageExt = ImageFormat.Bmp;
-                        break;
-                    case "Png":
-                        CameraHelper.imageExt = ImageFormat.Png;
-                        break;
-                    case "Gif":
-                        CameraHelper.imageExt = ImageFormat.Gif;
-                        break;
-                    default:
-                        CameraHelper.imageExt = ImageFormat.Jpeg;
-                        break;
+                    camera.Camera1.WaterFontSzie = int.Parse(IniReadValue("Camera1", "fontSize", cameraParaFile));//字体大小
+                    camera.Camera1.CameraName = IniReadValue("Camera1", "cameraName", cameraParaFile);//相机名称
+                    camera.Camera1.WatermarkType = IniReadValue("Camera1", "watermarkType", cameraParaFile);//水印类型
+                    camera.Camera1.CapabilitieItem = int.Parse(IniReadValue("Camera1", "capabilitieItem", cameraParaFile));//分辨率
+                    camera.Camera1.PicType = IniReadValue("Camera1", "picType", cameraParaFile);
+
+                    camera.Camera2.WaterFontSzie = int.Parse(IniReadValue("Camera2", "fontSize", cameraParaFile));//字体大小
+                    camera.Camera2.CameraName = IniReadValue("Camera2", "cameraName", cameraParaFile);//相机名称
+                    camera.Camera2.WatermarkType = IniReadValue("Camera2", "watermarkType", cameraParaFile);//水印类型
+                    camera.Camera2.CapabilitieItem = int.Parse(IniReadValue("Camera2", "capabilitieItem", cameraParaFile));//分辨率
+                    camera.Camera2.PicType = IniReadValue("Camera2", "picType", cameraParaFile);
                 }
+                catch { }
             }
             if (System.IO.File.Exists(configxmlfile))
             {
@@ -528,7 +528,7 @@ namespace SHJ
             }
 
             DeleteLogs();
-            
+
             nowform1 = this;
         }
 
@@ -972,7 +972,7 @@ namespace SHJ
                     PLC.ResetProgram();
                     CompressDirectory(nowLogPath, false);
                     ftpClient = new FTPHelper(ftpconfig.GetNameItemValue("IP") + ":" + ftpconfig.GetNameItemValue("Port"), ftpconfig.GetNameItemValue("User"), ftpconfig.GetNameItemValue("Pwd"));
-                    ftpClient.Upload(nowLogPath);
+                    ftpClient.Upload(nowLogPath, Encoding.ASCII.GetString(Form1.IMEI));
                 }
                 catch { }
             }
@@ -984,37 +984,46 @@ namespace SHJ
                     CloseCamera();//关闭摄像头
                     CompressDirectory(nowLogPath, false);
                     ftpClient = new FTPHelper(ftpconfig.GetNameItemValue("IP") + ":" + ftpconfig.GetNameItemValue("Port"), ftpconfig.GetNameItemValue("User"), ftpconfig.GetNameItemValue("Pwd"));
-                    ftpClient.Upload(nowLogPath);
+                    ftpClient.Upload(nowLogPath, Encoding.ASCII.GetString(Form1.IMEI));
                 }
                 catch { }
             }
 
-             #region 拍照定义测试功能
-
-            if (PLC.D11 == 8)
+            #region 拍照
+            if (PLC.D0 == 2)
             {
                 lbl_Photoing.Visible = true;
-                TakePhoto("放印面");
+                TakePhoto(2, "货道出货1");
+            }
+            if(PLC.D0==5)
+            {
+                lbl_Photoing.Visible = true;
+                TakePhoto(2, "货道出货2");
+            }
+            else if (PLC.D11 == 8)
+            {
+                lbl_Photoing.Visible = true;
+                TakePhoto(1,"放印面");
             }
             else if (PLC.D6 == 2)
             {
                 lbl_Photoing.Visible = true;
-                TakePhoto("装配盖子");
+                TakePhoto(1,"装配盖子");
             }
             else if (PLC.D7 == 2)
             {
                 lbl_Photoing.Visible = true;
-                TakePhoto("印面拍照");
+                TakePhoto(1,"印面拍照");
             }
             else if (PLC.D7 == 8)
             {
                 lbl_Photoing.Visible = true;
-                TakePhoto("装配印面");
+                TakePhoto(0,"装配印面");
             }
             else if (PLC.D9 == 12)
             {
                 lbl_Photoing.Visible = true;
-                TakePhoto("出货位置");
+                TakePhoto(1,"出货位置");
             }
             else
             {
@@ -2502,24 +2511,29 @@ namespace SHJ
         /// </summary>
         private void ConnectCamera()
         {
-            if (CameraHelper.IniCamera())
+            if (camera.Camera1.VideoDevice!=null)
             {
-                video1.VideoSource = CameraHelper.VideoDevice;
+                video1.VideoSource = camera.Camera1.VideoDevice;
                 video1.Start();
+            }
+            if (camera.Camera2.VideoDevice != null)
+            {
+                video2.VideoSource = camera.Camera2.VideoDevice;
+                video2.Start();
             }
         }
 
         private void video1_NewFrame(object sender, ref Bitmap image)//水印
         {
-            if (CameraHelper.watermarkType != "None")
+            if (camera.Camera1.WatermarkType != "None")
             {
                 Graphics grap = Graphics.FromImage(image);
                 SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.Red);
-                Font drawFont = new Font("Arial", CameraHelper.fontSize, System.Drawing.FontStyle.Bold, GraphicsUnit.Millimeter);
+                Font drawFont = new Font("Arial", camera.Camera1.WaterFontSzie, System.Drawing.FontStyle.Bold, GraphicsUnit.Millimeter);
                 int xPos = image.Width - (image.Width - 15);
                 int yPos = 10;
                 string drawString;
-                if (CameraHelper.watermarkType == "DateTime")//提货码样式
+                if (camera.Camera1.WatermarkType == "DateTime")//提货码样式
                 {
                     drawString = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 }
@@ -2530,7 +2544,29 @@ namespace SHJ
                 grap.DrawString(drawString, drawFont, drawBrush, xPos, yPos);
             }
         }
-        
+
+        private void video2_NewFrame(object sender, ref Bitmap image)
+        {
+            if (camera.Camera2.WatermarkType != "None")
+            {
+                Graphics grap = Graphics.FromImage(image);
+                SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.Red);
+                Font drawFont = new Font("Arial", camera.Camera1.WaterFontSzie, System.Drawing.FontStyle.Bold, GraphicsUnit.Millimeter);
+                int xPos = image.Width - (image.Width - 15);
+                int yPos = 10;
+                string drawString;
+                if (camera.Camera2.WatermarkType == "DateTime")//提货码样式
+                {
+                    drawString = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+                else
+                {
+                    drawString = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  PickingCode : " + myTihuomastr == null ? "模拟运行" : myTihuomastr;
+                }
+                grap.DrawString(drawString, drawFont, drawBrush, xPos, yPos);
+            }
+        }
+
         /// <summary>
         /// 关闭摄像头
         /// </summary>
@@ -2538,22 +2574,55 @@ namespace SHJ
         {
             video1.SignalToStop();
             video1.WaitForStop();
-            CameraHelper.VideoDevice.SignalToStop();
-            CameraHelper.VideoDevice.WaitForStop();
+            camera.Camera1.VideoDevice.SignalToStop();
+            camera.Camera1.VideoDevice.WaitForStop();
             video1.VideoSource = null;
+
+            video2.SignalToStop();
+            video2.WaitForStop();
+            camera.Camera2.VideoDevice.SignalToStop();
+            camera.Camera2.VideoDevice.WaitForStop();
+            video2.VideoSource = null;
         }
 
         /// <summary>
         /// 拍照
         /// </summary>
+        /// <param name="cameraIndex">像机序号，为0则同时拍摄</param>
         /// <param name="picName">名称</param>
-        public void TakePhoto(string picName)
+        public void TakePhoto(int cameraIndex,string picName)
         {
+            Bitmap photo;
+            string imgPath;
             try
             {
-                Bitmap photo = video1.GetCurrentVideoFrame();
-                string path = nowLogPath +"//" + picName + "." + CameraHelper.imageExt.ToString() ;
-                photo.Save(path, CameraHelper.imageExt);
+                switch (cameraIndex)
+                {
+                    case 1:
+                        photo = video1.GetCurrentVideoFrame();
+                        imgPath = nowLogPath + "//" + picName + "." + camera.Camera1.picType.ToString();
+                        photo.Save(imgPath, camera.Camera1.picType);
+                        photo.Dispose();
+                        break;
+                    case 2:
+                        photo = video2.GetCurrentVideoFrame();
+                        imgPath = nowLogPath + "//" + picName + "." + camera.Camera2.picType.ToString();
+                        photo.Save(imgPath, camera.Camera2.picType);
+                        photo.Dispose();
+                        break;
+                    case 0:
+                        photo = video1.GetCurrentVideoFrame();
+                        imgPath = nowLogPath + "//" + picName + "1" + "." + camera.Camera1.picType.ToString();
+                        photo.Save(imgPath, camera.Camera1.picType);
+                        photo.Dispose();
+
+                        photo = video2.GetCurrentVideoFrame();
+                        imgPath = nowLogPath + "//" + picName + "2" + "." + camera.Camera2.picType.ToString();
+                        photo.Save(imgPath, camera.Camera2.picType);
+                        photo.Dispose();
+                        break;
+
+                }
             }
             catch(Exception e)
             { }
@@ -2612,7 +2681,6 @@ namespace SHJ
             sw1.WriteLine(lbl_D10.Text);
             sw1.WriteLine(lbl_D11.Text);
             sw1.WriteLine();
-            TakePhoto("第" + writecount + "次记录");
             writecount++;
         }
 
@@ -2622,11 +2690,6 @@ namespace SHJ
             {
                 PLCHelper.errorToken = true;
             }
-        }
-
-        private void button8_Click(object sender, EventArgs e)
-        {
-            AddShipRecord("12345", "10");
         }
 
         private void button5_Click(object sender, EventArgs e)
