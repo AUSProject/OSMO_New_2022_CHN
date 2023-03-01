@@ -41,7 +41,6 @@ namespace SHJ
 
         private Keyboard keyboard = null;
         private CameraHelper camera;
-        private CameraPara nowCamera;
 
         private Point defualtPoint = new Point(508, 78);
 
@@ -689,6 +688,7 @@ namespace SHJ
                     updatexml();
                     Form1.myxmldoc.Save(Form1.configxmlfile);
                     Form1.myxmldoc.Save(Form1.configxmlfilecopy);
+                    GC.Collect();
                 }
                 else if (myresult == DialogResult.Cancel)
                 {
@@ -701,6 +701,10 @@ namespace SHJ
                 if (myresult == DialogResult.No)
                 {
                     e.Cancel = true;
+                }
+                else
+                {
+                    GC.Collect();
                 }
             }
         }
@@ -1464,8 +1468,7 @@ namespace SHJ
             pel_CameraSet.Visible = true;
             pel_CameraSet.BringToFront();
             camera = CameraHelper.GetCameraExample();
-            camera.IniCamera();
-            nowCamera = camera.Camera1;
+            camera.GetCameraDevices();
 
             cbx_cameraFro.Items.Add("顶部相机");//位置相机选择
             cbx_cameraFro.Items.Add("底部相机");
@@ -1473,7 +1476,7 @@ namespace SHJ
 
             try
             {
-                tempDevice = nowCamera.VideoDevice;
+                tempDevice = camera.VideoDevice1;
                 video2.VideoSource = tempDevice;
                 video2.Start();
 
@@ -1484,7 +1487,7 @@ namespace SHJ
                 }
                 try
                 {
-                    cbx_Rp.SelectedIndex = nowCamera.CapabilitieItem;
+                    cbx_Rp.SelectedIndex = camera.CapabilitieItem;
                 }
                 catch { }
             }
@@ -1494,23 +1497,23 @@ namespace SHJ
             foreach (FilterInfo item in camera.VideoDevices)
             {
                 cbx_PicFrom.Items.Add(item.Name);
-                if (item.Name == nowCamera.CameraName)
-                    cbx_PicFrom.Text = nowCamera.CameraName;
+                if (item.Name == camera.Camera1Name)
+                    cbx_PicFrom.Text = camera.Camera1Name;
                 else
                 {
                     cbx_PicFrom.SelectedIndex = 0;
                 }
             }
             //添加图片类型
-            cbx_PicType.Items.AddRange(camera.PicTypes);
-            cbx_PicType.Text = nowCamera.PicType;
+            cbx_PicType.Items.AddRange(camera.picTypeList);
+            cbx_PicType.Text = camera.PicType;
 
             //添加水印类型
-            cbx_PicWatermark.Items.AddRange(camera.WatermarkTypes);
-            cbx_PicWatermark.Text = nowCamera.WatermarkType;
+            cbx_PicWatermark.Items.AddRange(camera.watermarkTypeList);
+            cbx_PicWatermark.Text = camera.WatermarkType;
 
             //字体大小
-            nud_fonSize.Value = nowCamera.WaterFontSzie;
+            nud_fonSize.Value = camera.WaterFontSzie;
         }
 
         private void button14_Click(object sender, EventArgs e)
@@ -1549,16 +1552,14 @@ namespace SHJ
                 {
                     cbx_Rp.Items.Add(rp.FrameSize.Width + "x" + rp.FrameSize.Height);
                 }
-                cbx_Rp.SelectedIndex = nowCamera.CapabilitieItem;
+                cbx_Rp.SelectedIndex = camera.CapabilitieItem;
             }
             catch { }
         }
 
         private void cbx_cameraFro_SelectedIndexChanged(object sender, EventArgs e)
         {
-            nowCamera = cbx_cameraFro.SelectedIndex == 0 ? camera.Camera1 : camera.Camera2;
-            cbx_PicFrom.SelectedIndex = cbx_PicFrom.Items.IndexOf(nowCamera.CameraName);
-
+            cbx_PicFrom.SelectedIndex = cbx_PicFrom.Items.IndexOf(cbx_cameraFro.SelectedItem.ToString()=="顶部相机"?camera.Camera1Name:camera.Camera2Name);
         }
 
         private void video2_NewFrame(object sender, ref Bitmap image)//水印
@@ -1602,7 +1603,7 @@ namespace SHJ
             cbx_cameraFro.Items.Clear();
             this.pel_CameraSet.Visible = false;
 
-
+            GC.Collect();
         }
 
         private void cbx_Rp_SelectedIndexChanged(object sender, EventArgs e)//切换分辨率
@@ -1619,33 +1620,23 @@ namespace SHJ
 
         private void button15_Click(object sender, EventArgs e)//保存摄像头配置
         {
-
-            nowCamera.PicType = cbx_PicType.SelectedItem.ToString();//图片类型
-            nowCamera.WatermarkType = cbx_PicWatermark.SelectedItem.ToString();//水印类型
-            nowCamera.CameraName = cbx_PicFrom.SelectedItem.ToString();//摄像头名称
-            nowCamera.CapabilitieItem = cbx_Rp.SelectedIndex;//分辨率
-            nowCamera.WaterFontSzie = (int)nud_fonSize.Value;//字体大小
-            nowCamera.VideoDevice = tempDevice;//摄像源
-
-            string cameraIndex;
             if (cbx_cameraFro.SelectedIndex == 0)
             {
-                camera.Camera1 = nowCamera;
-                cameraIndex = "Camera1";
+                camera.VideoDevice1 = tempDevice;
+                Form1.IniWriteValue("CameraPara", "Camera1Name", cbx_PicFrom.SelectedItem.ToString(), Form1.cameraParaFile);
             }
             else
             {
-                camera.Camera2 = nowCamera;
-                cameraIndex = "Camera2";
+                camera.VideoDevice2 = tempDevice;
+                Form1.IniWriteValue("CameraPara", "Camera2Name", cbx_PicFrom.SelectedItem.ToString(), Form1.cameraParaFile);
             }
             //保存配制
-            Form1.IniWriteValue(cameraIndex, "cameraName", cbx_PicFrom.SelectedItem.ToString(), Form1.cameraParaFile);
-            Form1.IniWriteValue(cameraIndex, "capabilitieItem", cbx_Rp.SelectedIndex.ToString(), Form1.cameraParaFile);
-            Form1.IniWriteValue(cameraIndex, "fontSize", nud_fonSize.Value.ToString(), Form1.cameraParaFile);
-            Form1.IniWriteValue(cameraIndex, "watermarkType", cbx_PicWatermark.SelectedItem.ToString(), Form1.cameraParaFile);
-            bool result=Form1.IniWriteValue(cameraIndex, "picType", cbx_PicType.SelectedItem.ToString(), Form1.cameraParaFile);
-
-            if(result)
+            Form1.IniWriteValue("CameraPara", "capabilitieItem", cbx_Rp.SelectedIndex.ToString(), Form1.cameraParaFile);
+            Form1.IniWriteValue("CameraPara", "fontSize", nud_fonSize.Value.ToString(), Form1.cameraParaFile);
+            Form1.IniWriteValue("CameraPara", "watermarkType", cbx_PicWatermark.SelectedItem.ToString(), Form1.cameraParaFile);
+            bool result=Form1.IniWriteValue("CameraPara", "picType", cbx_PicType.SelectedItem.ToString(), Form1.cameraParaFile);
+            
+            if (result)
                 MessageBox.Show("配制保存成功");
             else
                 MessageBox.Show("配制保存失败");

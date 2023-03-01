@@ -90,9 +90,7 @@ namespace SHJ
                 {
                     PEPrinter.CreateProcessingData(PEPrinter.PicPath, mytype);
                 }
-                catch (Exception ex)
-                {
-                }
+                catch { }
                 PEPrinter.needPutImage = true;//加载图片并打印
             }
         }

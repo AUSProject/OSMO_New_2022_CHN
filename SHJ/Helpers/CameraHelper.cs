@@ -15,17 +15,17 @@ namespace SHJ
 
         private static CameraHelper _cameraHelper = null;
 
-        public string[] PicTypes = new string[] { "Png", "Jpeg", "Bmp", "Gif" };
-        public string[] WatermarkTypes = new string[] { "None", "DateTime", "TimeAndNum" };
-        public CameraPara Camera1 { get; set; }
-        public CameraPara Camera2 { get; set; }
+        public string[] picTypeList= new string[] { "Png", "Jpeg", "Bmp", "Gif" };
+        public string[] watermarkTypeList = new string[] { "None", "DateTime", "TimeAndNum" };
 
         public VideoCaptureDevice VideoDevice1 { get; set; }//摄像源1
         public VideoCaptureDevice VideoDevice2 { get; set; }//摄像源2
+
         #region CameraPara
 
+        public string Camera1Name { get; set; }//相机1名称
+        public string Camera2Name { get; set; }//相机2名称
         public string WatermarkType { get; set; }//水印类型
-        public string CameraName { get; set; }//像机名称
         public int CapabilitieItem { get; set; }//分辨率相对位置
         public int WaterFontSzie { get; set; }//水印字体大小
         public ImageFormat picType;
@@ -70,111 +70,101 @@ namespace SHJ
 
         private CameraHelper()
         {
-            Camera1 = new CameraPara() { WaterFontSzie = 6, WatermarkType = "None", CapabilitieItem = 0, PicType = "Jpeg", CameraName = "usb camera" };
-            Camera2 = new CameraPara() { WaterFontSzie = 6, WatermarkType = "None", CapabilitieItem = 0, PicType = "Jpeg", CameraName = "usb camera" };
+            IniCameraPara();
         }
-
+        
         /// <summary>
-        /// 初始化相机参数
+        /// 写入初始化相机参数
         /// </summary>
-        public void IniCameraPara()
+        public void WriteIniCameraPara()
         {
-            Form1.IniWriteValue("Camera1", "watermarkType", Camera1.WatermarkType, Form1.cameraParaFile);
-            Form1.IniWriteValue("Camera1", "cameraName", Camera1.CameraName, Form1.cameraParaFile);
-            Form1.IniWriteValue("Camera1", "capabilitieItem", Camera1.CapabilitieItem.ToString(), Form1.cameraParaFile);
-            Form1.IniWriteValue("Camera1", "fontSize", Camera1.WaterFontSzie.ToString(), Form1.cameraParaFile);
-            Form1.IniWriteValue("Camera1", "picType", Camera1.PicType, Form1.cameraParaFile);
+            Form1.IniWriteValue("CameraPara", "watermarkType", WatermarkType, Form1.cameraParaFile);
+            Form1.IniWriteValue("CameraPara", "capabilitieItem", CapabilitieItem.ToString(), Form1.cameraParaFile);
+            Form1.IniWriteValue("CameraPara", "fontSize", WaterFontSzie.ToString(), Form1.cameraParaFile);
+            Form1.IniWriteValue("CameraPara", "picType", PicType, Form1.cameraParaFile);
+            Form1.IniWriteValue("CameraPara", "Camera1Name","usb camera", Form1.cameraParaFile);
+            Form1.IniWriteValue("CameraPara", "Camera2Name","usb camera", Form1.cameraParaFile);
             
-            Form1.IniWriteValue("Camera2", "watermarkType", Camera2.WatermarkType, Form1.cameraParaFile);
-            Form1.IniWriteValue("Camera2", "cameraName", Camera2.CameraName, Form1.cameraParaFile);
-            Form1.IniWriteValue("Camera2", "capabilitieItem", Camera2.CapabilitieItem.ToString(), Form1.cameraParaFile);
-            Form1.IniWriteValue("Camera2", "fontSize", Camera2.WaterFontSzie.ToString(), Form1.cameraParaFile);
-            Form1.IniWriteValue("Camera2", "picType", Camera2.PicType, Form1.cameraParaFile);
         }
-
+        
         /// <summary>
-        /// 初始化像机源
+        /// 获取像机源配制
         /// </summary>
-        public void IniCamera()
+        public void GetCameraDevices()
         {
             try
             {
                 VideoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+                ReadCameraPara();
                 if (VideoDevices.Count == 0)
                 {
                     return;
                 }
                 else
                 {
-                    for (int i = 0; i < VideoDevices.Count; i++)//第一个相机
+                    for (int i = 0; i < VideoDevices.Count; i++)//获取第一个相机源
                     {
-                        if (VideoDevices[i].Name == Camera1.CameraName)
+                        if (VideoDevices[i].Name == Camera1Name)
                         {
-                            Camera1.VideoDevice = new VideoCaptureDevice(VideoDevices[i].MonikerString);
-                            Camera1.VideoDevice.VideoResolution = Camera1.VideoDevice.VideoCapabilities[Camera1.CapabilitieItem];//设置分辨率
+                            VideoDevice1 = new VideoCaptureDevice(VideoDevices[i].MonikerString);
+                            VideoDevice1.VideoResolution = VideoDevice1.VideoCapabilities[CapabilitieItem];//设置分辨率
+                            VideoDevices.RemoveAt(i);
                             break;
                         }
-                        else if (i == VideoDevices.Count)
+                        else if (i == VideoDevices.Count-1)//如果没有相同名称相机则选择第一个摄像源
                         {
-                            Camera1.VideoDevice = new VideoCaptureDevice(VideoDevices[0].MonikerString);
-                            Camera1.VideoDevice.VideoResolution = Camera1.VideoDevice.VideoCapabilities[Camera1.CapabilitieItem];
-                            Camera1.CameraName = VideoDevices[0].Name;
+                            VideoDevice1 = new VideoCaptureDevice(VideoDevices[0].MonikerString);
+                            VideoDevice1.VideoResolution = VideoDevice1.VideoCapabilities[CapabilitieItem];
+                            Camera1Name = VideoDevices[0].Name;
+                            VideoDevices.RemoveAt(0);
                             break;
                         }
                     }
-                    for (int i = 0; i < VideoDevices.Count; i++)//第二个相机
+                    for (int i = 0; i < VideoDevices.Count; i++)//获取第二个相机源
                     {
-                        if (VideoDevices[i].Name == Camera2.CameraName && VideoDevices[i].Name!=Camera1.CameraName)
+                        if (VideoDevices[i].Name == Camera2Name && VideoDevices[i].Name!=Camera1Name)
                         {
-                            Camera2.VideoDevice = new VideoCaptureDevice(VideoDevices[i].MonikerString);
-                            Camera2.VideoDevice.VideoResolution = Camera2.VideoDevice.VideoCapabilities[Camera2.CapabilitieItem];
+                            VideoDevice2 = new VideoCaptureDevice(VideoDevices[i].MonikerString);
+                            VideoDevice2.VideoResolution = VideoDevice2.VideoCapabilities[CapabilitieItem];
                             break;
                         }
-                        else if (i == VideoDevices.Count)
+                        else if(i== VideoDevices.Count-1)
                         {
-                            Camera2.VideoDevice = new VideoCaptureDevice(VideoDevices[0].MonikerString);
-                            Camera2.VideoDevice.VideoResolution = Camera2.VideoDevice.VideoCapabilities[Camera2.CapabilitieItem];
-                            Camera2.CameraName = VideoDevices[0].Name;
+                            VideoDevice2 = new VideoCaptureDevice(VideoDevices[0].MonikerString);
+                            VideoDevice2.VideoResolution = VideoDevice2.VideoCapabilities[CapabilitieItem];
+                            Camera2Name = VideoDevices[0].Name;
                             break;
                         }
                     }
                 }
             }
             catch { }
-        }
-    }
-    public class CameraPara
-    {
-        public VideoCaptureDevice VideoDevice { get; set; }//摄像源
-        public string WatermarkType { get; set; }//水印类型
-        public string CameraName { get; set; }//像机名称
-        public int CapabilitieItem { get; set; }//分辨率相对位置
-        public int WaterFontSzie { get; set; }//水印字体大小
-        public ImageFormat picType;
-        public string PicType
-        {
-            get { return picType.ToString(); }
-            set {
-                switch (value)//图片格式
-                {
-                    case "Jpeg":
-                        picType = ImageFormat.Jpeg;
-                        break;
-                    case "Bmp":
-                        picType = ImageFormat.Bmp;
-                        break;
-                    case "Png":
-                        picType = ImageFormat.Png;
-                        break;
-                    case "Gif":
-                        picType = ImageFormat.Gif;
-                        break;
-                    default:
-                        picType = ImageFormat.Jpeg;
-                        break;
-                }
+            finally
+            {
+                VideoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
             }
         }
 
+        private void IniCameraPara()
+        {
+            WaterFontSzie = 6;
+            WatermarkType = "None";
+            CapabilitieItem = 0;
+            PicType = "Jpeg";
+        }
+
+        private void ReadCameraPara()
+        {
+            try
+            {
+                Camera1Name = Form1.IniReadValue("CameraPara", "Camera1Name", Form1.cameraParaFile);
+                Camera2Name = Form1.IniReadValue("CameraPara", "Camera2Name", Form1.cameraParaFile);
+                WaterFontSzie = int.Parse(Form1.IniReadValue("CameraPara", "fontSize", Form1.cameraParaFile));//字体大小
+                WatermarkType = Form1.IniReadValue("CameraPara", "watermarkType", Form1.cameraParaFile);//水印类型
+                CapabilitieItem = int.Parse(Form1.IniReadValue("CameraPara", "capabilitieItem", Form1.cameraParaFile));//分辨率
+                PicType = Form1.IniReadValue("CameraPara", "picType", Form1.cameraParaFile);
+            }
+            catch { }
+        }
     }
 }

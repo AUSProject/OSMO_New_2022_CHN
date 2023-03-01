@@ -34,6 +34,7 @@ namespace SHJ
                 tihuomaresult = tihuomaresult.Replace("提货", "打印");
             }
             label2.Text = tihuomaresult;
+            
             if (Form1.isICYOK)
             {
                 this.label10.ForeColor = System.Drawing.SystemColors.HighlightText;
@@ -274,6 +275,15 @@ namespace SHJ
             print = PrintHelper.GetExample();
             pic_Erweima.Image = Image.FromFile(System.IO.Path.Combine(Form1.adimagesaddress+"\\Erweima", "erweima.jpg"));
             panel_Error.Location = new Point(520, 393);
+
+            if (Form1.machineNode.GetNameItemValue("photoTest") == "True")
+            {
+                button2.Visible = true;
+            }
+            else
+            {
+                button2.Visible = false;
+            }
         }
 
         private void label10_DoubleClick(object sender, EventArgs e)
@@ -286,7 +296,7 @@ namespace SHJ
         private string imageFilePath;
         private int cargoWayNum;
 
-        private void FileChose()
+        private void FileChoose()
         {
             string filePath = Application.StartupPath + "\\TestImages";
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -295,6 +305,7 @@ namespace SHJ
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 imageFilePath = openFileDialog.FileName;
+                openFileDialog.Dispose();
                 ShowIamge();
             }
 
@@ -335,6 +346,7 @@ namespace SHJ
                 cargoWayNum = cmbCargoWay.SelectedIndex + 1;
                 Form1.CallWorkingTest(cargoWayNum, imageFilePath);
                 this.Dispose();
+                GC.Collect();
                 this.Close();
             }
         }
@@ -347,7 +359,7 @@ namespace SHJ
 
         private void btnPicChoice_Click(object sender, EventArgs e)
         {
-            FileChose();
+            FileChoose();
         }
 
         private void btnQuit_Click(object sender, EventArgs e)
@@ -365,8 +377,8 @@ namespace SHJ
 
         private void button2_Click(object sender, EventArgs e)
         {
-            //new PCHMI.VAR().SEND_INT16(0, "D5", 1);
             Form1.HMIstep = 3;
+            Form1.testC = true;
         }
     }
 }

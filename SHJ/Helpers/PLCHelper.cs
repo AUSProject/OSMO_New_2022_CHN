@@ -149,17 +149,17 @@ namespace SHJ
         /// </summary>
         public void MachineRun(int number)
         {
-            if (runTiming <= 0)
+            if (runTiming <= 0)//运行超时
             {
                 errorToken = true;
                 errorMsg += "未知故障";
             }
-            if (Form1.appconfig.GetNameItemValue("fualtCheck")=="True" && print.PrintFaultInspect() != null)
+            if (Form1.appconfig.GetNameItemValue("fualtCheck")=="True" && print.PrintFaultInspect() != null)//打印机故障检测
             {
                 errorToken = true;
                 errorMsg += "打印机故障";
             }
-            if (Form1.machineNode.GetNameItemValue("isAutoRun")=="True")
+            if (Form1.machineNode.GetNameItemValue("isAutoRun")=="True")//自动运行模式
             {
                 if (Form1.machineNode.GetNameItemValue("isRigPrint")=="True")
                 {
@@ -180,7 +180,13 @@ namespace SHJ
             }
             else
             {
-                MachineControlAndMonitoring(number);
+                if(CheckMachineError()!=null)//机器故障检测
+                {
+                    errorToken = true;
+                    errorMsg += "抓手故障";
+                }
+                else
+                    MachineControlAndMonitoring(number);
             }
         }
 
@@ -237,11 +243,44 @@ namespace SHJ
                 IniMachine();
             }
         }
-        
+
+        private string[] errorList =
+        {
+            "打印机托盘错误",
+             "没有打印",
+             "出料位置错误",
+             "装配位置检测",
+             "存盖子位置检测",
+             "抓手故障",
+             "料槽位置印面取料失败",
+             "盖子存放位置放置失败",
+             "盒子取料超时" ,
+             "盖子存储位置取料失败",
+             "装配位置成品取料失败",
+             "成品出料槽放置成品失败"
+        };
+        /// <summary>
+        /// 机器故障显示
+        /// <para>返回故障信息</para>
+        /// </summary>
+        public static string FaultShow()
+        {
+            string eMsg = "";
+            if (faultCode != 0)
+            {
+                string error = Convert.ToString(faultCode, 2);
+            }
+            else
+            {
+                eMsg = null;
+            }
+            return eMsg;
+        }
+
         #endregion
 
         #region 上端手动控制
-        
+
         private const int _Start=1;//置位标志
 
         /// <summary>
@@ -892,40 +931,7 @@ namespace SHJ
             else
                 return true;
         }
-
-        private string[] errorList =
-        {
-            "打印机托盘错误",
-             "没有打印",
-             "出料位置错误",
-             "装配位置检测",
-             "存盖子位置检测",
-             "抓手故障",
-             "料槽位置印面取料失败",
-             "盖子存放位置放置失败",
-             "盒子取料超时" ,
-             "盖子存储位置取料失败",
-             "装配位置成品取料失败",
-             "成品出料槽放置成品失败"
-        };
-        /// <summary>
-        /// 机器故障显示
-        /// <para>返回故障信息</para>
-        /// </summary>
-        public static string FaultShow()
-        {
-            string eMsg = "";
-            if (faultCode != 0)
-            {
-                string error = Convert.ToString(faultCode, 2);
-            }
-            else
-            {
-                eMsg = null;
-            }
-            return eMsg;
-        }
-
+        
         /// <summary>
         /// 检查设备是否连接
         /// <para>true:连接 false:未连接</para>
@@ -941,6 +947,15 @@ namespace SHJ
             {
                 return false;
             }
+        }
+
+        private string CheckMachineError()
+        {
+            short D1011 = new PCHMI.VAR().GET_INT16(0, "D1011");
+            if (D1011 > 0)
+                return "抓手报错";
+            else
+                return null;
         }
 
         #endregion

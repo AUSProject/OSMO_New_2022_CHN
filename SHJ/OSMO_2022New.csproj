@@ -221,15 +221,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="pic\wait.gif" />
     <None Include="bin\binexe\cmimages\001.jpg" />
     <None Include="bin\binexe\bcmimages\202204131702422297379.jpg" />
     <None Include="pic\cancel_Eng.jpg" />
-    <None Include="pic\Error_tooptip.png" />
-    <None Include="pic\Warm_tooptip.png" />
-    <None Include="pic\waitting2 %282%29.gif" />
-    <None Include="Resources\waits.gif" />
-    <None Include="Resources\waitnew.gif" />
     <Content Include="Properties\Resources.Resx千万不要动！！！！.txt" />
     <None Include="Resources\arrow-down_green.png" />
     <None Include="Resources\waitnew-unscreen.gif" />

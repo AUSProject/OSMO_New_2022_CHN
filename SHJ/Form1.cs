@@ -171,7 +171,7 @@ namespace SHJ
         private XmlDocument myregxmldoc = new XmlDocument();//注册配置文件XML
         private bool isregedit = false;//是否已经注册
         public static int guanggaoreturntime;//返回广告页面计时。3分钟不操作，则返回广告页面
-        private int MAXreturntime = 120;
+        private int MAXreturntime = 10;
         private PEPrinter myprint;
         
         //GPRS变量
@@ -195,7 +195,6 @@ namespace SHJ
         
         public static int wulihuodao;//物理货道号
         private double shangpinjiage;
-        private int zhifutype;//0现金1支付宝2微信3一码付4提货码
         private int totalshangpinnum = 16;//显示的商品总数
         private int totalhuodaonum = 16;//显示的货道总数
         
@@ -282,27 +281,12 @@ namespace SHJ
                 try
                 {
                     File.Create(cameraParaFile).Close();
-                    camera.IniCameraPara();
+                    camera.WriteIniCameraPara();
                 }
                 catch { }
             }
             else
             {
-                try
-                {
-                    camera.Camera1.WaterFontSzie = int.Parse(IniReadValue("Camera1", "fontSize", cameraParaFile));//字体大小
-                    camera.Camera1.CameraName = IniReadValue("Camera1", "cameraName", cameraParaFile);//相机名称
-                    camera.Camera1.WatermarkType = IniReadValue("Camera1", "watermarkType", cameraParaFile);//水印类型
-                    camera.Camera1.CapabilitieItem = int.Parse(IniReadValue("Camera1", "capabilitieItem", cameraParaFile));//分辨率
-                    camera.Camera1.PicType = IniReadValue("Camera1", "picType", cameraParaFile);
-
-                    camera.Camera2.WaterFontSzie = int.Parse(IniReadValue("Camera2", "fontSize", cameraParaFile));//字体大小
-                    camera.Camera2.CameraName = IniReadValue("Camera2", "cameraName", cameraParaFile);//相机名称
-                    camera.Camera2.WatermarkType = IniReadValue("Camera2", "watermarkType", cameraParaFile);//水印类型
-                    camera.Camera2.CapabilitieItem = int.Parse(IniReadValue("Camera2", "capabilitieItem", cameraParaFile));//分辨率
-                    camera.Camera2.PicType = IniReadValue("Camera2", "picType", cameraParaFile);
-                }
-                catch { }
             }
             if (System.IO.File.Exists(configxmlfile))
             {
@@ -517,14 +501,6 @@ namespace SHJ
             setting.debugPass = systemNode.GetNameItemValue("debugPass");
             setting.setupPass = systemNode.GetNameItemValue("setupPass");
             
-            if (machineNode.GetNameItemValue("photoTest")=="True")//需要记录位置则显示功能
-            {
-                panel2.Visible = true;
-                panel2.Location = new Point(454, 759);
-                video1.Visible = true;
-                video1.Location = new Point(300, 100);
-            }
-
             DeleteLogs();
 
             nowform1 = this;
@@ -762,6 +738,7 @@ namespace SHJ
                 {
                     this.Dispose();
                     this.Close();
+                    GC.Collect();
                 }
                 catch
                 {
@@ -777,56 +754,62 @@ namespace SHJ
         private void timer2_Tick(object sender, EventArgs e)
         {
             myprint.PEloop();//处理打印机事务
-
-            if (HMIstep == 0)//广告
+            switch (HMIstep)
             {
-                if (mytihuoma != null)
-                {
-                    checktihuoma = false;//取消验证
-                    mytihuoma.Close();
-                    mytihuoma = null;
-                }
-                CloseCamera();
-                this.panel1.Visible = true;//广告面板关闭显示
-                this.panel4.Visible = false;//出货界面关闭显示
-                this.pictureBox1.Focus();//获取焦点
-                pic_Erweima.Visible = true;//显示二维码
-            }
-            else if (HMIstep == 1)//提货码输入界面
-            {
-                if (mytihuoma == null)
-                {
-                    mytihuoma = new tihuoma();
-                    if (mytihuoma.ShowDialog() == DialogResult.Yes)
+                case 0://广告页面
+                    if (mytihuoma != null)
                     {
+                        checktihuoma = false;//取消验证
+                        mytihuoma.Close();
+                        mytihuoma = null;
                     }
-                    mytihuoma = null;
-                }
-                this.panel1.Visible = false;//广告面板关闭显示
-                this.panel4.Visible = false;//出货界面关闭显示
-                pic_Erweima.Visible = false;
+                    this.panel1.Visible = true;//广告面板关闭显示
+                    this.panel4.Visible = false;//出货界面关闭显示
+                    this.pictureBox1.Focus();//获取焦点
+                    pic_Erweima.Visible = true;//显示二维码
+                    break;
+                case 1://提货码页面
+                    if (mytihuoma == null)
+                    {
+                        mytihuoma = new tihuoma();
+                        if (mytihuoma.ShowDialog() == DialogResult.Yes)
+                        {
+                        }
+                        mytihuoma = null;
+                    }
+                    this.panel1.Visible = false;//广告面板关闭显示
+                    this.panel4.Visible = false;//出货界面关闭显示
+                    pic_Erweima.Visible = false;
+                    
+                    axWindowsMediaPlayer1.Visible = false;
+                    axWindowsMediaPlayer1.Ctlcontrols.stop();
+                    this.axWindowsMediaPlayer1.currentPlaylist.clear();
+                    break;
+                case 3://出货页面
+                    if (mytihuoma != null)
+                    {
+                        checktihuoma = false;//取消验证
+                        mytihuoma.Close();
+                        mytihuoma = null;
+                    }
+                    this.panel1.Visible = false;//广告面板关闭显示
+                    this.panel4.Visible = true;//出货界面显示
+                    pic_Erweima.Visible = false;
 
-                CloseCamera();
+                    axWindowsMediaPlayer1.Visible = false;
+                    axWindowsMediaPlayer1.Ctlcontrols.stop();
+                    axWindowsMediaPlayer1.currentPlaylist.clear();
 
-                axWindowsMediaPlayer1.Visible = false;
-                axWindowsMediaPlayer1.Ctlcontrols.stop();
-            }
-            else if (HMIstep == 3)//出货界面
-            {
-                if (mytihuoma != null)
-                {
-                    checktihuoma = false;//取消验证
-                    mytihuoma.Close();
-                    mytihuoma = null;
-                }
-                this.panel1.Visible = false;//广告面板关闭显示
-                this.panel4.Visible = true;//出货界面显示
-                pic_Erweima.Visible = false;
+                    if (testC)
+                    {
+                        ConnectCamera();
+                        ShowCameraAndPoint();
+                        testC = false;
+                    }
 
-                axWindowsMediaPlayer1.Visible = false;
-                axWindowsMediaPlayer1.Ctlcontrols.stop();
-
-                ConnectCamera();
+                    break;
+                default:
+                    break;
             }
 
             if (needopensettingform)
@@ -861,6 +844,8 @@ namespace SHJ
         private void safeOutSell()
         {
             outSell = false;
+            ShowCameraAndPoint();//是否在运行时显示摄像头
+            ConnectCamera();//打开摄像头
             liushuirecv = ((GSMRxBuffer[9] - 48) * 10 + (GSMRxBuffer[10] - 48)) * 60 + (GSMRxBuffer[11] - 48) * 10 + (GSMRxBuffer[12] - 48);
             ReCargoNum = (((int)GSMRxBuffer[13]) << 8) + ((int)GSMRxBuffer[14]);//接收到的货道号
             nowLogPath=log.CreateRunningLog(ReCargoNum.ToString(),myTihuomastr);//创建日志
@@ -933,8 +918,6 @@ namespace SHJ
                 AddShipRecord(result.ToString(), shangpinjiage.ToString());
                 
                 istestmode = false;
-                zhifutype = 4;//支付方式为提货码
-
                 HMIstep = 3;//出货
                 guanggaoreturntime = 0;
                 timer3.Enabled = true;
@@ -953,6 +936,8 @@ namespace SHJ
         #endregion
 
         #region Timer3
+        short D0P, D7P;
+        bool D11P, D6P, D9P;
         //运行控制和显示
         private void timer3_Tick(object sender, EventArgs e)
         {
@@ -961,60 +946,65 @@ namespace SHJ
             RunningDisplay();
             if (PLCHelper.errorToken)
             {
-                ReturnInputPage();
                 try
                 {
+                    ReturnInputPage();
                     log.WriteStepLog(StepType.运行故障, PLCHelper.errorMsg);
                     log.SaveRunningLog();
-                    CloseCamera();//关闭摄像头
                     PLC.ResetProgram();
                     CompressDirectory(nowLogPath, false);
                     ftpClient = new FTPHelper(ftpconfig.GetNameItemValue("IP") + ":" + ftpconfig.GetNameItemValue("Port"), ftpconfig.GetNameItemValue("User"), ftpconfig.GetNameItemValue("Pwd"));
-                    ftpClient.Upload(nowLogPath, Encoding.ASCII.GetString(Form1.IMEI));
+                    ftpClient.Upload(nowLogPath+".zip", Encoding.ASCII.GetString(Form1.IMEI));
                 }
                 catch { }
             }
             else if (PLCHelper._RunEnd)
             {
-                ReturnInputPage();
                 try
                 {
-                    CloseCamera();//关闭摄像头
+                    ReturnInputPage();
                     CompressDirectory(nowLogPath, false);
                     ftpClient = new FTPHelper(ftpconfig.GetNameItemValue("IP") + ":" + ftpconfig.GetNameItemValue("Port"), ftpconfig.GetNameItemValue("User"), ftpconfig.GetNameItemValue("Pwd"));
-                    ftpClient.Upload(nowLogPath, Encoding.ASCII.GetString(Form1.IMEI));
+                    ftpClient.Upload(nowLogPath+".zip", Encoding.ASCII.GetString(Form1.IMEI));
                 }
                 catch { }
             }
 
             #region 拍照
-            if (PLC.D0 == 2)
+            if (PLC.D0 == 2 && D0P==0)
             {
                 TakePhoto(2, "货道出货1");
+                D0P = 5;
             }
-            if(PLC.D0==5)
+            if(PLC.D0==5 && D0P==5)
             {
                 TakePhoto(2, "货道出货2");
+                D0P = 0;
             }
-            else if (PLC.D11 == 8)
+            else if (PLC.D11 == 8 && !D11P)
             {
                 TakePhoto(1,"放印面");
+                D11P = true;
             }
-            else if (PLC.D6 == 2)
+            else if (PLC.D6 == 2 && !D6P)
             {
                 TakePhoto(1,"装配盖子");
+                D6P = true;
             }
-            else if (PLC.D7 == 2)
+            else if (PLC.D7 == 2 && D7P==0)
             {
                 TakePhoto(1,"印面拍照");
+                D7P = 8;
             }
-            else if (PLC.D7 == 8)
+            else if (PLC.D7 == 8 && D7P==8)
             {
                 TakePhoto(0,"装配印面");
+                D7P = 0;
             }
-            else if (PLC.D9 == 12)
+            else if (PLC.D9 == 12 && !D9P)
             {
                 TakePhoto(1,"出货位置");
+                D9P = true;
             }
 
             if (machineNode.GetNameItemValue("photoTest")=="True")
@@ -1822,6 +1812,9 @@ namespace SHJ
         /// </summary>
         private void ReturnInputPage()
         {
+            D0P = 0;D11P = false;D6P = false;D7P = 0;D9P = false;
+            CloseCamera();//关闭摄像头
+            CloseCameraAndPoint();//隐藏摄像头
             timer3.Enabled = false;
             pel_SellTips.Visible = false;
             ReCargoNum = 0;
@@ -1908,7 +1901,6 @@ namespace SHJ
             this.axWindowsMediaPlayer1.Location = new Point(0, 0);
             this.axWindowsMediaPlayer1.settings.autoStart = true;
             this.axWindowsMediaPlayer1.settings.setMode("loop", true);
-            this.imageList1.ImageSize = new Size(215, 215);
 
             this.label2.Location = new Point(1400, 10);
             this.label5.Location = new Point(210, 740);
@@ -1920,21 +1912,6 @@ namespace SHJ
             this.pel_SellTips.Location = new Point(1300, 850);
 
             needupdatePlaylist = true;
-
-            if (machineNode.GetNameItemValue("photoTest")=="True")//需要记录位置则显示功能
-            {
-                panel2.Visible = true;
-                panel2.Location = new Point(454, 759);
-                video1.Visible = true;
-                video2.Visible = true;
-                video1.Location = new Point(300, 100);
-                video2.Location = new Point(300, 460);
-            }
-            else
-            {
-                panel2.Visible = false;
-                //video1.Visible = false;
-            }
         }
 
         /// <summary>
@@ -2373,10 +2350,11 @@ namespace SHJ
                 tihuoma.tihuomaresult = "模拟运行开始";
                 try
                 {
+                    ShowCameraAndPoint();//是否在运行时显示摄像头
+                    ConnectCamera();//打开摄像头
                     AddCoverPicture(huodaoNum);//加载盒体图片
                     pictureBox7.Load(PicPath);//加载印章图案
                     HMIstep = 3;//显示出货页面
-
                     log.WriteStepLog(StepType.印章图案检查, "状态正常");//日志记录
                 }
                 catch { }
@@ -2388,14 +2366,11 @@ namespace SHJ
                 ReCargoNum = result;//实际出货商品号
                 guanggaoreturntime = 0;
                 shangpinjiage = 0;//实际出货商品价格
-                zhifutype = 4;//支付方式为提货码
                 try
                 {
                     PEPrinter.PicPath = PicPath;
                 }
-                catch(Exception ex)
-                {
-                }
+                catch { }
             }
             else
             {
@@ -2487,6 +2462,8 @@ namespace SHJ
         #endregion
 
         #region Camera
+
+        public static bool testC = false;
         
         /// <summary>
         /// 打开摄像头
@@ -2495,15 +2472,18 @@ namespace SHJ
         {
             try
             {
-                camera.IniCamera();
-                if (camera.Camera1.VideoDevice != null)
+                GC.Collect();
+                camera.GetCameraDevices();
+                if (camera.VideoDevice1 != null)
                 {
-                    video1.VideoSource = camera.Camera1.VideoDevice;
+                    camera.VideoDevice1.Start();
+                    video1.VideoSource = camera.VideoDevice1;
                     video1.Start();
                 }
-                if (camera.Camera2.VideoDevice != null)
+                if (camera.VideoDevice2 != null)
                 {
-                    video2.VideoSource = camera.Camera2.VideoDevice;
+                    camera.VideoDevice2.Start();
+                    video2.VideoSource = camera.VideoDevice2;
                     video2.Start();
                 }
             }
@@ -2512,15 +2492,15 @@ namespace SHJ
 
         private void video1_NewFrame(object sender, ref Bitmap image)//水印
         {
-            if (camera.Camera1.WatermarkType != "None")
+            if (camera.WatermarkType != "None")
             {
                 Graphics grap = Graphics.FromImage(image);
                 SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.Red);
-                Font drawFont = new Font("Arial", camera.Camera1.WaterFontSzie, System.Drawing.FontStyle.Bold, GraphicsUnit.Millimeter);
+                Font drawFont = new Font("Arial", camera.WaterFontSzie, System.Drawing.FontStyle.Bold, GraphicsUnit.Millimeter);
                 int xPos = image.Width - (image.Width - 15);
                 int yPos = 10;
                 string drawString;
-                if (camera.Camera1.WatermarkType == "DateTime")//提货码样式
+                if (camera.WatermarkType == "DateTime")//提货码样式
                 {
                     drawString = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 }
@@ -2534,15 +2514,15 @@ namespace SHJ
 
         private void video2_NewFrame(object sender, ref Bitmap image)
         {
-            if (camera.Camera2.WatermarkType != "None")
+            if (camera.WatermarkType != "None")
             {
                 Graphics grap = Graphics.FromImage(image);
                 SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.Red);
-                Font drawFont = new Font("Arial", camera.Camera1.WaterFontSzie, System.Drawing.FontStyle.Bold, GraphicsUnit.Millimeter);
+                Font drawFont = new Font("Arial", camera.WaterFontSzie, System.Drawing.FontStyle.Bold, GraphicsUnit.Millimeter);
                 int xPos = image.Width - (image.Width - 15);
                 int yPos = 10;
                 string drawString;
-                if (camera.Camera2.WatermarkType == "DateTime")//提货码样式
+                if (camera.WatermarkType == "DateTime")//提货码样式
                 {
                     drawString = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 }
@@ -2556,7 +2536,7 @@ namespace SHJ
 
         private void lbl_D10_Click(object sender, EventArgs e)
         {
-            HMIstep = 1;
+            ReturnInputPage();
         }
 
         /// <summary>
@@ -2564,18 +2544,32 @@ namespace SHJ
         /// </summary>
         private void CloseCamera()
         {
+            CloseCamera1();
+            CloseCamera2();
+            GC.Collect();
+        }
+
+        private void CloseCamera1()
+        {
             try
             {
                 video1.SignalToStop();
                 video1.WaitForStop();
-                camera.Camera1.VideoDevice.SignalToStop();
-                camera.Camera1.VideoDevice.WaitForStop();
+                camera.VideoDevice1.SignalToStop();
+                camera.VideoDevice1.WaitForStop();
                 video1.VideoSource = null;
+            }
+            catch { }
+        }
 
+        private void CloseCamera2()
+        {
+            try
+            {
                 video2.SignalToStop();
                 video2.WaitForStop();
-                camera.Camera2.VideoDevice.SignalToStop();
-                camera.Camera2.VideoDevice.WaitForStop();
+                camera.VideoDevice2.SignalToStop();
+                camera.VideoDevice2.WaitForStop();
                 video2.VideoSource = null;
             }
             catch { }
@@ -2595,36 +2589,75 @@ namespace SHJ
                 switch (cameraIndex)
                 {
                     case 1:
-                        photo = video1.GetCurrentVideoFrame();
-                        imgPath = nowLogPath + "//" + picName + "." + camera.Camera1.picType.ToString();
-                        photo.Save(imgPath, camera.Camera1.picType);
-                        photo.Dispose();
+                        if (video1.IsRunning)
+                        {
+                            photo = video1.GetCurrentVideoFrame();
+                            imgPath = nowLogPath + "//" + picName + "." + camera.picType.ToString();
+                            photo.Save(imgPath, camera.picType);
+                            photo.Dispose();
+                        }
+                        else
+                            video1.Start();
                         break;
                     case 2:
-                        photo = video2.GetCurrentVideoFrame();
-                        imgPath = nowLogPath + "//" + picName + "." + camera.Camera2.picType.ToString();
-                        photo.Save(imgPath, camera.Camera2.picType);
-                        photo.Dispose();
+                        if (video2.IsRunning)
+                        {
+                            photo = video2.GetCurrentVideoFrame();
+                            imgPath = nowLogPath + "//" + picName + "." + camera.picType.ToString();
+                            photo.Save(imgPath, camera.picType);
+                            photo.Dispose();
+                        }
+                        else
+                            video2.Start();
                         break;
                     case 0:
-                        photo = video1.GetCurrentVideoFrame();
-                        imgPath = nowLogPath + "//" + picName + "1" + "." + camera.Camera1.picType.ToString();
-                        photo.Save(imgPath, camera.Camera1.picType);
-                        photo.Dispose();
-
-                        photo = video2.GetCurrentVideoFrame();
-                        imgPath = nowLogPath + "//" + picName + "2" + "." + camera.Camera2.picType.ToString();
-                        photo.Save(imgPath, camera.Camera2.picType);
-                        photo.Dispose();
+                        if (video1.IsRunning)
+                        {
+                            photo = video1.GetCurrentVideoFrame();
+                            imgPath = nowLogPath + "//" + picName + "1" + "." + camera.picType.ToString();
+                            photo.Save(imgPath, camera.picType);
+                            photo.Dispose();
+                        }
+                        if (video2.IsRunning)
+                        {
+                            photo = video2.GetCurrentVideoFrame();
+                            imgPath = nowLogPath + "//" + picName + "2" + "." + camera.picType.ToString();
+                            photo.Save(imgPath, camera.picType);
+                            photo.Dispose();
+                        }
+                        CloseCamera2();
                         break;
 
                 }
             }
-            catch(Exception e)
-            { }
+            catch { }
         }
-        
+
         #endregion
-        
+
+        #region Test
+
+        private void ShowCameraAndPoint()
+        {
+            if (machineNode.GetNameItemValue("photoTest") == "True")//需要记录位置则显示功能
+            {
+                panel2.Visible = true;
+                panel2.Location = new Point(50, 620);
+                video1.Visible = true;
+                video2.Visible = true;
+                video1.Location = new Point(50, 100);
+                video2.Location = new Point(50, 360);
+            }
+        }
+
+        private void CloseCameraAndPoint()
+        {
+            panel2.Visible = false;
+            video1.Visible = false;
+            video2.Visible = false;
+        }
+
+        #endregion
+
     }
 }
