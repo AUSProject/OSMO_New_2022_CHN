@@ -519,8 +519,6 @@ namespace SHJ
             
             if (machineNode.GetNameItemValue("photoTest")=="True")//需要记录位置则显示功能
             {
-                //拍照的位置测试功能
-                sw1 = new StreamWriter(Path.Combine(logPath, "拍照定位" + ".txt"));
                 panel2.Visible = true;
                 panel2.Location = new Point(454, 759);
                 video1.Visible = true;
@@ -788,6 +786,7 @@ namespace SHJ
                     mytihuoma.Close();
                     mytihuoma = null;
                 }
+                CloseCamera();
                 this.panel1.Visible = true;//广告面板关闭显示
                 this.panel4.Visible = false;//出货界面关闭显示
                 this.pictureBox1.Focus();//获取焦点
@@ -806,6 +805,8 @@ namespace SHJ
                 this.panel1.Visible = false;//广告面板关闭显示
                 this.panel4.Visible = false;//出货界面关闭显示
                 pic_Erweima.Visible = false;
+
+                CloseCamera();
 
                 axWindowsMediaPlayer1.Visible = false;
                 axWindowsMediaPlayer1.Ctlcontrols.stop();
@@ -928,11 +929,6 @@ namespace SHJ
             int result = CargoStockAndStateCheck(ReCargoNum.ToString());
             if (result < 90)
             {
-                try
-                {
-                    ConnectCamera();//打开摄像头
-                }
-                catch { }
                 shangpinjiage = double.Parse(nodelistshangpin[cNum].GetNameItemValue("jiage"));//实际出货商品价格
                 AddShipRecord(result.ToString(), shangpinjiage.ToString());
                 
@@ -994,42 +990,31 @@ namespace SHJ
             #region 拍照
             if (PLC.D0 == 2)
             {
-                lbl_Photoing.Visible = true;
                 TakePhoto(2, "货道出货1");
             }
             if(PLC.D0==5)
             {
-                lbl_Photoing.Visible = true;
                 TakePhoto(2, "货道出货2");
             }
             else if (PLC.D11 == 8)
             {
-                lbl_Photoing.Visible = true;
                 TakePhoto(1,"放印面");
             }
             else if (PLC.D6 == 2)
             {
-                lbl_Photoing.Visible = true;
                 TakePhoto(1,"装配盖子");
             }
             else if (PLC.D7 == 2)
             {
-                lbl_Photoing.Visible = true;
                 TakePhoto(1,"印面拍照");
             }
             else if (PLC.D7 == 8)
             {
-                lbl_Photoing.Visible = true;
                 TakePhoto(0,"装配印面");
             }
             else if (PLC.D9 == 12)
             {
-                lbl_Photoing.Visible = true;
                 TakePhoto(1,"出货位置");
-            }
-            else
-            {
-                lbl_Photoing.Visible = false;
             }
 
             if (machineNode.GetNameItemValue("photoTest")=="True")
@@ -1938,16 +1923,12 @@ namespace SHJ
 
             if (machineNode.GetNameItemValue("photoTest")=="True")//需要记录位置则显示功能
             {
-                //拍照的位置测试功能
-                try
-                {
-                    sw1 = new StreamWriter(Path.Combine(logPath, "拍照定位" + ".txt"));
-                }
-                catch { }
                 panel2.Visible = true;
                 panel2.Location = new Point(454, 759);
                 video1.Visible = true;
+                video2.Visible = true;
                 video1.Location = new Point(300, 100);
+                video2.Location = new Point(300, 460);
             }
             else
             {
@@ -2383,7 +2364,6 @@ namespace SHJ
         /// <param name="PicPath">印章图案路径</param>
         public void WorkingTest(int huodaoNum,string PicPath)
         {
-            ConnectCamera();//打开摄像头
             nowLogPath=log.CreateRunningLog(huodaoNum.ToString(),"模拟测试");
             int result = CargoStockAndStateCheck(huodaoNum.ToString());
             if(result < 90 && PLCHelper.nowStep == 0x00)//无报错
@@ -2513,17 +2493,21 @@ namespace SHJ
         /// </summary>
         private void ConnectCamera()
         {
-            camera.IniCamera();
-            if (camera.Camera1.VideoDevice != null)
+            try
             {
-                video1.VideoSource = camera.Camera1.VideoDevice;
-                video1.Start();
+                camera.IniCamera();
+                if (camera.Camera1.VideoDevice != null)
+                {
+                    video1.VideoSource = camera.Camera1.VideoDevice;
+                    video1.Start();
+                }
+                if (camera.Camera2.VideoDevice != null)
+                {
+                    video2.VideoSource = camera.Camera2.VideoDevice;
+                    video2.Start();
+                }
             }
-            if (camera.Camera2.VideoDevice != null)
-            {
-                video2.VideoSource = camera.Camera2.VideoDevice;
-                video2.Start();
-            }
+            catch { }
         }
 
         private void video1_NewFrame(object sender, ref Bitmap image)//水印
@@ -2570,22 +2554,31 @@ namespace SHJ
             }
         }
 
+        private void lbl_D10_Click(object sender, EventArgs e)
+        {
+            HMIstep = 1;
+        }
+
         /// <summary>
         /// 关闭摄像头
         /// </summary>
         private void CloseCamera()
         {
-            video1.SignalToStop();
-            video1.WaitForStop();
-            camera.Camera1.VideoDevice.SignalToStop();
-            camera.Camera1.VideoDevice.WaitForStop();
-            video1.VideoSource = null;
+            try
+            {
+                video1.SignalToStop();
+                video1.WaitForStop();
+                camera.Camera1.VideoDevice.SignalToStop();
+                camera.Camera1.VideoDevice.WaitForStop();
+                video1.VideoSource = null;
 
-            video2.SignalToStop();
-            video2.WaitForStop();
-            camera.Camera2.VideoDevice.SignalToStop();
-            camera.Camera2.VideoDevice.WaitForStop();
-            video2.VideoSource = null;
+                video2.SignalToStop();
+                video2.WaitForStop();
+                camera.Camera2.VideoDevice.SignalToStop();
+                camera.Camera2.VideoDevice.WaitForStop();
+                video2.VideoSource = null;
+            }
+            catch { }
         }
 
         /// <summary>
@@ -2630,100 +2623,7 @@ namespace SHJ
             catch(Exception e)
             { }
         }
-
-        #region 照片定位
-
-        StreamWriter sw1;
-        private void button1_Click(object sender, EventArgs e)
-        {
-            sw1.WriteLine("放印面");
-            sw1.WriteLine(lbl_D0.Text);
-            sw1.WriteLine(lbl_D6.Text);
-            sw1.WriteLine(lbl_D7.Text);
-            sw1.WriteLine(lbl_D8.Text);
-            sw1.WriteLine(lbl_D9.Text);
-            sw1.WriteLine( lbl_D10.Text);
-            sw1.WriteLine( lbl_D11.Text);
-            sw1.WriteLine();
-        }
-
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            sw1.WriteLine("装配盖子");
-            sw1.WriteLine(lbl_D0.Text);
-            sw1.WriteLine(lbl_D6.Text);
-            sw1.WriteLine(lbl_D7.Text);
-            sw1.WriteLine(lbl_D8.Text);
-            sw1.WriteLine(lbl_D9.Text);
-            sw1.WriteLine( lbl_D10.Text);
-            sw1.WriteLine( lbl_D11.Text);
-            sw1.WriteLine();
-        }
-
-        private void button4_Click(object sender, EventArgs e)
-        {
-            sw1.WriteLine("印面拍照");
-            sw1.WriteLine(lbl_D0.Text);
-            sw1.WriteLine(lbl_D6.Text);
-            sw1.WriteLine(lbl_D7.Text);
-            sw1.WriteLine(lbl_D8.Text);
-            sw1.WriteLine(lbl_D9.Text);
-            sw1.WriteLine( lbl_D10.Text);
-            sw1.WriteLine( lbl_D11.Text);
-            sw1.WriteLine();
-        }
-        int writecount = 1;
-        private void button7_Click(object sender, EventArgs e)
-        {
-            sw1.WriteLine("第" + writecount + "次记录");
-            sw1.WriteLine(lbl_D0.Text);
-            sw1.WriteLine(lbl_D6.Text);
-            sw1.WriteLine(lbl_D7.Text);
-            sw1.WriteLine(lbl_D8.Text);
-            sw1.WriteLine(lbl_D9.Text);
-            sw1.WriteLine(lbl_D10.Text);
-            sw1.WriteLine(lbl_D11.Text);
-            sw1.WriteLine();
-            writecount++;
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-            if (HMIstep == 3)
-            {
-                PLCHelper.errorToken = true;
-            }
-        }
-
-        private void button5_Click(object sender, EventArgs e)
-        {
-            sw1.WriteLine("装载印面");
-            sw1.WriteLine(lbl_D0.Text);
-            sw1.WriteLine(lbl_D6.Text);
-            sw1.WriteLine(lbl_D7.Text);
-            sw1.WriteLine(lbl_D8.Text);
-            sw1.WriteLine(lbl_D9.Text);
-            sw1.WriteLine( lbl_D10.Text);
-            sw1.WriteLine( lbl_D11.Text);
-            sw1.WriteLine();
-        }
-
-        private void button6_Click(object sender, EventArgs e)
-        {
-            sw1.WriteLine("出货位置");
-            sw1.WriteLine(lbl_D0.Text);
-            sw1.WriteLine(lbl_D6.Text);
-            sw1.WriteLine(lbl_D7.Text);
-            sw1.WriteLine(lbl_D8.Text);
-            sw1.WriteLine(lbl_D9.Text);
-            sw1.WriteLine( lbl_D10.Text);
-            sw1.WriteLine( lbl_D11.Text);
-            sw1.WriteLine();
-            sw1.Close();
-        }
-
-        #endregion
-
+        
         #endregion
         
     }

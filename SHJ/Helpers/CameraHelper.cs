@@ -20,6 +20,43 @@ namespace SHJ
         public CameraPara Camera1 { get; set; }
         public CameraPara Camera2 { get; set; }
 
+        public VideoCaptureDevice VideoDevice1 { get; set; }//摄像源1
+        public VideoCaptureDevice VideoDevice2 { get; set; }//摄像源2
+        #region CameraPara
+
+        public string WatermarkType { get; set; }//水印类型
+        public string CameraName { get; set; }//像机名称
+        public int CapabilitieItem { get; set; }//分辨率相对位置
+        public int WaterFontSzie { get; set; }//水印字体大小
+        public ImageFormat picType;
+        public string PicType
+        {
+            get { return picType.ToString(); }
+            set
+            {
+                switch (value)//图片格式
+                {
+                    case "Jpeg":
+                        picType = ImageFormat.Jpeg;
+                        break;
+                    case "Bmp":
+                        picType = ImageFormat.Bmp;
+                        break;
+                    case "Png":
+                        picType = ImageFormat.Png;
+                        break;
+                    case "Gif":
+                        picType = ImageFormat.Gif;
+                        break;
+                    default:
+                        picType = ImageFormat.Jpeg;
+                        break;
+                }
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// 获取实例
         /// </summary>
